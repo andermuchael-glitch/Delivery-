@@ -12,587 +12,709 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Comandas Delivery" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: #f4f5f7; }
-  body {
-    font-family: 'Inter', -apple-system, sans-serif; color: #14181f;
-    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
-  }
-  button { font-family: inherit; cursor: pointer; }
-  input { font-family: inherit; }
-  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type=number] { -moz-appearance: textfield; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: #f4f5f7; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif; color: #14181f;
+  padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+}
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+#app { min-height: 100vh; padding-bottom: 32px; }
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e7e9ee;
+  position: sticky; top: 0; z-index: 10;
+}
+.header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 10px; background: #0d9488;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.brand-block { min-width: 0; }
+.brand { font-weight: 800; font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.15; }
+.brand-sub { font-size: 11.5px; color: #8a91a0; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-right { display: flex; align-items: center; gap: 6px; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 9px; border: 1px solid #e7e9ee;
+  background: #ffffff; color: #14181f; display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.icon-btn:active { background: #f1f3f6; }
+.tabbar {
+  display: flex; background: #ffffff; border-top: 1px solid #e7e9ee;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  flex: 1; border: none; background: transparent; color: #8a91a0;
+  font-size: 11.5px; font-weight: 600; padding: 10px 0 8px; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+}
+.tab .tab-icon { font-size: 19px; }
+.tab.active { color: #0d9488; }
+.bar { font-size: 13px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+.bar.error { background: #fef2f2; color: #b42318; }
+.bar.success { background: #ecfdf5; color: #067647; }
+.bar button { background: none; border: none; color: inherit; font-size: 15px; }
+main { max-width: 480px; margin: 0 auto; padding: 16px 14px 76px; }
+.day-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.nav-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid #e7e9ee;
+  background: #ffffff; color: #14181f; display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.nav-btn:active { background: #f1f3f6; }
+.day-nav-label { text-align: center; }
+.day-nav-date { font-weight: 700; font-size: 15.5px; text-transform: capitalize; }
+.date-input { background: transparent; border: none; color: #8a91a0; font-size: 11px; margin-top: 2px; }
+.month-label { font-weight: 700; font-size: 16.5px; text-transform: capitalize; }
+.card { background: #ffffff; border-radius: 16px; padding: 16px 14px; border: 1px solid #edeff3; }
+.list-header {
+  display: grid; grid-template-columns: 1fr 1fr 34px 30px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: #8a91a0;
+  text-transform: uppercase; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid #edeff3;
+}
+.empty-row { font-size: 13px; color: #8a91a0; text-align: center; padding: 22px 8px; }
+.entry-row { display: grid; grid-template-columns: 1fr 1fr 34px 30px; gap: 8px; align-items: center; padding: 6px 0; }
+.entry-row.conferido { opacity: 0.5; }
+.comanda-field {
+  border: 1px solid #e2e5ec; border-radius: 9px; padding: 9px 10px;
+  font-size: 14px; font-weight: 600; background: #f9fafb; color: #14181f; width: 100%;
+}
+.comanda-field:focus, .taxa-wrap:focus-within, .auth-input:focus, #arrancada-input:focus { outline: none; border-color: #0d9488; background: #fff; }
+.comanda-field.riscado { text-decoration: line-through; }
+.taxa-wrap { display: flex; align-items: center; border: 1px solid #e2e5ec; border-radius: 9px; background: #f9fafb; overflow: hidden; }
+.taxa-prefix { font-size: 12px; color: #8a91a0; padding: 0 0 0 10px; }
+.taxa-field {
+  border: none; outline: none; padding: 9px 10px 9px 4px;
+  font-size: 14px; font-weight: 600; background: transparent; color: #14181f; width: 100%;
+}
+.check-wrap { display: flex; align-items: center; justify-content: center; }
+.check-wrap input { width: 19px; height: 19px; accent-color: #0d9488; cursor: pointer; }
+.remove-btn { border: none; background: transparent; color: #d33; display: flex; align-items: center; justify-content: center; padding: 6px; font-size: 15px; }
+.add-btn {
+  margin-top: 8px; width: 100%; border: 1.5px dashed #cfd4dd; background: transparent;
+  color: #0d9488; font-weight: 700; font-size: 13px; padding: 11px 0; border-radius: 10px;
+}
+.add-btn:active { background: #f0fdfa; }
+.divider { border-top: 1px solid #edeff3; margin: 16px 0 12px; }
+.arrancada-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.arrancada-label { font-size: 13px; font-weight: 600; color: #4b5262; }
+.summary-block { border-top: 1px solid #edeff3; padding-top: 10px; }
+.summary-line { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; color: #4b5262; }
+.summary-strong { font-weight: 700; color: #14181f; }
+.summary-total { margin-top: 6px; padding-top: 10px; border-top: 1.5px solid #14181f; font-size: 16px; font-weight: 800; color: #14181f; }
+.saving-note { text-align: center; font-size: 11px; color: #a3a9b5; margin-top: 12px; }
+.big-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.big-stat { background: #ffffff; border: 1px solid #edeff3; border-radius: 16px; padding: 16px 14px; }
+.big-stat-value { font-size: 25px; font-weight: 800; color: #0d9488; }
+.big-stat-label { font-size: 11.5px; color: #8a91a0; margin-top: 4px; }
+.day-list-title { font-size: 12px; color: #8a91a0; margin: 18px 4px 8px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.day-list { display: flex; flex-direction: column; gap: 6px; }
+.day-list-item {
+  display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center;
+  background: #ffffff; border: 1px solid #edeff3; border-radius: 12px;
+  padding: 11px 14px; color: #14181f; text-align: left; width: 100%;
+}
+.day-list-item:active { background: #f9fafb; }
+.day-list-date { font-size: 13px; font-weight: 700; text-transform: capitalize; }
+.day-list-entregas { font-size: 12px; color: #8a91a0; }
+.day-list-total { font-size: 13px; font-weight: 700; color: #0d9488; text-align: right; }
+.loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #8a91a0; font-size: 14px; }
+.auth-screen {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px 16px; background: #f4f5f7;
+}
+.auth-card {
+  background: #ffffff; border-radius: 20px; padding: 32px 24px;
+  width: 100%; max-width: 340px; box-shadow: 0 4px 24px rgba(20,24,31,0.06);
+  border: 1px solid #edeff3;
+  display: flex; flex-direction: column; align-items: center;
+}
+.auth-logo {
+  width: 52px; height: 52px; border-radius: 14px; background: #0d9488;
+  display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 12px;
+}
+.auth-brand { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.auth-sub { font-size: 13px; color: #8a91a0; margin-top: 3px; margin-bottom: 20px; }
+.auth-error {
+  background: #fef2f2; color: #b42318; font-size: 12.5px; padding: 9px 12px;
+  border-radius: 9px; width: 100%; margin-bottom: 12px; text-align: center;
+}
+.auth-input {
+  width: 100%; border: 1px solid #e2e5ec; border-radius: 10px; padding: 12px 13px;
+  font-size: 14px; margin-bottom: 10px; background: #f9fafb; color: #14181f;
+}
+.auth-submit {
+  width: 100%; border: none; border-radius: 10px; padding: 13px 0; background: #0d9488;
+  color: #ffffff; font-weight: 700; font-size: 14px; margin-top: 4px;
+}
+.auth-submit:active { background: #0b7a70; }
+.auth-switch { width: 100%; border: none; background: transparent; color: #0d9488; font-size: 12.5px; margin-top: 14px; font-weight: 600; }
+.auth-note { max-width: 300px; text-align: center; font-size: 11px; color: #a3a9b5; margin-top: 18px; line-height: 1.5; }
 
-  #app { min-height: 100vh; padding-bottom: 32px; }
-
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e7e9ee;
-    position: sticky; top: 0; z-index: 10;
-  }
-  .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .logo-mark {
-    width: 36px; height: 36px; border-radius: 10px; background: #0d9488;
-    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-  }
-  .brand-block { min-width: 0; }
-  .brand { font-weight: 800; font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.15; }
-  .brand-sub { font-size: 11.5px; color: #8a91a0; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .header-right { display: flex; align-items: center; gap: 6px; }
-  .icon-btn {
-    width: 34px; height: 34px; border-radius: 9px; border: 1px solid #e7e9ee;
-    background: #ffffff; color: #14181f; display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
-  }
-  .icon-btn:active { background: #f1f3f6; }
-
-  .tabbar {
-    display: flex; background: #ffffff; border-top: 1px solid #e7e9ee;
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .tab {
-    flex: 1; border: none; background: transparent; color: #8a91a0;
-    font-size: 11.5px; font-weight: 600; padding: 10px 0 8px; display: flex; flex-direction: column;
-    align-items: center; gap: 3px;
-  }
-  .tab .tab-icon { font-size: 19px; }
-  .tab.active { color: #0d9488; }
-
-  .bar { font-size: 13px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
-  .bar.error { background: #fef2f2; color: #b42318; }
-  .bar.success { background: #ecfdf5; color: #067647; }
-  .bar button { background: none; border: none; color: inherit; font-size: 15px; }
-
-  main { max-width: 480px; margin: 0 auto; padding: 16px 14px 76px; }
-
-  .day-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .nav-btn {
-    width: 36px; height: 36px; border-radius: 10px; border: 1px solid #e7e9ee;
-    background: #ffffff; color: #14181f; display: flex; align-items: center; justify-content: center; font-size: 17px;
-  }
-  .nav-btn:active { background: #f1f3f6; }
-  .day-nav-label { text-align: center; }
-  .day-nav-date { font-weight: 700; font-size: 15.5px; text-transform: capitalize; }
-  .date-input { background: transparent; border: none; color: #8a91a0; font-size: 11px; margin-top: 2px; }
-  .month-label { font-weight: 700; font-size: 16.5px; text-transform: capitalize; }
-
-  .card { background: #ffffff; border-radius: 16px; padding: 16px 14px; border: 1px solid #edeff3; }
-  .list-header {
-    display: grid; grid-template-columns: 1fr 1fr 34px 30px;
-    font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: #8a91a0;
-    text-transform: uppercase; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid #edeff3;
-  }
-  .empty-row { font-size: 13px; color: #8a91a0; text-align: center; padding: 22px 8px; }
-
-  .entry-row { display: grid; grid-template-columns: 1fr 1fr 34px 30px; gap: 8px; align-items: center; padding: 6px 0; }
-  .entry-row.conferido { opacity: 0.5; }
-  .comanda-field {
-    border: 1px solid #e2e5ec; border-radius: 9px; padding: 9px 10px;
-    font-size: 14px; font-weight: 600; background: #f9fafb; color: #14181f; width: 100%;
-  }
-  .comanda-field:focus, .taxa-wrap:focus-within, .auth-input:focus, #arrancada-input:focus { outline: none; border-color: #0d9488; background: #fff; }
-  .comanda-field.riscado { text-decoration: line-through; }
-  .taxa-wrap { display: flex; align-items: center; border: 1px solid #e2e5ec; border-radius: 9px; background: #f9fafb; overflow: hidden; }
-  .taxa-prefix { font-size: 12px; color: #8a91a0; padding: 0 0 0 10px; }
-  .taxa-field {
-    border: none; outline: none; padding: 9px 10px 9px 4px;
-    font-size: 14px; font-weight: 600; background: transparent; color: #14181f; width: 100%;
-  }
-  .check-wrap { display: flex; align-items: center; justify-content: center; }
-  .check-wrap input { width: 19px; height: 19px; accent-color: #0d9488; cursor: pointer; }
-  .remove-btn { border: none; background: transparent; color: #d33; display: flex; align-items: center; justify-content: center; padding: 6px; font-size: 15px; }
-
-  .add-btn {
-    margin-top: 8px; width: 100%; border: 1.5px dashed #cfd4dd; background: transparent;
-    color: #0d9488; font-weight: 700; font-size: 13px; padding: 11px 0; border-radius: 10px;
-  }
-  .add-btn:active { background: #f0fdfa; }
-  .divider { border-top: 1px solid #edeff3; margin: 16px 0 12px; }
-  .arrancada-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .arrancada-label { font-size: 13px; font-weight: 600; color: #4b5262; }
-
-  .summary-block { border-top: 1px solid #edeff3; padding-top: 10px; }
-  .summary-line { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; color: #4b5262; }
-  .summary-strong { font-weight: 700; color: #14181f; }
-  .summary-total { margin-top: 6px; padding-top: 10px; border-top: 1.5px solid #14181f; font-size: 16px; font-weight: 800; color: #14181f; }
-
-  .saving-note { text-align: center; font-size: 11px; color: #a3a9b5; margin-top: 12px; }
-
-  .big-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .big-stat { background: #ffffff; border: 1px solid #edeff3; border-radius: 16px; padding: 16px 14px; }
-  .big-stat-value { font-size: 25px; font-weight: 800; color: #0d9488; }
-  .big-stat-label { font-size: 11.5px; color: #8a91a0; margin-top: 4px; }
-
-  .day-list-title { font-size: 12px; color: #8a91a0; margin: 18px 4px 8px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
-  .day-list { display: flex; flex-direction: column; gap: 6px; }
-  .day-list-item {
-    display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center;
-    background: #ffffff; border: 1px solid #edeff3; border-radius: 12px;
-    padding: 11px 14px; color: #14181f; text-align: left; width: 100%;
-  }
-  .day-list-item:active { background: #f9fafb; }
-  .day-list-date { font-size: 13px; font-weight: 700; text-transform: capitalize; }
-  .day-list-entregas { font-size: 12px; color: #8a91a0; }
-  .day-list-total { font-size: 13px; font-weight: 700; color: #0d9488; text-align: right; }
-
-  .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #8a91a0; font-size: 14px; }
-
-  .auth-screen {
-    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 24px 16px; background: #f4f5f7;
-  }
-  .auth-card {
-    background: #ffffff; border-radius: 20px; padding: 32px 24px;
-    width: 100%; max-width: 340px; box-shadow: 0 4px 24px rgba(20,24,31,0.06);
-    border: 1px solid #edeff3;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .auth-logo {
-    width: 52px; height: 52px; border-radius: 14px; background: #0d9488;
-    display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 12px;
-  }
-  .auth-brand { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
-  .auth-sub { font-size: 13px; color: #8a91a0; margin-top: 3px; margin-bottom: 20px; }
-  .auth-error {
-    background: #fef2f2; color: #b42318; font-size: 12.5px; padding: 9px 12px;
-    border-radius: 9px; width: 100%; margin-bottom: 12px; text-align: center;
-  }
-  .auth-input {
-    width: 100%; border: 1px solid #e2e5ec; border-radius: 10px; padding: 12px 13px;
-    font-size: 14px; margin-bottom: 10px; background: #f9fafb; color: #14181f;
-  }
-  .auth-submit {
-    width: 100%; border: none; border-radius: 10px; padding: 13px 0; background: #0d9488;
-    color: #ffffff; font-weight: 700; font-size: 14px; margin-top: 4px;
-  }
-  .auth-submit:active { background: #0b7a70; }
-  .auth-switch { width: 100%; border: none; background: transparent; color: #0d9488; font-size: 12.5px; margin-top: 14px; font-weight: 600; }
-  .auth-note { max-width: 300px; text-align: center; font-size: 11px; color: #a3a9b5; margin-top: 18px; line-height: 1.5; }
+/* --- Gastos (novo) --- */
+.expense-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr 30px; gap: 8px; align-items: center; padding: 6px 0; }
+.expense-list-header {
+  display: grid; grid-template-columns: 1.1fr 1fr 1fr 30px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: #8a91a0;
+  text-transform: uppercase; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 1px solid #edeff3;
+}
+.expense-select {
+  border: 1px solid #e2e5ec; border-radius: 9px; padding: 9px 8px;
+  font-size: 13px; font-weight: 600; background: #f9fafb; color: #14181f; width: 100%; appearance: none;
+}
+.expense-select:focus { outline: none; border-color: #0d9488; background: #fff; }
+.expense-cat-icon { margin-right: 4px; }
 </style>
 </head>
 <body>
 <div id="app"><div class="loading-screen">carregando…</div></div>
-
 <script>
 (function () {
-  "use strict";
+"use strict";
+var MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+var WEEKDAYS_PT = ["dom","seg","ter","qua","qui","sex","sáb"];
+var GLOBAL_PREFIX = "comandasdelivery:";
+var currentUser = null;
 
-  var MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  var WEEKDAYS_PT = ["dom","seg","ter","qua","qui","sex","sáb"];
-  var GLOBAL_PREFIX = "comandasdelivery:";
-  var currentUser = null;
+/* Categorias de gastos */
+var EXPENSE_CATEGORIES = [
+  { id: "combustivel", label: "Combustível", icon: "⛽" },
+  { id: "oleo", label: "Troca de óleo", icon: "🛢️" },
+  { id: "manutencao", label: "Manutenção", icon: "🔧" },
+  { id: "pneu", label: "Pneu", icon: "🛞" },
+  { id: "alimentacao", label: "Alimentação", icon: "🍔" },
+  { id: "outros", label: "Outros", icon: "📦" }
+];
+function categoryLabel(id) {
+  for (var i = 0; i < EXPENSE_CATEGORIES.length; i++) { if (EXPENSE_CATEGORIES[i].id === id) return EXPENSE_CATEGORIES[i].icon + " " + EXPENSE_CATEGORIES[i].label; }
+  return id;
+}
 
-  function dataPrefix() { return GLOBAL_PREFIX + "user:" + currentUser + ":"; }
-  function storeGet(key) {
-    try { var raw = localStorage.getItem(dataPrefix() + key); return raw === null ? null : raw; }
-    catch (e) { return null; }
-  }
-  function storeSet(key, value) {
-    try { localStorage.setItem(dataPrefix() + key, value); return true; }
-    catch (e) { return false; }
-  }
+function dataPrefix() { return GLOBAL_PREFIX + "user:" + currentUser + ":"; }
+function storeGet(key) {
+  try { var raw = localStorage.getItem(dataPrefix() + key); return raw === null ? null : raw; }
+  catch (e) { return null; }
+}
+function storeSet(key, value) {
+  try { localStorage.setItem(dataPrefix() + key, value); return true; }
+  catch (e) { return false; }
+}
+function simpleHash(str) {
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) { hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0; }
+  return String(hash);
+}
+function loadUsers() {
+  try { var raw = localStorage.getItem(GLOBAL_PREFIX + "auth:users"); return raw ? JSON.parse(raw) : {}; }
+  catch (e) { return {}; }
+}
+function saveUsers(users) { localStorage.setItem(GLOBAL_PREFIX + "auth:users", JSON.stringify(users)); }
+function normalizeUsername(u) { return (u || "").trim().toLowerCase(); }
+function registerUser(username, password) {
+  var u = normalizeUsername(username);
+  if (!u || !password) return { ok: false, msg: "Preencha usuário e senha." };
+  if (u.length < 3) return { ok: false, msg: "Usuário deve ter ao menos 3 caracteres." };
+  if (password.length < 4) return { ok: false, msg: "Senha deve ter ao menos 4 caracteres." };
+  var users = loadUsers();
+  if (users[u]) return { ok: false, msg: "Esse usuário já existe." };
+  users[u] = { passwordHash: simpleHash(password), createdAt: new Date().toISOString() };
+  saveUsers(users);
+  return { ok: true };
+}
+function verifyLogin(username, password) {
+  var u = normalizeUsername(username);
+  var users = loadUsers();
+  if (!users[u]) return { ok: false, msg: "Usuário não encontrado." };
+  if (users[u].passwordHash !== simpleHash(password)) return { ok: false, msg: "Senha incorreta." };
+  return { ok: true, username: u };
+}
+function getSession() { try { return localStorage.getItem(GLOBAL_PREFIX + "auth:session"); } catch (e) { return null; } }
+function setSession(username) { localStorage.setItem(GLOBAL_PREFIX + "auth:session", username); }
+function clearSession() { localStorage.removeItem(GLOBAL_PREFIX + "auth:session"); }
+function todayKey() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function fmtBRL(n) { n = n || 0; return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+function fmtDateLabel(key) {
+  var parts = key.split("-").map(Number);
+  var dt = new Date(parts[0], parts[1] - 1, parts[2]);
+  return pad(parts[2]) + "/" + pad(parts[1]) + " · " + WEEKDAYS_PT[dt.getDay()];
+}
+function emptyDay(dateKey) { return { dateKey: dateKey, entries: [], arrancada: 60 }; }
+function emptyExpenseDay(dateKey) { return { dateKey: dateKey, items: [] }; }
 
-  function simpleHash(str) {
-    var hash = 0;
-    for (var i = 0; i < str.length; i++) { hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0; }
-    return String(hash);
-  }
-  function loadUsers() {
-    try { var raw = localStorage.getItem(GLOBAL_PREFIX + "auth:users"); return raw ? JSON.parse(raw) : {}; }
-    catch (e) { return {}; }
-  }
-  function saveUsers(users) { localStorage.setItem(GLOBAL_PREFIX + "auth:users", JSON.stringify(users)); }
-  function normalizeUsername(u) { return (u || "").trim().toLowerCase(); }
-  function registerUser(username, password) {
-    var u = normalizeUsername(username);
-    if (!u || !password) return { ok: false, msg: "Preencha usuário e senha." };
-    if (u.length < 3) return { ok: false, msg: "Usuário deve ter ao menos 3 caracteres." };
-    if (password.length < 4) return { ok: false, msg: "Senha deve ter ao menos 4 caracteres." };
-    var users = loadUsers();
-    if (users[u]) return { ok: false, msg: "Esse usuário já existe." };
-    users[u] = { passwordHash: simpleHash(password), createdAt: new Date().toISOString() };
-    saveUsers(users);
-    return { ok: true };
-  }
-  function verifyLogin(username, password) {
-    var u = normalizeUsername(username);
-    var users = loadUsers();
-    if (!users[u]) return { ok: false, msg: "Usuário não encontrado." };
-    if (users[u].passwordHash !== simpleHash(password)) return { ok: false, msg: "Senha incorreta." };
-    return { ok: true, username: u };
-  }
-  function getSession() { try { return localStorage.getItem(GLOBAL_PREFIX + "auth:session"); } catch (e) { return null; } }
-  function setSession(username) { localStorage.setItem(GLOBAL_PREFIX + "auth:session", username); }
-  function clearSession() { localStorage.removeItem(GLOBAL_PREFIX + "auth:session"); }
+var state = {
+  dayIndex: [],
+  expenseIndex: [],
+  selectedKey: todayKey(),
+  selectedExpenseKey: todayKey(),
+  dayData: emptyDay(todayKey()),
+  expenseData: emptyExpenseDay(todayKey()),
+  view: "day",
+  monthCursor: (function () { var d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })(),
+  monthDays: {},
+  monthExpenseDays: {},
+  saving: false,
+  error: null,
+  backupMsg: null,
+  isFullscreen: false
+};
 
-  function todayKey() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
-  function pad(n) { return String(n).padStart(2, "0"); }
-  function fmtBRL(n) { n = n || 0; return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
-  function fmtDateLabel(key) {
-    var parts = key.split("-").map(Number);
-    var dt = new Date(parts[0], parts[1] - 1, parts[2]);
-    return pad(parts[2]) + "/" + pad(parts[1]) + " · " + WEEKDAYS_PT[dt.getDay()];
+function loadDayIndex() { var raw = storeGet("day-index"); return raw ? JSON.parse(raw) : []; }
+function saveDayIndex(keys) { storeSet("day-index", JSON.stringify(keys)); }
+function loadDay(key) { var raw = storeGet("day:" + key); return raw ? JSON.parse(raw) : emptyDay(key); }
+function saveDay(data) {
+  state.saving = true; render();
+  storeSet("day:" + data.dateKey, JSON.stringify(data));
+  if (state.dayIndex.indexOf(data.dateKey) === -1) {
+    state.dayIndex.push(data.dateKey);
+    state.dayIndex.sort();
+    saveDayIndex(state.dayIndex);
   }
-  function emptyDay(dateKey) { return { dateKey: dateKey, entries: [], arrancada: 60 }; }
+  state.saving = false;
+}
 
-  var state = {
-    dayIndex: [],
-    selectedKey: todayKey(),
-    dayData: emptyDay(todayKey()),
-    view: "day",
-    monthCursor: (function () { var d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })(),
-    monthDays: {},
-    saving: false,
-    error: null,
-    backupMsg: null,
-    isFullscreen: false
-  };
+/* --- Persistência dos gastos --- */
+function loadExpenseIndex() { var raw = storeGet("expense-index"); return raw ? JSON.parse(raw) : []; }
+function saveExpenseIndex(keys) { storeSet("expense-index", JSON.stringify(keys)); }
+function loadExpenseDay(key) { var raw = storeGet("expense:" + key); return raw ? JSON.parse(raw) : emptyExpenseDay(key); }
+function saveExpenseDay(data) {
+  state.saving = true; render();
+  storeSet("expense:" + data.dateKey, JSON.stringify(data));
+  if (state.expenseIndex.indexOf(data.dateKey) === -1) {
+    state.expenseIndex.push(data.dateKey);
+    state.expenseIndex.sort();
+    saveExpenseIndex(state.expenseIndex);
+  }
+  state.saving = false;
+}
 
-  function loadDayIndex() { var raw = storeGet("day-index"); return raw ? JSON.parse(raw) : []; }
-  function saveDayIndex(keys) { storeSet("day-index", JSON.stringify(keys)); }
-  function loadDay(key) { var raw = storeGet("day:" + key); return raw ? JSON.parse(raw) : emptyDay(key); }
-  function saveDay(data) {
-    state.saving = true; render();
-    storeSet("day:" + data.dateKey, JSON.stringify(data));
-    if (state.dayIndex.indexOf(data.dateKey) === -1) {
-      state.dayIndex.push(data.dateKey);
-      state.dayIndex.sort();
-      saveDayIndex(state.dayIndex);
+function init() {
+  var session = getSession();
+  if (session) { currentUser = session; startApp(); }
+  else { renderLogin(); }
+}
+
+function startApp() {
+  state.dayIndex = loadDayIndex();
+  state.dayData = loadDay(state.selectedKey);
+  state.expenseIndex = loadExpenseIndex();
+  state.expenseData = loadExpenseDay(state.selectedExpenseKey);
+  render();
+}
+
+function logout() {
+  clearSession();
+  currentUser = null;
+  authState.mode = "login";
+  authState.error = null;
+  renderLogin();
+}
+
+var authState = { mode: "login", error: null };
+
+function renderLogin() {
+  var app = document.getElementById("app");
+  var isRegister = authState.mode === "register";
+  var html = '';
+  html += '<div class="auth-screen"><div class="auth-card">';
+  html += '  <div class="auth-logo">🛵</div>';
+  html += '  <div class="auth-brand">Comandas Delivery</div>';
+  html += '  <div class="auth-sub">' + (isRegister ? "Criar novo usuário" : "Entrar na sua conta") + '</div>';
+  if (authState.error) html += '  <div class="auth-error">' + esc(authState.error) + '</div>';
+  html += '  <input class="auth-input" id="auth-username" type="text" placeholder="Usuário" autocomplete="username" />';
+  html += '  <input class="auth-input" id="auth-password" type="password" placeholder="Senha" autocomplete="' + (isRegister ? "new-password" : "current-password") + '" />';
+  html += '  <button class="auth-submit" data-action="auth-submit">' + (isRegister ? "Criar conta" : "Entrar") + '</button>';
+  html += '  <button class="auth-switch" data-action="auth-switch">' + (isRegister ? "Já tem conta? Entrar" : "Não tem conta? Criar agora") + '</button>';
+  html += '</div>';
+  html += '<div class="auth-note">Login local a este dispositivo — cada pessoa usa seu próprio usuário e senha para manter os lançamentos separados.</div>';
+  html += '</div>';
+  app.innerHTML = html;
+
+  var userInput = document.getElementById("auth-username");
+  var passInput = document.getElementById("auth-password");
+
+  function submit() {
+    var u = userInput.value, p = passInput.value;
+    if (isRegister) {
+      var r = registerUser(u, p);
+      if (!r.ok) { authState.error = r.msg; renderLogin(); return; }
+      var login = verifyLogin(u, p);
+      currentUser = login.username;
+      setSession(currentUser);
+      authState.error = null;
+      startApp();
+    } else {
+      var res = verifyLogin(u, p);
+      if (!res.ok) { authState.error = res.msg; renderLogin(); return; }
+      currentUser = res.username;
+      setSession(currentUser);
+      authState.error = null;
+      startApp();
     }
-    state.saving = false;
   }
 
-  function init() {
-    var session = getSession();
-    if (session) { currentUser = session; startApp(); }
-    else { renderLogin(); }
-  }
-  function startApp() {
-    state.dayIndex = loadDayIndex();
-    state.dayData = loadDay(state.selectedKey);
-    render();
-  }
-  function logout() {
-    clearSession();
-    currentUser = null;
-    authState.mode = "login";
+  app.querySelector('[data-action="auth-submit"]').onclick = submit;
+  app.querySelector('[data-action="auth-switch"]').onclick = function () {
+    authState.mode = isRegister ? "login" : "register";
     authState.error = null;
     renderLogin();
-  }
+  };
+  [userInput, passInput].forEach(function (el) { el.onkeydown = function (ev) { if (ev.key === "Enter") submit(); }; });
+  userInput.focus();
+}
 
-  var authState = { mode: "login", error: null };
+function selectDay(key) { state.selectedKey = key; state.dayData = loadDay(key); render(); }
+function addEntry() {
+  var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  state.dayData.entries.push({ id: id, comanda: "", taxa: "", conferido: false });
+  saveDay(state.dayData); render();
+}
+function updateEntry(id, field, value) {
+  state.dayData.entries = state.dayData.entries.map(function (e) {
+    if (e.id !== id) return e;
+    var copy = Object.assign({}, e); copy[field] = value; return copy;
+  });
+  saveDay(state.dayData); render();
+}
+function removeEntry(id) {
+  state.dayData.entries = state.dayData.entries.filter(function (e) { return e.id !== id; });
+  saveDay(state.dayData); render();
+}
+function setArrancada(value) { state.dayData.arrancada = value; saveDay(state.dayData); render(); }
+function shiftDay(dir) {
+  var parts = state.selectedKey.split("-").map(Number);
+  var dt = new Date(parts[0], parts[1] - 1, parts[2] + dir);
+  selectDay(dt.getFullYear() + "-" + pad(dt.getMonth() + 1) + "-" + pad(dt.getDate()));
+}
 
-  function renderLogin() {
-    var app = document.getElementById("app");
-    var isRegister = authState.mode === "register";
-    var html = '';
-    html += '<div class="auth-screen"><div class="auth-card">';
-    html += '  <div class="auth-logo">🛵</div>';
-    html += '  <div class="auth-brand">Comandas Delivery</div>';
-    html += '  <div class="auth-sub">' + (isRegister ? "Criar novo usuário" : "Entrar na sua conta") + '</div>';
-    if (authState.error) html += '  <div class="auth-error">' + esc(authState.error) + '</div>';
-    html += '  <input class="auth-input" id="auth-username" type="text" placeholder="Usuário" autocomplete="username" />';
-    html += '  <input class="auth-input" id="auth-password" type="password" placeholder="Senha" autocomplete="' + (isRegister ? "new-password" : "current-password") + '" />';
-    html += '  <button class="auth-submit" data-action="auth-submit">' + (isRegister ? "Criar conta" : "Entrar") + '</button>';
-    html += '  <button class="auth-switch" data-action="auth-switch">' + (isRegister ? "Já tem conta? Entrar" : "Não tem conta? Criar agora") + '</button>';
-    html += '</div>';
-    html += '<div class="auth-note">Login local a este dispositivo — cada pessoa usa seu próprio usuário e senha para manter os lançamentos separados.</div>';
-    html += '</div>';
-    app.innerHTML = html;
+/* --- Gastos: navegação e edição --- */
+function selectExpenseDay(key) { state.selectedExpenseKey = key; state.expenseData = loadExpenseDay(key); render(); }
+function shiftExpenseDay(dir) {
+  var parts = state.selectedExpenseKey.split("-").map(Number);
+  var dt = new Date(parts[0], parts[1] - 1, parts[2] + dir);
+  selectExpenseDay(dt.getFullYear() + "-" + pad(dt.getMonth() + 1) + "-" + pad(dt.getDate()));
+}
+function addExpense() {
+  var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  state.expenseData.items.push({ id: id, categoria: "combustivel", descricao: "", valor: "" });
+  saveExpenseDay(state.expenseData); render();
+}
+function updateExpense(id, field, value) {
+  state.expenseData.items = state.expenseData.items.map(function (it) {
+    if (it.id !== id) return it;
+    var copy = Object.assign({}, it); copy[field] = value; return copy;
+  });
+  saveExpenseDay(state.expenseData); render();
+}
+function removeExpense(id) {
+  state.expenseData.items = state.expenseData.items.filter(function (it) { return it.id !== id; });
+  saveExpenseDay(state.expenseData); render();
+}
 
-    var userInput = document.getElementById("auth-username");
-    var passInput = document.getElementById("auth-password");
+function shiftMonth(dir) {
+  var m = state.monthCursor.m + dir, y = state.monthCursor.y;
+  if (m < 0) { m = 11; y -= 1; } if (m > 11) { m = 0; y += 1; }
+  state.monthCursor = { y: y, m: m }; render();
+}
+function getMonthKeys() {
+  var prefix = state.monthCursor.y + "-" + pad(state.monthCursor.m + 1) + "-";
+  return state.dayIndex.filter(function (k) { return k.indexOf(prefix) === 0; }).sort();
+}
+function getMonthExpenseKeys() {
+  var prefix = state.monthCursor.y + "-" + pad(state.monthCursor.m + 1) + "-";
+  return state.expenseIndex.filter(function (k) { return k.indexOf(prefix) === 0; }).sort();
+}
+function computeMonthTotals() {
+  var keys = getMonthKeys();
+  var entregas = 0, taxas = 0, arrancada = 0;
+  keys.forEach(function (k) {
+    var d = state.monthDays[k] || (state.monthDays[k] = loadDay(k));
+    entregas += d.entries.length;
+    taxas += d.entries.reduce(function (s, e) { return s + (parseFloat(e.taxa) || 0); }, 0);
+    arrancada += parseFloat(d.arrancada) || 0;
+  });
+  return { entregas: entregas, taxas: taxas, arrancada: arrancada, total: taxas + arrancada, diasAtivos: keys.length };
+}
+function computeMonthExpenseTotal() {
+  var keys = getMonthExpenseKeys();
+  var total = 0;
+  keys.forEach(function (k) {
+    var d = state.monthExpenseDays[k] || (state.monthExpenseDays[k] = loadExpenseDay(k));
+    total += d.items.reduce(function (s, it) { return s + (parseFloat(it.valor) || 0); }, 0);
+  });
+  return total;
+}
 
-    function submit() {
-      var u = userInput.value, p = passInput.value;
-      if (isRegister) {
-        var r = registerUser(u, p);
-        if (!r.ok) { authState.error = r.msg; renderLogin(); return; }
-        var login = verifyLogin(u, p);
-        currentUser = login.username;
-        setSession(currentUser);
-        authState.error = null;
-        startApp();
-      } else {
-        var res = verifyLogin(u, p);
-        if (!res.ok) { authState.error = res.msg; renderLogin(); return; }
-        currentUser = res.username;
-        setSession(currentUser);
-        authState.error = null;
-        startApp();
-      }
+function toggleFullscreen() {
+  if (!document.fullscreenElement) { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+  else { document.exitFullscreen && document.exitFullscreen(); }
+}
+document.addEventListener("fullscreenchange", function () { state.isFullscreen = !!document.fullscreenElement; render(); });
+
+function exportBackup() {
+  var all = {};
+  state.dayIndex.forEach(function (k) { all[k] = loadDay(k); });
+  var allExpenses = {};
+  state.expenseIndex.forEach(function (k) { allExpenses[k] = loadExpenseDay(k); });
+  var payload = { exportedAt: new Date().toISOString(), user: currentUser, days: all, expenses: allExpenses };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "comandas-delivery-backup-" + todayKey() + ".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  state.backupMsg = { type: "success", text: "Backup baixado com sucesso." }; render();
+}
+function importBackupFile(file) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var parsed = JSON.parse(reader.result);
+      var days = parsed.days || {};
+      var expenses = parsed.expenses || {};
+      var keys = Object.keys(days).filter(function (k) { return days[k]; });
+      keys.forEach(function (k) { storeSet("day:" + k, JSON.stringify(days[k])); });
+      var merged = state.dayIndex.slice();
+      keys.forEach(function (k) { if (merged.indexOf(k) === -1) merged.push(k); });
+      merged.sort(); saveDayIndex(merged); state.dayIndex = merged; state.monthDays = {};
+      state.dayData = loadDay(state.selectedKey);
+
+      var expKeys = Object.keys(expenses).filter(function (k) { return expenses[k]; });
+      expKeys.forEach(function (k) { storeSet("expense:" + k, JSON.stringify(expenses[k])); });
+      var mergedExp = state.expenseIndex.slice();
+      expKeys.forEach(function (k) { if (mergedExp.indexOf(k) === -1) mergedExp.push(k); });
+      mergedExp.sort(); saveExpenseIndex(mergedExp); state.expenseIndex = mergedExp; state.monthExpenseDays = {};
+      state.expenseData = loadExpenseDay(state.selectedExpenseKey);
+
+      state.backupMsg = { type: "success", text: (keys.length + expKeys.length) + " dia(s) restaurado(s) com sucesso." };
+    } catch (e) {
+      state.backupMsg = { type: "error", text: "Arquivo inválido. Verifique se é um backup gerado pelo app." };
     }
-    app.querySelector('[data-action="auth-submit"]').onclick = submit;
-    app.querySelector('[data-action="auth-switch"]').onclick = function () {
-      authState.mode = isRegister ? "login" : "register";
-      authState.error = null;
-      renderLogin();
-    };
-    [userInput, passInput].forEach(function (el) { el.onkeydown = function (ev) { if (ev.key === "Enter") submit(); }; });
-    userInput.focus();
-  }
+    render();
+  };
+  reader.readAsText(file);
+}
 
-  function selectDay(key) { state.selectedKey = key; state.dayData = loadDay(key); render(); }
+function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
 
-  function addEntry() {
-    var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    state.dayData.entries.push({ id: id, comanda: "", taxa: "", conferido: false });
-    saveDay(state.dayData); render();
-  }
-  function updateEntry(id, field, value) {
-    state.dayData.entries = state.dayData.entries.map(function (e) {
-      if (e.id !== id) return e;
-      var copy = Object.assign({}, e); copy[field] = value; return copy;
+function render() {
+  var app = document.getElementById("app");
+  var html = "";
+  html += '<header>';
+  html += '  <div class="header-left">';
+  html += '    <div class="logo-mark">🛵</div>';
+  html += '    <div class="brand-block"><div class="brand">Comandas Delivery</div><div class="brand-sub">' + esc(currentUser) + '</div></div>';
+  html += '  </div>';
+  html += '  <div class="header-right">';
+  html += '    <button class="icon-btn" data-action="fullscreen" title="Tela cheia">' + (state.isFullscreen ? "⤡" : "⤢") + '</button>';
+  html += '    <button class="icon-btn" data-action="export" title="Baixar backup">⬇</button>';
+  html += '    <button class="icon-btn" data-action="import" title="Restaurar backup">⬆</button>';
+  html += '    <button class="icon-btn" data-action="logout" title="Sair">⏻</button>';
+  html += '    <input type="file" id="import-file" accept="application/json" style="display:none" />';
+  html += '  </div>';
+  html += '</header>';
+  if (state.backupMsg) html += '<div class="bar ' + state.backupMsg.type + '">' + esc(state.backupMsg.text) + '<button data-action="dismiss-backup">✕</button></div>';
+  if (state.error) html += '<div class="bar error">' + esc(state.error) + '<button data-action="dismiss-error">✕</button></div>';
+  html += '<main>';
+  if (state.view === "day") html += renderDayView();
+  else if (state.view === "gastos") html += renderGastosView();
+  else html += renderMonthView();
+  html += '</main>';
+  html += '<nav class="tabbar">';
+  html += '  <button class="tab' + (state.view === "day" ? " active" : "") + '" data-action="view-day"><span class="tab-icon">📋</span>Dia</button>';
+  html += '  <button class="tab' + (state.view === "gastos" ? " active" : "") + '" data-action="view-gastos"><span class="tab-icon">💸</span>Gastos</button>';
+  html += '  <button class="tab' + (state.view === "month" ? " active" : "") + '" data-action="view-month"><span class="tab-icon">📊</span>Mês</button>';
+  html += '</nav>';
+  app.innerHTML = html;
+  bindEvents();
+}
+
+function renderDayView() {
+  var d = state.dayData;
+  var entregas = d.entries.length;
+  var conferidas = d.entries.filter(function (e) { return e.conferido; }).length;
+  var taxas = d.entries.reduce(function (s, e) { return s + (parseFloat(e.taxa) || 0); }, 0);
+  var arrancada = parseFloat(d.arrancada) || 0;
+  var total = taxas + arrancada;
+  var html = '';
+  html += '<div class="day-nav">';
+  html += '  <button class="nav-btn" data-action="prev-day">‹</button>';
+  html += '  <div class="day-nav-label"><div class="day-nav-date">' + esc(fmtDateLabel(state.selectedKey)) + '</div>';
+  html += '  <input type="date" class="date-input" id="date-picker" value="' + esc(state.selectedKey) + '" /></div>';
+  html += '  <button class="nav-btn" data-action="next-day">›</button>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '  <div class="list-header"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>';
+  if (entregas === 0) html += '<div class="empty-row">Nenhuma entrega lançada ainda.<br>Toque em "Nova comanda" para começar.</div>';
+  d.entries.forEach(function (e) {
+    html += '<div class="entry-row' + (e.conferido ? " conferido" : "") + '" data-id="' + esc(e.id) + '">';
+    html += '  <input class="comanda-field' + (e.conferido ? " riscado" : "") + '" type="number" inputmode="numeric" placeholder="nº" value="' + esc(e.comanda) + '" data-field="comanda" />';
+    html += '  <div class="taxa-wrap"><span class="taxa-prefix">R$</span><input class="taxa-field" type="number" inputmode="decimal" placeholder="0,00" value="' + esc(e.taxa) + '" data-field="taxa" /></div>';
+    html += '  <label class="check-wrap"><input type="checkbox" data-field="conferido" ' + (e.conferido ? "checked" : "") + ' /></label>';
+    html += '  <button class="remove-btn" data-action="remove-entry">🗑</button>';
+    html += '</div>';
+  });
+  html += '<button class="add-btn" data-action="add-entry">+ Nova comanda</button>';
+  html += '<div class="divider"></div>';
+  html += '<div class="arrancada-row"><span class="arrancada-label">Arrancada do dia</span>';
+  html += '  <div class="taxa-wrap"><span class="taxa-prefix">R$</span><input class="taxa-field" type="number" inputmode="decimal" id="arrancada-input" value="' + esc(d.arrancada) + '" /></div></div>';
+  html += '<div class="summary-block">';
+  html += '  <div class="summary-line"><span>Entregas</span><span class="summary-strong">' + entregas + '</span></div>';
+  html += '  <div class="summary-line"><span>Conferidas</span><span class="summary-strong">' + conferidas + '/' + entregas + '</span></div>';
+  html += '  <div class="summary-line"><span>Soma taxas</span><span class="summary-strong">' + fmtBRL(taxas) + '</span></div>';
+  html += '  <div class="summary-line"><span>Arrancada</span><span class="summary-strong">' + fmtBRL(arrancada) + '</span></div>';
+  html += '  <div class="summary-line summary-total"><span>Total do dia</span><span>' + fmtBRL(total) + '</span></div>';
+  html += '</div></div>';
+  html += '<div class="saving-note">' + (state.saving ? "salvando…" : "salvo automaticamente") + '</div>';
+  return html;
+}
+
+function renderGastosView() {
+  var d = state.expenseData;
+  var itens = d.items.length;
+  var totalGastos = d.items.reduce(function (s, it) { return s + (parseFloat(it.valor) || 0); }, 0);
+  var html = '';
+  html += '<div class="day-nav">';
+  html += '  <button class="nav-btn" data-action="prev-expense-day">‹</button>';
+  html += '  <div class="day-nav-label"><div class="day-nav-date">' + esc(fmtDateLabel(state.selectedExpenseKey)) + '</div>';
+  html += '  <input type="date" class="date-input" id="expense-date-picker" value="' + esc(state.selectedExpenseKey) + '" /></div>';
+  html += '  <button class="nav-btn" data-action="next-expense-day">›</button>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '  <div class="expense-list-header"><span>Categoria</span><span>Descrição</span><span>Valor</span><span></span></div>';
+  if (itens === 0) html += '<div class="empty-row">Nenhum gasto lançado ainda.<br>Toque em "Novo gasto" para começar.</div>';
+  d.items.forEach(function (it) {
+    html += '<div class="expense-row" data-id="' + esc(it.id) + '">';
+    html += '  <select class="expense-select" data-field="categoria">';
+    EXPENSE_CATEGORIES.forEach(function (c) {
+      html += '<option value="' + esc(c.id) + '"' + (it.categoria === c.id ? " selected" : "") + '>' + esc(c.icon + " " + c.label) + '</option>';
     });
-    saveDay(state.dayData); render();
-  }
-  function removeEntry(id) {
-    state.dayData.entries = state.dayData.entries.filter(function (e) { return e.id !== id; });
-    saveDay(state.dayData); render();
-  }
-  function setArrancada(value) { state.dayData.arrancada = value; saveDay(state.dayData); render(); }
+    html += '  </select>';
+    html += '  <input class="comanda-field" type="text" placeholder="detalhe" value="' + esc(it.descricao) + '" data-field="descricao" />';
+    html += '  <div class="taxa-wrap"><span class="taxa-prefix">R$</span><input class="taxa-field" type="number" inputmode="decimal" placeholder="0,00" value="' + esc(it.valor) + '" data-field="valor" /></div>';
+    html += '  <button class="remove-btn" data-action="remove-expense">🗑</button>';
+    html += '</div>';
+  });
+  html += '<button class="add-btn" data-action="add-expense">+ Novo gasto</button>';
+  html += '<div class="summary-block">';
+  html += '  <div class="summary-line"><span>Itens lançados</span><span class="summary-strong">' + itens + '</span></div>';
+  html += '  <div class="summary-line summary-total"><span>Total de gastos do dia</span><span>' + fmtBRL(totalGastos) + '</span></div>';
+  html += '</div></div>';
+  html += '<div class="saving-note">' + (state.saving ? "salvando…" : "salvo automaticamente") + '</div>';
+  return html;
+}
 
-  function shiftDay(dir) {
-    var parts = state.selectedKey.split("-").map(Number);
-    var dt = new Date(parts[0], parts[1] - 1, parts[2] + dir);
-    selectDay(dt.getFullYear() + "-" + pad(dt.getMonth() + 1) + "-" + pad(dt.getDate()));
-  }
-  function shiftMonth(dir) {
-    var m = state.monthCursor.m + dir, y = state.monthCursor.y;
-    if (m < 0) { m = 11; y -= 1; } if (m > 11) { m = 0; y += 1; }
-    state.monthCursor = { y: y, m: m }; render();
-  }
-  function getMonthKeys() {
-    var prefix = state.monthCursor.y + "-" + pad(state.monthCursor.m + 1) + "-";
-    return state.dayIndex.filter(function (k) { return k.indexOf(prefix) === 0; }).sort();
-  }
-  function computeMonthTotals() {
-    var keys = getMonthKeys();
-    var entregas = 0, taxas = 0, arrancada = 0;
-    keys.forEach(function (k) {
-      var d = state.monthDays[k] || (state.monthDays[k] = loadDay(k));
-      entregas += d.entries.length;
-      taxas += d.entries.reduce(function (s, e) { return s + (parseFloat(e.taxa) || 0); }, 0);
-      arrancada += parseFloat(d.arrancada) || 0;
-    });
-    return { entregas: entregas, taxas: taxas, arrancada: arrancada, total: taxas + arrancada, diasAtivos: keys.length };
-  }
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
-    else { document.exitFullscreen && document.exitFullscreen(); }
-  }
-  document.addEventListener("fullscreenchange", function () { state.isFullscreen = !!document.fullscreenElement; render(); });
-
-  function exportBackup() {
-    var all = {};
-    state.dayIndex.forEach(function (k) { all[k] = loadDay(k); });
-    var payload = { exportedAt: new Date().toISOString(), user: currentUser, days: all };
-    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url; a.download = "comandas-delivery-backup-" + todayKey() + ".json";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    state.backupMsg = { type: "success", text: "Backup baixado com sucesso." }; render();
-  }
-  function importBackupFile(file) {
-    var reader = new FileReader();
-    reader.onload = function () {
-      try {
-        var parsed = JSON.parse(reader.result);
-        var days = parsed.days || parsed;
-        var keys = Object.keys(days).filter(function (k) { return days[k]; });
-        keys.forEach(function (k) { storeSet("day:" + k, JSON.stringify(days[k])); });
-        var merged = state.dayIndex.slice();
-        keys.forEach(function (k) { if (merged.indexOf(k) === -1) merged.push(k); });
-        merged.sort(); saveDayIndex(merged); state.dayIndex = merged; state.monthDays = {};
-        state.dayData = loadDay(state.selectedKey);
-        state.backupMsg = { type: "success", text: keys.length + " dia(s) restaurado(s) com sucesso." };
-      } catch (e) {
-        state.backupMsg = { type: "error", text: "Arquivo inválido. Verifique se é um backup gerado pelo app." };
-      }
-      render();
-    };
-    reader.readAsText(file);
-  }
-
-  function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
-
-  function render() {
-    var app = document.getElementById("app");
-    var html = "";
-
-    html += '<header>';
-    html += '  <div class="header-left">';
-    html += '    <div class="logo-mark">🛵</div>';
-    html += '    <div class="brand-block"><div class="brand">Comandas Delivery</div><div class="brand-sub">' + esc(currentUser) + '</div></div>';
-    html += '  </div>';
-    html += '  <div class="header-right">';
-    html += '    <button class="icon-btn" data-action="fullscreen" title="Tela cheia">' + (state.isFullscreen ? "⤡" : "⤢") + '</button>';
-    html += '    <button class="icon-btn" data-action="export" title="Baixar backup">⬇</button>';
-    html += '    <button class="icon-btn" data-action="import" title="Restaurar backup">⬆</button>';
-    html += '    <button class="icon-btn" data-action="logout" title="Sair">⏻</button>';
-    html += '    <input type="file" id="import-file" accept="application/json" style="display:none" />';
-    html += '  </div>';
-    html += '</header>';
-
-    if (state.backupMsg) html += '<div class="bar ' + state.backupMsg.type + '">' + esc(state.backupMsg.text) + '<button data-action="dismiss-backup">✕</button></div>';
-    if (state.error) html += '<div class="bar error">' + esc(state.error) + '<button data-action="dismiss-error">✕</button></div>';
-
-    html += '<main>';
-    html += state.view === "day" ? renderDayView() : renderMonthView();
-    html += '</main>';
-
-    html += '<nav class="tabbar">';
-    html += '  <button class="tab' + (state.view === "day" ? " active" : "") + '" data-action="view-day"><span class="tab-icon">📋</span>Dia</button>';
-    html += '  <button class="tab' + (state.view === "month" ? " active" : "") + '" data-action="view-month"><span class="tab-icon">📊</span>Mês</button>';
-    html += '</nav>';
-
-    app.innerHTML = html;
-    bindEvents();
-  }
-
-  function renderDayView() {
-    var d = state.dayData;
+function renderMonthView() {
+  var t = computeMonthTotals();
+  var gastosMes = computeMonthExpenseTotal();
+  var keys = getMonthKeys();
+  var html = '';
+  html += '<div class="day-nav">';
+  html += '  <button class="nav-btn" data-action="prev-month">‹</button>';
+  html += '  <div class="month-label">' + MONTHS_PT[state.monthCursor.m] + ' ' + state.monthCursor.y + '</div>';
+  html += '  <button class="nav-btn" data-action="next-month">›</button>';
+  html += '</div>';
+  html += '<div class="big-stat-grid">';
+  html += '  <div class="big-stat"><div class="big-stat-value">' + t.entregas + '</div><div class="big-stat-label">entregas no mês</div></div>';
+  html += '  <div class="big-stat"><div class="big-stat-value">' + fmtBRL(t.total) + '</div><div class="big-stat-label">total recebido</div></div>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '  <div class="summary-line"><span>Dias lançados</span><span class="summary-strong">' + t.diasAtivos + '</span></div>';
+  html += '  <div class="summary-line"><span>Soma taxas</span><span class="summary-strong">' + fmtBRL(t.taxas) + '</span></div>';
+  html += '  <div class="summary-line"><span>Soma arrancadas</span><span class="summary-strong">' + fmtBRL(t.arrancada) + '</span></div>';
+  html += '  <div class="summary-line"><span>Gastos do mês</span><span class="summary-strong">' + fmtBRL(gastosMes) + '</span></div>';
+  html += '  <div class="summary-line summary-total"><span>Saldo do mês</span><span>' + fmtBRL(t.total - gastosMes) + '</span></div>';
+  html += '</div>';
+  html += '<div class="day-list-title">Dias do mês</div><div class="day-list">';
+  if (keys.length === 0) html += '<div class="empty-row">Nenhum dia lançado neste mês ainda.</div>';
+  keys.forEach(function (k) {
+    var d = state.monthDays[k] || loadDay(k);
     var entregas = d.entries.length;
-    var conferidas = d.entries.filter(function (e) { return e.conferido; }).length;
     var taxas = d.entries.reduce(function (s, e) { return s + (parseFloat(e.taxa) || 0); }, 0);
-    var arrancada = parseFloat(d.arrancada) || 0;
-    var total = taxas + arrancada;
+    var arr = parseFloat(d.arrancada) || 0;
+    html += '<button class="day-list-item" data-action="open-day" data-key="' + esc(k) + '">';
+    html += '  <span class="day-list-date">' + esc(fmtDateLabel(k)) + '</span>';
+    html += '  <span class="day-list-entregas">' + entregas + ' entregas</span>';
+    html += '  <span class="day-list-total">' + fmtBRL(taxas + arr) + '</span>';
+    html += '</button>';
+  });
+  html += '</div>';
+  return html;
+}
 
-    var html = '';
-    html += '<div class="day-nav">';
-    html += '  <button class="nav-btn" data-action="prev-day">‹</button>';
-    html += '  <div class="day-nav-label"><div class="day-nav-date">' + esc(fmtDateLabel(state.selectedKey)) + '</div>';
-    html += '  <input type="date" class="date-input" id="date-picker" value="' + esc(state.selectedKey) + '" /></div>';
-    html += '  <button class="nav-btn" data-action="next-day">›</button>';
-    html += '</div>';
+function bindEvents() {
+  var app = document.getElementById("app");
+  app.querySelectorAll('[data-action="view-day"]').forEach(function (el) { el.onclick = function () { state.view = "day"; render(); }; });
+  app.querySelectorAll('[data-action="view-gastos"]').forEach(function (el) { el.onclick = function () { state.view = "gastos"; render(); }; });
+  app.querySelectorAll('[data-action="view-month"]').forEach(function (el) { el.onclick = function () { state.view = "month"; render(); }; });
+  app.querySelectorAll('[data-action="fullscreen"]').forEach(function (el) { el.onclick = toggleFullscreen; });
+  app.querySelectorAll('[data-action="export"]').forEach(function (el) { el.onclick = exportBackup; });
+  app.querySelectorAll('[data-action="import"]').forEach(function (el) { el.onclick = function () { document.getElementById("import-file").click(); }; });
+  app.querySelectorAll('[data-action="logout"]').forEach(function (el) { el.onclick = function () { if (confirm("Sair da conta?")) logout(); }; });
+  var fileInput = document.getElementById("import-file");
+  if (fileInput) fileInput.onchange = function (e) { var f = e.target.files[0]; if (f) importBackupFile(f); e.target.value = ""; };
+  app.querySelectorAll('[data-action="dismiss-backup"]').forEach(function (el) { el.onclick = function () { state.backupMsg = null; render(); }; });
+  app.querySelectorAll('[data-action="dismiss-error"]').forEach(function (el) { el.onclick = function () { state.error = null; render(); }; });
 
-    html += '<div class="card">';
-    html += '  <div class="list-header"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>';
+  app.querySelectorAll('[data-action="prev-day"]').forEach(function (el) { el.onclick = function () { shiftDay(-1); }; });
+  app.querySelectorAll('[data-action="next-day"]').forEach(function (el) { el.onclick = function () { shiftDay(1); }; });
+  app.querySelectorAll('[data-action="prev-month"]').forEach(function (el) { el.onclick = function () { shiftMonth(-1); }; });
+  app.querySelectorAll('[data-action="next-month"]').forEach(function (el) { el.onclick = function () { shiftMonth(1); }; });
 
-    if (entregas === 0) html += '<div class="empty-row">Nenhuma entrega lançada ainda.<br>Toque em "Nova comanda" para começar.</div>';
+  var datePicker = document.getElementById("date-picker");
+  if (datePicker) datePicker.onchange = function (e) { selectDay(e.target.value); };
 
-    d.entries.forEach(function (e) {
-      html += '<div class="entry-row' + (e.conferido ? " conferido" : "") + '" data-id="' + esc(e.id) + '">';
-      html += '  <input class="comanda-field' + (e.conferido ? " riscado" : "") + '" type="number" inputmode="numeric" placeholder="nº" value="' + esc(e.comanda) + '" data-field="comanda" />';
-      html += '  <div class="taxa-wrap"><span class="taxa-prefix">R$</span><input class="taxa-field" type="number" inputmode="decimal" placeholder="0,00" value="' + esc(e.taxa) + '" data-field="taxa" /></div>';
-      html += '  <label class="check-wrap"><input type="checkbox" data-field="conferido" ' + (e.conferido ? "checked" : "") + ' /></label>';
-      html += '  <button class="remove-btn" data-action="remove-entry">🗑</button>';
-      html += '</div>';
-    });
-
-    html += '<button class="add-btn" data-action="add-entry">+ Nova comanda</button>';
-    html += '<div class="divider"></div>';
-    html += '<div class="arrancada-row"><span class="arrancada-label">Arrancada do dia</span>';
-    html += '  <div class="taxa-wrap"><span class="taxa-prefix">R$</span><input class="taxa-field" type="number" inputmode="decimal" id="arrancada-input" value="' + esc(d.arrancada) + '" /></div></div>';
-
-    html += '<div class="summary-block">';
-    html += '  <div class="summary-line"><span>Entregas</span><span class="summary-strong">' + entregas + '</span></div>';
-    html += '  <div class="summary-line"><span>Conferidas</span><span class="summary-strong">' + conferidas + '/' + entregas + '</span></div>';
-    html += '  <div class="summary-line"><span>Soma taxas</span><span class="summary-strong">' + fmtBRL(taxas) + '</span></div>';
-    html += '  <div class="summary-line"><span>Arrancada</span><span class="summary-strong">' + fmtBRL(arrancada) + '</span></div>';
-    html += '  <div class="summary-line summary-total"><span>Total do dia</span><span>' + fmtBRL(total) + '</span></div>';
-    html += '</div></div>';
-
-    html += '<div class="saving-note">' + (state.saving ? "salvando…" : "salvo automaticamente") + '</div>';
-    return html;
-  }
-
-  function renderMonthView() {
-    var t = computeMonthTotals();
-    var keys = getMonthKeys();
-
-    var html = '';
-    html += '<div class="day-nav">';
-    html += '  <button class="nav-btn" data-action="prev-month">‹</button>';
-    html += '  <div class="month-label">' + MONTHS_PT[state.monthCursor.m] + ' ' + state.monthCursor.y + '</div>';
-    html += '  <button class="nav-btn" data-action="next-month">›</button>';
-    html += '</div>';
-
-    html += '<div class="big-stat-grid">';
-    html += '  <div class="big-stat"><div class="big-stat-value">' + t.entregas + '</div><div class="big-stat-label">entregas no mês</div></div>';
-    html += '  <div class="big-stat"><div class="big-stat-value">' + fmtBRL(t.total) + '</div><div class="big-stat-label">total recebido</div></div>';
-    html += '</div>';
-
-    html += '<div class="card">';
-    html += '  <div class="summary-line"><span>Dias lançados</span><span class="summary-strong">' + t.diasAtivos + '</span></div>';
-    html += '  <div class="summary-line"><span>Soma taxas</span><span class="summary-strong">' + fmtBRL(t.taxas) + '</span></div>';
-    html += '  <div class="summary-line"><span>Soma arrancadas</span><span class="summary-strong">' + fmtBRL(t.arrancada) + '</span></div>';
-    html += '  <div class="summary-line summary-total"><span>Total do mês</span><span>' + fmtBRL(t.total) + '</span></div>';
-    html += '</div>';
-
-    html += '<div class="day-list-title">Dias do mês</div><div class="day-list">';
-    if (keys.length === 0) html += '<div class="empty-row">Nenhum dia lançado neste mês ainda.</div>';
-    keys.forEach(function (k) {
-      var d = state.monthDays[k] || loadDay(k);
-      var entregas = d.entries.length;
-      var taxas = d.entries.reduce(function (s, e) { return s + (parseFloat(e.taxa) || 0); }, 0);
-      var arr = parseFloat(d.arrancada) || 0;
-      html += '<button class="day-list-item" data-action="open-day" data-key="' + esc(k) + '">';
-      html += '  <span class="day-list-date">' + esc(fmtDateLabel(k)) + '</span>';
-      html += '  <span class="day-list-entregas">' + entregas + ' entregas</span>';
-      html += '  <span class="day-list-total">' + fmtBRL(taxas + arr) + '</span>';
-      html += '</button>';
-    });
-    html += '</div>';
-    return html;
-  }
-
-  function bindEvents() {
-    var app = document.getElementById("app");
-    app.querySelectorAll('[data-action="view-day"]').forEach(function (el) { el.onclick = function () { state.view = "day"; render(); }; });
-    app.querySelectorAll('[data-action="view-month"]').forEach(function (el) { el.onclick = function () { state.view = "month"; render(); }; });
-    app.querySelectorAll('[data-action="fullscreen"]').forEach(function (el) { el.onclick = toggleFullscreen; });
-    app.querySelectorAll('[data-action="export"]').forEach(function (el) { el.onclick = exportBackup; });
-    app.querySelectorAll('[data-action="import"]').forEach(function (el) { el.onclick = function () { document.getElementById("import-file").click(); }; });
-    app.querySelectorAll('[data-action="logout"]').forEach(function (el) { el.onclick = function () { if (confirm("Sair da conta?")) logout(); }; });
-    var fileInput = document.getElementById("import-file");
-    if (fileInput) fileInput.onchange = function (e) { var f = e.target.files[0]; if (f) importBackupFile(f); e.target.value = ""; };
-
-    app.querySelectorAll('[data-action="dismiss-backup"]').forEach(function (el) { el.onclick = function () { state.backupMsg = null; render(); }; });
-    app.querySelectorAll('[data-action="dismiss-error"]').forEach(function (el) { el.onclick = function () { state.error = null; render(); }; });
-
-    app.querySelectorAll('[data-action="prev-day"]').forEach(function (el) { el.onclick = function () { shiftDay(-1); }; });
-    app.querySelectorAll('[data-action="next-day"]').forEach(function (el) { el.onclick = function () { shiftDay(1); }; });
-    app.querySelectorAll('[data-action="prev-month"]').forEach(function (el) { el.onclick = function () { shiftMonth(-1); }; });
-    app.querySelectorAll('[data-action="next-month"]').forEach(function (el) { el.onclick = function () { shiftMonth(1); }; });
-
-    var datePicker = document.getElementById("date-picker");
-    if (datePicker) datePicker.onchange = function (e) { selectDay(e.target.value); };
-
-    app.querySelectorAll('[data-action="add-entry"]').forEach(function (el) { el.onclick = addEntry; });
-    app.querySelectorAll('[data-action="remove-entry"]').forEach(function (el) { el.onclick = function () { removeEntry(el.closest(".entry-row").getAttribute("data-id")); }; });
-    app.querySelectorAll(".entry-row input").forEach(function (el) {
-      var row = el.closest(".entry-row");
-      var id = row.getAttribute("data-id");
-      var field = el.getAttribute("data-field");
-      if (field === "conferido") { el.onchange = function () { updateEntry(id, field, el.checked); }; }
-      else {
-        el.onblur = function () { updateEntry(id, field, el.value); };
-        el.onkeydown = function (ev) { if (ev.key === "Enter") el.blur(); };
-      }
-    });
-
-    var arrancadaInput = document.getElementById("arrancada-input");
-    if (arrancadaInput) {
-      arrancadaInput.onblur = function () { setArrancada(arrancadaInput.value); };
-      arrancadaInput.onkeydown = function (ev) { if (ev.key === "Enter") arrancadaInput.blur(); };
+  app.querySelectorAll('[data-action="add-entry"]').forEach(function (el) { el.onclick = addEntry; });
+  app.querySelectorAll('[data-action="remove-entry"]').forEach(function (el) { el.onclick = function () { removeEntry(el.closest(".entry-row").getAttribute("data-id")); }; });
+  app.querySelectorAll(".entry-row input").forEach(function (el) {
+    var row = el.closest(".entry-row");
+    var id = row.getAttribute("data-id");
+    var field = el.getAttribute("data-field");
+    if (field === "conferido") { el.onchange = function () { updateEntry(id, field, el.checked); }; }
+    else {
+      el.onblur = function () { updateEntry(id, field, el.value); };
+      el.onkeydown = function (ev) { if (ev.key === "Enter") el.blur(); };
     }
+  });
 
-    app.querySelectorAll('[data-action="open-day"]').forEach(function (el) { el.onclick = function () { selectDay(el.getAttribute("data-key")); state.view = "day"; render(); }; });
+  var arrancadaInput = document.getElementById("arrancada-input");
+  if (arrancadaInput) {
+    arrancadaInput.onblur = function () { setArrancada(arrancadaInput.value); };
+    arrancadaInput.onkeydown = function (ev) { if (ev.key === "Enter") arrancadaInput.blur(); };
   }
 
-  init();
+  app.querySelectorAll('[data-action="open-day"]').forEach(function (el) { el.onclick = function () { selectDay(el.getAttribute("data-key")); state.view = "day"; render(); }; });
 
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function () {});
-    });
-  }
+  /* --- Gastos --- */
+  app.querySelectorAll('[data-action="prev-expense-day"]').forEach(function (el) { el.onclick = function () { shiftExpenseDay(-1); }; });
+  app.querySelectorAll('[data-action="next-expense-day"]').forEach(function (el) { el.onclick = function () { shiftExpenseDay(1); }; });
+  var expenseDatePicker = document.getElementById("expense-date-picker");
+  if (expenseDatePicker) expenseDatePicker.onchange = function (e) { selectExpenseDay(e.target.value); };
+  app.querySelectorAll('[data-action="add-expense"]').forEach(function (el) { el.onclick = addExpense; });
+  app.querySelectorAll('[data-action="remove-expense"]').forEach(function (el) { el.onclick = function () { removeExpense(el.closest(".expense-row").getAttribute("data-id")); }; });
+  app.querySelectorAll(".expense-row input, .expense-row select").forEach(function (el) {
+    var row = el.closest(".expense-row");
+    var id = row.getAttribute("data-id");
+    var field = el.getAttribute("data-field");
+    if (el.tagName === "SELECT") { el.onchange = function () { updateExpense(id, field, el.value); }; }
+    else {
+      el.onblur = function () { updateExpense(id, field, el.value); };
+      el.onkeydown = function (ev) { if (ev.key === "Enter") el.blur(); };
+    }
+  });
+}
+
+init();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
 })();
 </script>
 </body>
