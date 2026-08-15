@@ -1,0 +1,25 @@
+DELIVERY COMANDAS — VERSÃO 2
+
+Esta versão já vem compilada com:
+- identidade visual azul e moto esportiva genérica, sem marca conhecida;
+- layout mobile-first;
+- comandas e taxas;
+- fechamento diário com KM inicial, KM final e KM rodados;
+- gastos;
+- aba Mecânica com troca de óleo;
+- intervalo de óleo definido por cada usuário;
+- KM atual puxada da KM final do dia;
+- relatório mensal com KM rodados, média e totais;
+- login local por usuário;
+- backup JSON;
+- PWA/service worker.
+
+INSTALAÇÃO:
+1. Faça backup da versão atual.
+2. Substitua o index.html pelo deste pacote.
+3. Envie também logo-moto.svg, manifest.json e sw.js.
+4. Faça commit na branch main.
+5. Atualize o GitHub Pages.
+
+OBSERVAÇÃO:
+Esta é uma versão independente/reconstruída da interface. Antes de substituir a versão atual em produção, teste seus dados e fluxos.
