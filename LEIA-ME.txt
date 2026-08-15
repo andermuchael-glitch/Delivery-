@@ -23,3 +23,9 @@ INSTALAÇÃO:
 
 OBSERVAÇÃO:
 Esta é uma versão independente/reconstruída da interface. Antes de substituir a versão atual em produção, teste seus dados e fluxos.
+
+
+RÁDIO:
+- Jovem Pan 94,1 FM — Itajaí/Balneário Camboriú.
+- Transamérica 99,7 FM — Balneário Camboriú.
+- Os botões abrem as páginas oficiais de transmissão das emissoras.
