@@ -10,16 +10,17 @@ function simpleHash(str){let h=0;for(let i=0;i<str.length;i++)h=(Math.imul(31,h)
 const passwordRecord=p=>({hash:simpleHash(p),encoded:btoa(unescape(encodeURIComponent(p)))});
 function migrateLegacyData(){
  if(localStorage.getItem(MIGRATION_KEY))return;
- const oldUsers=safeJSON(OLD+"auth:users",{}),discovered=new Set(Object.keys(oldUsers)),legacyPrefix=OLD+"user:";
+ const oldUsers=safeJSON(OLD+"auth:users",{}),currentUsers=safeJSON(APP+"null:users",{}),discovered=new Set([...Object.keys(oldUsers),...Object.keys(currentUsers)]),legacyPrefix=OLD+"user:";
  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||"";if(k.startsWith(legacyPrefix)){const rest=k.slice(legacyPrefix.length),p=rest.indexOf(":");if(p>0)discovered.add(rest.slice(0,p))}}
- const backup={createdAt:new Date().toISOString(),source:"comandasdelivery",users:{},data:{}},targetUsers=authUsers();
+ const backup={createdAt:new Date().toISOString(),source:"comandasdelivery",users:{},currentV2Users:currentUsers,data:{}},targetUsers=authUsers();
  for(const u of discovered){
+  if(currentUsers[u]&&!targetUsers[u])targetUsers[u]={...currentUsers[u]};
   if(oldUsers[u]){backup.users[u]=oldUsers[u];if(!targetUsers[u])targetUsers[u]={legacyHash:oldUsers[u].passwordHash||null,createdAt:oldUsers[u].createdAt||new Date().toISOString()};else if(!targetUsers[u].legacyHash&&oldUsers[u].passwordHash)targetUsers[u].legacyHash=oldUsers[u].passwordHash}
   const prefix=`${OLD}user:${u}:`,targetPrefix=`${APP}${u}:`;
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||"";if(!k.startsWith(prefix))continue;const suffix=k.slice(prefix.length),raw=localStorage.getItem(k);backup.data[`${u}:${suffix}`]=raw;if(localStorage.getItem(targetPrefix+suffix)!==null)continue;let value=raw;try{const parsed=JSON.parse(raw);if(suffix.startsWith("day:")&&parsed){parsed.entries=(parsed.entries||[]).map(e=>({...e,ok:e.ok===true||e.conferido===true}));delete parsed.conferido;parsed.kmInicial??="";parsed.kmFinal??="";value=JSON.stringify(parsed)}else if(suffix.startsWith("expense:")&&parsed){value=JSON.stringify({date:parsed.date||parsed.dateKey||suffix.slice(8),items:(parsed.items||[]).map(e=>({id:e.id||crypto.randomUUID(),cat:e.cat||e.categoria||"outros",desc:e.desc??e.descricao??"",val:e.val??e.valor??""}))})}}catch{}localStorage.setItem(targetPrefix+suffix.replace(/^expense:/,"exp:"),value)}
   const di=safeJSON(prefix+"day-index",[]);if(Array.isArray(di))localStorage.setItem(targetPrefix+"legacy-day-index",JSON.stringify(di));const ei=safeJSON(prefix+"expense-index",[]);if(Array.isArray(ei))localStorage.setItem(targetPrefix+"legacy-exp-index",JSON.stringify(ei));
  }
- setAuthUsers(targetUsers);localStorage.setItem(APP+"migration-backup:"+Date.now(),JSON.stringify(backup));localStorage.setItem(MIGRATION_KEY,JSON.stringify({completedAt:new Date().toISOString(),users:[...discovered],version:3}));
+ setAuthUsers(targetUsers);try{localStorage.setItem(APP+"migration-backup:"+Date.now(),JSON.stringify(backup))}catch{}localStorage.setItem(MIGRATION_KEY,JSON.stringify({completedAt:new Date().toISOString(),users:[...discovered],version:3}));
  if(!user&&localStorage.getItem(OLD+"auth:session")){const oldSession=localStorage.getItem(OLD+"auth:session");if(targetUsers[oldSession]){user=oldSession;localStorage.setItem(SESSION_KEY,user)}}
 }
 migrateLegacyData();
