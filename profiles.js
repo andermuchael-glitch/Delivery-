@@ -22,5 +22,6 @@
   function mount(){mountProfileBar();monthLatestCard()}
   if(typeof shell==='function'){const oldShell=shell;shell=function(content){oldShell(content);setTimeout(mount,0)}}
   if(typeof go==='function'){const oldGo=go;go=function(v){oldGo(v);setTimeout(mount,0)}}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,0));else setTimeout(mount,0);
+  if(active!=='default'&&typeof render==='function')setTimeout(()=>render(),0);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,20));else setTimeout(mount,20);
 })();
