@@ -10,6 +10,7 @@ const STYLE=`
 #app .day-ui .day-close-card .sum.total{font-size:18px}
 #app .day-ui .km-card{margin-top:12px}
 #app .day-ui .cmd-list-card .entry{background:linear-gradient(145deg,#0a1725,#07111b);border:1px solid #172d42;border-radius:13px;padding:8px;margin:7px 0}
+#app .day-ui .entry-list{display:flex;flex-direction:column;gap:0}
 @media(max-width:600px){#app .day-ui .entry{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px 30px}#app .day-ui .title{font-size:18px}}
 `;
 function css(){if(document.getElementById('ui-fixes-style'))return;let s=document.createElement('style');s.id='ui-fixes-style';s.textContent=STYLE;document.head.appendChild(s)}
@@ -27,21 +28,18 @@ function apply(){
  [...cmdCard.querySelectorAll(':scope > .sum'),...cmdCard.querySelectorAll(':scope > .line')].forEach(el=>cc.appendChild(el));
  let arrRow=[...cmdCard.children].find(el=>el.textContent.includes('Arrancada do dia')&&el.querySelector('#arr'));if(arrRow)cc.insertBefore(arrRow,cc.querySelector('.sum'));
  let add=cmdCard.querySelector(':scope > .add'),title=cmdCard.querySelector(':scope > .title'),table=cmdCard.querySelector(':scope > .tablehead');
- if(add&&title&&!add.dataset.fixed){if(table)cmdCard.insertBefore(add,table);else title.insertAdjacentElement('afterend',add)}
- // Mais recente sempre no topo; a primeira comanda permanece na base, formando a contagem de baixo para cima.
- if(!cmdCard.dataset.sorted){
-   let entries=[...cmdCard.querySelectorAll(':scope > .entry')];
-   if(entries.length){
-     let table=cmdCard.querySelector(':scope > .tablehead');
-     entries.reverse().forEach(e=>cmdCard.appendChild(e));
-     if(table)cmdCard.insertBefore(table,cmdCard.querySelector(':scope > .entry'));
-     if(add){let first=cmdCard.querySelector(':scope > .entry');if(first)cmdCard.insertBefore(add,first);else if(table)cmdCard.insertBefore(add,table)}
-   }
-   cmdCard.dataset.sorted='1';
+ if(add&&title&&table&&!add.dataset.fixed){cmdCard.insertBefore(add,table)}
+ // Lista: a ordem visual é do mais recente para o mais antigo. O render original mantém a ordem dos dados.
+ // Não alteramos a ordem dos dados nem os números das comandas.
+ let entries=[...cmdCard.querySelectorAll(':scope > .entry')];
+ if(entries.length){
+   let list=cmdCard.querySelector(':scope > .entry-list');
+   if(!list){list=document.createElement('div');list.className='entry-list';entries.forEach(e=>list.appendChild(e));if(table)table.insertAdjacentElement('afterend',list);else if(add)add.insertAdjacentElement('afterend',list);}
+   // A comanda mais recente é a primeira visualmente: inverte apenas a apresentação.
+   list.style.flexDirection='column-reverse';
  }
  cmdCard.classList.add('cmd-list-card');
  if(kmCard.parentElement===main)cmdCard.insertAdjacentElement('afterend',kmCard);
- if(add&&!add.dataset.fixed){add.dataset.fixed='1';add.onclick=()=>{const d=getDay(day);d.entries.unshift({id:crypto.randomUUID(),comanda:'',taxa:'',ok:false});saveDayAnd(day,d);render()}}
 }
 let timer;function run(){clearTimeout(timer);timer=setTimeout(apply,40)}
 new MutationObserver(run).observe(document.body,{childList:true,subtree:true});
