@@ -27,12 +27,20 @@ function apply(){
  [...cmdCard.querySelectorAll(':scope > .sum'),...cmdCard.querySelectorAll(':scope > .line')].forEach(el=>cc.appendChild(el));
  let arrRow=[...cmdCard.children].find(el=>el.textContent.includes('Arrancada do dia')&&el.querySelector('#arr'));if(arrRow)cc.insertBefore(arrRow,cc.querySelector('.sum'));
  let add=cmdCard.querySelector(':scope > .add'),title=cmdCard.querySelector(':scope > .title'),table=cmdCard.querySelector(':scope > .tablehead');
- if(add&&title){if(table)cmdCard.insertBefore(add,table);else title.insertAdjacentElement('afterend',add)}
- // Mais recente sempre no topo; a ordem cronológica fica de baixo para cima.
- let entries=[...cmdCard.querySelectorAll(':scope > .entry')];if(entries.length){let ref=cmdCard.querySelector(':scope > .add');entries.reverse().forEach(e=>cmdCard.insertBefore(e,ref))}
+ if(add&&title&&!add.dataset.fixed){if(table)cmdCard.insertBefore(add,table);else title.insertAdjacentElement('afterend',add)}
+ // Mais recente sempre no topo; a primeira comanda permanece na base, formando a contagem de baixo para cima.
+ if(!cmdCard.dataset.sorted){
+   let entries=[...cmdCard.querySelectorAll(':scope > .entry')];
+   if(entries.length){
+     let table=cmdCard.querySelector(':scope > .tablehead');
+     entries.reverse().forEach(e=>cmdCard.appendChild(e));
+     if(table)cmdCard.insertBefore(table,cmdCard.querySelector(':scope > .entry'));
+     if(add){let first=cmdCard.querySelector(':scope > .entry');if(first)cmdCard.insertBefore(add,first);else if(table)cmdCard.insertBefore(add,table)}
+   }
+   cmdCard.dataset.sorted='1';
+ }
  cmdCard.classList.add('cmd-list-card');
  if(kmCard.parentElement===main)cmdCard.insertAdjacentElement('afterend',kmCard);
- // Próxima comanda nasce no topo da lista.
  if(add&&!add.dataset.fixed){add.dataset.fixed='1';add.onclick=()=>{const d=getDay(day);d.entries.unshift({id:crypto.randomUUID(),comanda:'',taxa:'',ok:false});saveDayAnd(day,d);render()}}
 }
 let timer;function run(){clearTimeout(timer);timer=setTimeout(apply,40)}
