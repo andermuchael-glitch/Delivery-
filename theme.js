@@ -1,0 +1,28 @@
+(function(){
+'use strict';
+if(window.__deliveryThemeLoaded)return;window.__deliveryThemeLoaded=true;
+const KEY='delivery-theme';
+const saved=localStorage.getItem(KEY)||'dark';
+document.documentElement.dataset.theme=saved;
+const style=document.createElement('style');style.textContent=`
+:root[data-theme="light"] body{background:#f6f7f9!important;color:#101827!important}
+:root[data-theme="light"] .card{background:#fff!important;border-color:#e2e7ee!important;color:#101827!important;box-shadow:0 2px 12px rgba(15,23,42,.06)}
+:root[data-theme="light"] input,:root[data-theme="light"] select,:root[data-theme="light"] textarea{background:#fff!important;color:#101827!important;border-color:#d7dee8!important}
+:root[data-theme="light"] .head{background:#fff!important;border-color:#e2e7ee!important;color:#101827!important}
+:root[data-theme="light"] .muted,:root[data-theme="light"] .sub{color:#667085!important}
+:root[data-theme="light"] .bottom{background:rgba(255,255,255,.96)!important;border-color:#e2e7ee!important}
+:root[data-theme="light"] .bottom button{color:#667085!important}
+:root[data-theme="light"] .bottom button.active{color:#f2a900!important}
+:root[data-theme="light"] .company-profile-bar,.light-panel{background:#fff!important}
+.theme-switch{display:flex;gap:6px;margin:8px 0 12px;padding:4px;background:#eef1f5;border-radius:12px;border:1px solid #dfe4eb}
+.theme-switch button{flex:1;border:0;border-radius:9px;padding:9px 8px;background:transparent;color:#667085;font-weight:800;font-size:12px}
+.theme-switch button.active{background:#ffbf1f;color:#111827;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+:root[data-theme="dark"] .theme-switch{background:#0b1724;border-color:#1d3043}.theme-switch button.active{background:#ffbd1b}
+`;document.head.appendChild(style);
+function setTheme(v){localStorage.setItem(KEY,v);document.documentElement.dataset.theme=v;update()}
+function update(){document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===document.documentElement.dataset.theme))}
+function mount(){if(document.getElementById('themeSwitch'))return;const main=document.querySelector('main');if(!main)return;const wrap=document.createElement('div');wrap.id='themeSwitch';wrap.className='theme-switch';wrap.innerHTML='<button data-theme-choice="light">☀ Claro</button><button data-theme-choice="dark">☾ Escuro</button>';wrap.querySelectorAll('button').forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));main.prepend(wrap);update()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,50));else setTimeout(mount,50);
+if(typeof shell==='function'){const old=shell;shell=function(c){old(c);setTimeout(mount,0)}}
+if(typeof go==='function'){const old=go;go=function(v){old(v);setTimeout(mount,0)}}
+})();
