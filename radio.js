@@ -1,65 +1,27 @@
-(() => {
-  "use strict";
-  const STREAM = "https://stream.zeno.fm/c45wbq2us3buv";
-  const OFFICIAL = "https://jovempan.com.br/ao-vivo/";
-  const style = document.createElement("style");
-  style.textContent = `
-    #jp-radio{position:fixed;left:10px;right:10px;bottom:82px;z-index:25;display:none;align-items:center;gap:9px;padding:9px 10px;border:1px solid #1b4163;border-radius:14px;background:rgba(7,18,30,.97);box-shadow:0 8px 24px #0008;backdrop-filter:blur(12px)}
-    #jp-radio .jp-title{flex:1;min-width:0}.jp-title b{display:block;font-size:12px}.jp-title span{display:block;color:#91a0b4;font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #jp-radio button{border:1px solid #29465e;background:#0b1a29;color:#fff;border-radius:10px;min-width:38px;height:38px;font-size:17px}.jp-play{background:#087cff!important;border-color:#087cff!important}.jp-stop{border-color:#704047!important}.jp-hide{font-size:14px!important;min-width:32px!important}
-    #jp-radio-fab{position:fixed;right:12px;bottom:86px;z-index:26;border:1px solid #1b4163;background:#0b1a29;color:#fff;border-radius:50%;width:48px;height:48px;font-size:21px;box-shadow:0 6px 20px #0008}
-    @media(max-width:390px){#jp-radio{left:7px;right:7px}.jp-title span{max-width:150px}}
-  `;
-  document.head.appendChild(style);
-
-  function getAudio() {
-    if (window.__jpAudio) return window.__jpAudio;
-    const audio = document.createElement("audio");
-    audio.id = "jp-audio-persistent";
-    audio.preload = "none";
-    audio.playsInline = true;
-    audio.src = STREAM;
-    audio.setAttribute("aria-label", "Jovem Pan FM 100.9");
-    // Mantém o elemento fora do conteúdo que o aplicativo reconstrói ao trocar de página.
-    document.documentElement.appendChild(audio);
-    window.__jpAudio = audio;
-    return audio;
-  }
-
-  function install() {
-    if (document.getElementById("jp-radio")) return;
-    const audio = getAudio();
-    const fab = document.createElement("button");
-    fab.id = "jp-radio-fab";
-    fab.title = "Jovem Pan FM 100.9";
-    fab.textContent = "📻";
-
-    const bar = document.createElement("div");
-    bar.id = "jp-radio";
-    bar.innerHTML = `<div class="jp-title"><b>Jovem Pan FM</b><span>100.9 FM • Rádio ao vivo</span></div><button class="jp-play" id="jp-play">▶</button><button class="jp-stop" id="jp-stop">⏹</button><button id="jp-volume">🔊</button><button class="jp-hide" id="jp-hide">×</button>`;
-    document.body.append(fab, bar);
-
-    const play = bar.querySelector("#jp-play");
-    const volume = bar.querySelector("#jp-volume");
-
-    const sync = () => { play.textContent = audio.paused ? "▶" : "⏸"; };
-    fab.onclick = () => { bar.style.display = bar.style.display === "flex" ? "none" : "flex"; sync(); };
-    // Esconder o player NÃO interrompe a rádio.
-    bar.querySelector("#jp-hide").onclick = () => { bar.style.display = "none"; };
-    // Só este botão interrompe a transmissão.
-    bar.querySelector("#jp-stop").onclick = () => { audio.pause(); audio.currentTime = 0; sync(); };
-    play.onclick = async () => {
-      if (audio.paused) {
-        try { await audio.play(); sync(); }
-        catch { window.open(OFFICIAL, "_blank", "noopener,noreferrer"); }
-      } else { audio.pause(); sync(); }
-    };
-    volume.onclick = () => { audio.muted = !audio.muted; volume.textContent = audio.muted ? "🔇" : "🔊"; };
-    audio.addEventListener("pause", sync);
-    audio.addEventListener("play", sync);
-    sync();
-  }
-
-  new MutationObserver(install).observe(document.documentElement, { childList: true, subtree: true });
-  install();
+(function(){
+'use strict';
+if(window.__deliveryRadioV2)return;window.__deliveryRadioV2=true;
+const stations=[
+{id:'trans',name:'Transamérica',freq:'99,7 FM',city:'Balneário Camboriú / SC',stream:'https://radio02.zas.media/proxy/trans99/stream',fallback:'https://www.trans99fm.com.br/'},
+{id:'rock',name:'89 FM A Rádio Rock',freq:'89,1 FM',city:'São Paulo / SP',stream:'https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac?dist=site-89fm',fallback:'https://www.radiorock.com.br/'}
+];
+let current='trans',playing=false;const audio=window.__deliveryRadioAudio||new Audio();audio.preload='none';audio.playsInline=true;audio.volume=.85;window.__deliveryRadioAudio=audio;
+const st=document.createElement('style');st.textContent=`
+.radio-page{min-height:calc(100vh - 64px);margin:-14px -12px -94px;padding:14px 12px 105px;background:#f5f7fa;color:#172033}.radio-page *{box-sizing:border-box}.radio-head{display:flex;align-items:center;gap:12px;padding:8px 2px 18px}.radio-logo{width:78px;height:78px;border-radius:24px;background:#ffc329;color:#172033;display:flex;align-items:center;justify-content:center;font-size:38px;border:3px solid #172033}.radio-head h1{margin:0;font-size:28px}.radio-head p{margin:4px 0 0;color:#728096;font-size:16px}.radio-main{background:linear-gradient(145deg,#182238,#111a2c);border-radius:25px;padding:24px 22px 20px;color:#fff;box-shadow:0 14px 28px #0003}.radio-live{color:#ffd044;font-size:15px;font-weight:900;margin-bottom:24px}.radio-main h2{font-size:28px;margin:0 0 8px}.radio-main .where{font-size:18px;color:#aeb9c9;margin-bottom:28px}.radio-play{width:100%;height:62px;border:0;border-radius:18px;background:#ffc329;color:#171d2b;font-size:21px;font-weight:900}.radio-volume{display:flex;align-items:center;gap:10px;margin-top:18px}.radio-volume input{flex:1;accent-color:#ffc329}.radio-section-title{color:#9aa7b9;font-size:15px;font-weight:900;letter-spacing:.4px;margin:34px 6px 12px;text-transform:uppercase}.radio-list{display:grid;gap:10px}.radio-station{width:100%;border:1px solid #e2e7ee;background:#fff;border-radius:18px;padding:12px;display:flex;align-items:center;gap:12px;text-align:left;color:#172033}.radio-station.active{border-color:#ffc329;background:#fffbed}.radio-station-icon{width:54px;height:54px;flex:none;border-radius:14px;background:#eef2f7;color:#8d9aac;display:flex;align-items:center;justify-content:center;font-size:25px}.radio-station.active .radio-station-icon{background:#ffc329;color:#172033}.radio-station-info{min-width:0;flex:1}.radio-station-info strong{display:block;font-size:16px}.radio-station-info span{display:block;color:#8b97a8;font-size:13px;margin-top:4px}.radio-station-btn{font-size:24px;color:#94a2b4}.radio-mini{position:fixed;left:10px;right:10px;bottom:82px;z-index:19;background:#121c2e;color:#fff;border:1px solid #2b3a51;border-radius:18px;padding:9px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px #0006}.radio-mini[hidden]{display:none}.radio-mini-icon{width:40px;height:40px;border-radius:11px;background:#ffc329;color:#172033;display:flex;align-items:center;justify-content:center;font-size:20px}.radio-mini-info{flex:1;min-width:0}.radio-mini-info strong,.radio-mini-info span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.radio-mini-info span{font-size:11px;color:#9daabd;margin-top:2px}.radio-mini button{border:0;background:transparent;color:#fff;font-size:21px;padding:6px}.radio-error{display:none;margin-top:12px;padding:10px 12px;border-radius:12px;background:#3b151b;color:#ffb3b8;font-size:12px}.radio-error.show{display:block}.radio-error a{color:#ffd45a;margin-left:4px}.radio-tab-icon{font-size:20px!important}@media(max-width:390px){.radio-page{margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}.radio-main{padding:20px 17px}.radio-main h2{font-size:24px}.radio-head h1{font-size:25px}.radio-head p{font-size:14px}.radio-mini{left:7px;right:7px}}
+`;document.head.appendChild(st);
+function s(){return stations.find(x=>x.id===current)||stations[0]}
+function addTab(){const nav=document.querySelector('.tabs');if(!nav)return;let b=nav.querySelector('[data-radio-tab]');if(!b){b=document.createElement('button');b.className='tab';b.dataset.radioTab='1';b.innerHTML='<b class="radio-tab-icon">📻</b>Rádio';b.onclick=openRadio;nav.appendChild(b)}b.classList.toggle('active',window.view==='radio')}
+function mini(){let m=document.getElementById('radioMini');if(m)return m;m=document.createElement('div');m.id='radioMini';m.className='radio-mini';m.hidden=true;m.innerHTML='<div class="radio-mini-icon">◉</div><div class="radio-mini-info"><strong></strong><span></span></div><button data-mplay>▶</button><button data-mclose>×</button>';document.body.appendChild(m);m.querySelector('[data-mplay]').onclick=toggle;m.querySelector('[data-mclose]').onclick=()=>{audio.pause();playing=false;m.hidden=true;sync()};return m}
+function sync(){const x=s();document.querySelectorAll('[data-radio-play]').forEach(b=>b.textContent=playing?'Ⅱ  Pausar':'▶  Tocar');document.querySelectorAll('[data-station]').forEach(b=>{const active=b.dataset.station===current;b.classList.toggle('active',active);const q=b.querySelector('.radio-station-btn');if(q)q.textContent=active&&playing?'Ⅱ':'▷'});const m=mini();m.querySelector('strong').textContent=x.name;m.querySelector('span').textContent=x.freq+' · '+x.city;m.querySelector('[data-mplay]').textContent=playing?'Ⅱ':'▶';m.hidden=!playing||window.view==='radio';const live=document.querySelector('.radio-live');if(live)live.textContent='● '+(playing?'AO VIVO':'PAUSADO')}
+function err(msg){const e=document.getElementById('radioError');if(e){e.classList.add('show');e.innerHTML=msg+' <a href="'+s().fallback+'" target="_blank" rel="noopener">Abrir site da rádio</a>'}}
+async function play(){const x=s();if(audio.src!==x.stream)audio.src=x.stream;try{await audio.play();playing=true;const e=document.getElementById('radioError');if(e)e.classList.remove('show')}catch(e){playing=false;err('Não foi possível iniciar o áudio agora.')}sync()}
+function pause(){audio.pause();playing=false;sync()}function toggle(){playing?pause():play()}
+function select(id){current=id;audio.pause();playing=false;renderRadio();play()}
+audio.onplaying=()=>{playing=true;sync()};audio.onpause=()=>{if(!audio.ended){playing=false;sync()}};audio.onerror=()=>{playing=false;err('A fonte de áudio não respondeu.');sync()};
+function renderRadio(){const main=document.querySelector('main');if(!main)return;const x=s();main.innerHTML='<div class="radio-page"><div class="radio-head"><div class="radio-logo">◉</div><div><h1>Rádio</h1><p>Ouça enquanto trabalha</p></div></div><section class="radio-main"><div class="radio-live">● '+(playing?'AO VIVO':'PAUSADO')+'</div><h2>'+x.name+'</h2><div class="where">'+x.freq+' · '+x.city+'</div><button class="radio-play" data-radio-play>'+ (playing?'Ⅱ  Pausar':'▶  Tocar') +'</button><div class="radio-volume"><span>🔊</span><input id="radioVol" type="range" min="0" max="1" step="0.01" value="'+audio.volume+'"></div><div id="radioError" class="radio-error"></div></section><div class="radio-section-title">Sugestões</div><div class="radio-list">'+stations.map(a=>'<button class="radio-station '+(a.id===current?'active':'')+'" data-station="'+a.id+'"><div class="radio-station-icon">◉</div><div class="radio-station-info"><strong>'+a.name+'</strong><span>⌖ '+a.freq+' · '+a.city+'</span></div><div class="radio-station-btn">'+(a.id===current&&playing?'Ⅱ':'▷')+'</div></button>').join('')+'</div></div>';
+main.querySelector('[data-radio-play]').onclick=toggle;main.querySelector('#radioVol').oninput=e=>audio.volume=Number(e.target.value);main.querySelectorAll('[data-station]').forEach(b=>b.onclick=()=>select(b.dataset.station));addTab();sync()}
+const originalGo=go,originalShell=shell;function openRadio(){window.view='radio';originalShell('');renderRadio();addTab()}
+window.go=function(v){if(v==='radio'){openRadio();return}originalGo(v);setTimeout(()=>{addTab();const m=document.getElementById('radioMini');if(m)m.hidden=!playing},20)};
+window.radioCard=function(){return ''};window.radioOpen=openRadio;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{document.querySelectorAll('.radio-card').forEach(e=>e.remove());addTab()},40));else setTimeout(()=>{document.querySelectorAll('.radio-card').forEach(e=>e.remove());addTab()},40);
 })();
