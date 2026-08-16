@@ -3,8 +3,8 @@
   "short_name": "Delivery",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#050b14",
-  "theme_color": "#006cff",
+  "background_color": "#101827",
+  "theme_color": "#ffc21c",
   "lang": "pt-BR",
   "icons": []
 }
