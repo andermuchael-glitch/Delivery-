@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="96" fill="#ffd200"/>
-<circle cx="256" cy="256" r="190" fill="#050505" stroke="#ffd200" stroke-width="16"/>
-<circle cx="256" cy="256" r="166" fill="none" stroke="#ffd200" stroke-width="7"/>
-<text x="256" y="267" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="900" letter-spacing="25">AND</text>
-<text x="256" y="332" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="400" letter-spacing="8">STYLE</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#ffd400"/><circle cx="512" cy="512" r="365" fill="#000" stroke="#000" stroke-width="34"/><circle cx="512" cy="512" r="331" fill="none" stroke="#ffd400" stroke-width="15"/><text x="512" y="505" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="190" font-weight="900" letter-spacing="52">AND</text><text x="512" y="625" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="102" font-weight="400" letter-spacing="13">STYLE</text></svg>
