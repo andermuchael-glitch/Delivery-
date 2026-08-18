@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#ffc21c"/><g fill="none" stroke="#101827" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"><circle cx="150" cy="365" r="58"/><circle cx="390" cy="365" r="58"/><path d="M150 365h83l55-118h65l37 118h-58"/><path d="M233 365l-46-118h101l37 118"/><path d="M187 247h-39c-30 0-55 25-55 55v22h77"/><path d="M252 247l38-58h68c32 0 58 26 58 58v0"/><path d="M347 189h31"/><path d="M340 247h55"/></g><path d="M300 145c12-25 35-42 62-46 9-1 18 0 27 3l-20 24c-7-2-15-2-22 1-11 4-20 11-26 22z" fill="#101827"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="96" fill="#ffd200"/>
+<circle cx="256" cy="256" r="190" fill="#050505" stroke="#ffd200" stroke-width="16"/>
+<circle cx="256" cy="256" r="166" fill="none" stroke="#ffd200" stroke-width="7"/>
+<text x="256" y="267" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="900" letter-spacing="25">AND</text>
+<text x="256" y="332" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="400" letter-spacing="8">STYLE</text>
+</svg>
