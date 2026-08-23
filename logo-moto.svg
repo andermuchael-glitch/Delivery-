@@ -1,1 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="18" fill="#000"/><image href="data:image/png;base64,PLACEHOLDER" x="0" y="0" width="512" height="512" preserveAspectRatio="xMidYMid meet"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><filter id="s"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity=".55"/></filter></defs>
+<rect width="512" height="512" rx="28" fill="#050505"/>
+<circle cx="256" cy="235" r="205" fill="#050505" stroke="#ffc400" stroke-width="10"/>
+<circle cx="256" cy="235" r="177" fill="none" stroke="#ffc400" stroke-width="3"/>
+<g stroke="#ffc400" stroke-width="6" fill="none" stroke-linecap="round">
+<path d="M63 290h105M52 310h115M68 330h105"/>
+<path d="M352 304h105M365 324h96"/>
+</g>
+<!-- delivery box -->
+<g filter="url(#s)"><path d="M91 144h82l18 20v126H82V164z" fill="#171717" stroke="#ffc400" stroke-width="7"/><path d="M91 144l18-17h45l19 17" fill="none" stroke="#aaa" stroke-width="7"/><path d="M91 178h82" stroke="#ffc400" stroke-width="7"/><text x="100" y="219" font-family="Arial,sans-serif" font-size="17" font-weight="900" fill="#ffc400">ENTREGA365</text></g>
+<!-- motorcycle and rider -->
+<g filter="url(#s)" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="212" cy="348" r="48" fill="#111" stroke="#aaa" stroke-width="9"/><circle cx="382" cy="348" r="48" fill="#111" stroke="#aaa" stroke-width="9"/>
+<path d="M212 348l58-61 48 2 64 59-42 0-39-48-38 48z" fill="#151515" stroke="#ffc400" stroke-width="8"/>
+<path d="M270 287l-22-48 38-27 51 32-22 46z" fill="#191919" stroke="#aaa" stroke-width="8"/>
+<path d="M292 260l47 22 33-34 29 12-26 41-47 7" fill="#111" stroke="#aaa" stroke-width="8"/>
+<path d="M319 300l63-5 39-42 20 12-39 60-48 18" fill="#171717" stroke="#aaa" stroke-width="8"/>
+<path d="M348 270l27-32 34 9" fill="none" stroke="#ffc400" stroke-width="7"/>
+<path d="M300 185c-13-42 9-77 49-84 45-8 73 24 68 62-5 37-30 57-69 54-24-2-41-13-48-32z" fill="#161616" stroke="#aaa" stroke-width="9"/>
+<path d="M304 181c25-16 67-20 104-1" fill="none" stroke="#ffc400" stroke-width="7"/>
+<path d="M292 213l-39 47-37 45" fill="none" stroke="#aaa" stroke-width="16"/>
+<path d="M253 260l55 30" fill="none" stroke="#ffc400" stroke-width="7"/>
+<path d="M279 305l-18 55" fill="none" stroke="#aaa" stroke-width="18"/>
+<path d="M304 301l-18 59" fill="none" stroke="#aaa" stroke-width="18"/>
+<path d="M236 291l-24 57" fill="none" stroke="#171717" stroke-width="30"/>
+<path d="M348 321l31 0" fill="none" stroke="#ffc400" stroke-width="8"/>
+<path d="M383 292l31-45" fill="none" stroke="#aaa" stroke-width="8"/>
+<path d="M407 243l27 7" fill="none" stroke="#aaa" stroke-width="8"/>
+<!-- headlight --> <path d="M392 287l29 16-23 33-30-17z" fill="#fff" stroke="#aaa" stroke-width="6"/>
+</g>
+<!-- brand plate -->
+<path d="M45 390h422l-28 67H73z" fill="#050505" stroke="#ffc400" stroke-width="8"/>
+<text x="58" y="437" font-family="Arial,sans-serif" font-size="49" font-weight="900" font-style="italic" fill="#fff">ENTREGA</text>
+<text x="334" y="437" font-family="Arial,sans-serif" font-size="49" font-weight="900" font-style="italic" fill="#ffc400">365</text>
+<path d="M105 473h302" stroke="#ffc400" stroke-width="4"/>
+<text x="256" y="493" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" font-weight="900" letter-spacing="3" fill="#ffc400">ENTREGAS QUE MOVEM VOCÊ</text>
+</svg>
