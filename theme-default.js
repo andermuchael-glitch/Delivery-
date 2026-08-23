@@ -1,0 +1,1 @@
+(function(){if(!localStorage.getItem('delivery-theme'))localStorage.setItem('delivery-theme','dark')})();
