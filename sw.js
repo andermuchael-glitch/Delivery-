@@ -1,5 +1,5 @@
-const CACHE = "entrega365-phone-auth-v2";
-const AUTH = "./phone-auth-v2.js";
+const CACHE = "entrega365-phone-auth-v3";
+const AUTH = "./phone-auth-v3.js";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-moto.svg", "./logo-entrega365.png", AUTH];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -7,7 +7,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-async function injectAuth(response) {
+async function injectAuth(response){
   const type=response.headers.get("content-type")||"";
   if(!type.includes("text/html"))return response;
   const html=await response.text();
