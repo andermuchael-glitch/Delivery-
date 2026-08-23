@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#181818">
+<title>Entrega365 • Recuperação de dados</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#181818;color:#f5f5f5;font:15px system-ui,-apple-system,Segoe UI,sans-serif;padding:20px}main{max-width:650px;margin:auto}.card{background:#242424;border:1px solid #3a3a3a;border-radius:18px;padding:18px;margin-bottom:14px}h1{margin:0 0 6px}.muted{color:#aaa}.warn{border-color:#8b7412;background:#302a10;color:#ffe16a}.key{padding:8px 0;border-bottom:1px solid #3a3a3a;word-break:break-all}.key:last-child{border:0}button{width:100%;border:0;border-radius:12px;padding:14px;margin-top:9px;font-weight:900;font-size:15px;background:#ffd000;color:#151515}button.secondary{background:#303030;color:#fff;border:1px solid #555}input[type=file]{width:100%;padding:10px;background:#1f1f1f;border:1px solid #444;color:#fff;border-radius:10px}.ok{color:#55d98a}.danger{color:#ff7777;font-weight:800}
+</style></head>
+<body><main>
+<div class="card"><h1>Recuperação Entrega365</h1><div class="muted">Esta página acessa somente o armazenamento local deste endereço do navegador.</div></div>
+<div class="card warn"><b>IMPORTANTE</b><br>Não apague dados do navegador e não desinstale o aplicativo antigo. Primeiro faça o backup abaixo.</div>
+<div class="card"><h2>1. Dados encontrados neste endereço</h2><div id="info"></div><button id="export">BAIXAR BACKUP COMPLETO</button><button class="secondary" id="copy">COPIAR DIAGNÓSTICO</button></div>
+<div class="card"><h2>2. Restaurar um backup</h2><div class="muted">Use somente depois de fazer o backup. O arquivo será importado para este mesmo endereço.</div><input id="file" type="file" accept="application/json"><button class="secondary" id="import">IMPORTAR BACKUP</button></div>
+<div class="card"><div class="danger">Nunca use “Limpar dados do site” enquanto estivermos recuperando os dados.</div></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+function snapshot(){const data={version:1,origin:location.origin,url:location.href,createdAt:new Date().toISOString(),localStorage:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);data.localStorage[k]=localStorage.getItem(k)}return data}
+function render(){const keys=Object.keys(snapshot().localStorage);$('#info').innerHTML=`<p><b class="ok">${keys.length} item(ns) encontrado(s).</b></p>`+(keys.length?keys.map(k=>`<div class="key"><b>${esc(k)}</b> <span class="muted">(${(localStorage.getItem(k)||'').length} caracteres)</span></div>`).join(''):'<p class="muted">Nenhum dado no localStorage deste endereço.</p>')}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+$('#export').onclick=()=>{const b=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='entrega365-backup-'+location.hostname+'-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('#copy').onclick=async()=>{const s=snapshot();const text=`Origem: ${s.origin}\nData: ${s.createdAt}\nItens: ${Object.keys(s.localStorage).length}\nChaves:\n${Object.keys(s.localStorage).join('\n')}`;try{await navigator.clipboard.writeText(text);alert('Diagnóstico copiado.')}catch{prompt('Copie o diagnóstico:',text)}};
+$('#import').onclick=()=>{const f=$('#file').files[0];if(!f)return alert('Selecione um backup JSON.');if(!confirm('Isso substituirá as chaves que têm o mesmo nome neste endereço. Continuar?'))return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x.localStorage||typeof x.localStorage!=='object')throw Error('Formato inválido');for(const [k,v] of Object.entries(x.localStorage))localStorage.setItem(k,String(v??''));alert('Backup importado. Recarregue a página.');render()}catch(e){alert('Não foi possível importar: '+e.message)}};r.readAsText(f)};
+render();
+</script></body></html>
