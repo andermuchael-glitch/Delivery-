@@ -1,6 +1,6 @@
-const CACHE = "entrega365-logo-v9-jpg";
+const CACHE = "entrega365-logo-v10-direct-jpg";
 const AUTH = "./auth-fix.js";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.jpg", "./logo-moto.svg", AUTH];
+const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.jpg", AUTH];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
@@ -10,7 +10,8 @@ self.addEventListener("activate", event => {
 async function injectAuth(response) {
   const type = response.headers.get("content-type") || "";
   if (!type.includes("text/html")) return response;
-  const html = await response.text();
+  let html = await response.text();
+  html = html.replaceAll("logo-moto.svg", "logo-entrega365.jpg");
   if (html.includes(AUTH)) return new Response(html, { status: response.status, statusText: response.statusText, headers: response.headers });
   const injected = html.replace(/<\/body>/i, `<script type="module" src="${AUTH}"></script></body>`);
   const headers = new Headers(response.headers);
@@ -36,5 +37,5 @@ self.addEventListener("fetch", event => {
       caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
     }
     return res;
-  })));
+  }));
 });
