@@ -1,6 +1,6 @@
-const CACHE = "entrega365-logo-v8-correct";
+const CACHE = "entrega365-logo-v9-jpg";
 const AUTH = "./auth-fix.js";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.png", "./logo-moto.svg", AUTH];
+const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.jpg", "./logo-moto.svg", AUTH];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
@@ -31,7 +31,7 @@ self.addEventListener("fetch", event => {
     return;
   }
   event.respondWith(caches.match(req).then(cached => cached || fetch(req).then(res => {
-    if (res.ok && /\.(js|css|svg|png|json)$/.test(url.pathname)) {
+    if (res.ok && /\.(js|css|svg|png|jpg|jpeg|json)$/.test(url.pathname)) {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
     }
