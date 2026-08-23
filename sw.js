@@ -1,24 +1,26 @@
-const VERSION="55";
-const CACHE="entrega365-v"+VERSION;
-const ASSETS=["./","./index.html?v="+VERSION,"./logo-entrega365.png?v="+VERSION,"./manifest.json?v="+VERSION];
-const STYLE=`<style id="e365-tools-style">.e365-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 12px;padding:9px;background:#202020;border:1px solid #444;border-radius:15px}.e365-tools button{min-height:42px;border:1px solid #555;border-radius:10px;background:#292929;color:#fff;font-weight:900;font-size:12px}.e365-tools .backup{background:#ffd000;color:#151515;border-color:#ffd000}.e365-tools .csv{color:#ffd000}.e365-tools .pdf{color:#fff}@media(max-width:390px){.e365-tools{gap:5px;padding:7px}.e365-tools button{font-size:10px;padding:5px}}</style>`;
-const MARKUP=`<div class="e365-tools" id="e365Tools"><button class="backup" onclick="e365Backup()">⬇ Backup</button><button onclick="document.getElementById('e365RestoreFile').click()">⬆ Subir</button><button class="csv" onclick="e365CSV()">CSV</button><button class="pdf" onclick="e365PDF()">PDF</button><input id="e365RestoreFile" type="file" accept="application/json,.json" hidden onchange="e365Restore(this.files[0])"></div>`;
-const SCRIPT=`<script>(function(){
-const P="dcv2:";
-function currentUser(){return localStorage.getItem(P+"session")||"usuario"}
-function userKeys(){const p=P+currentUser()+":";return Object.keys(localStorage).filter(k=>k.startsWith(p))}
-function value(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return localStorage.getItem(k)}}
-function download(name,text,type){const b=new Blob([text],{type:type}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function install(){const main=document.querySelector("main");if(!main)return;if(!document.getElementById("e365Tools"))main.insertAdjacentHTML("afterbegin",${JSON.stringify(MARKUP)})}
-window.e365Backup=function(){const data={app:"Entrega365",version:55,user:currentUser(),createdAt:new Date().toISOString(),data:{}};userKeys().forEach(k=>data.data[k]=value(k));download("entrega365-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(data,null,2),"application/json;charset=utf-8")};
-window.backup=window.e365Backup;
-window.e365Restore=function(file){if(!file)return;const r=new FileReader();r.onload=function(){try{const o=JSON.parse(r.result),data=o.data||o;if(!data||typeof data!=="object")throw Error("Formato inválido");if(!confirm("Restaurar este backup neste usuário? Os dados atuais serão substituídos."))return;const u=currentUser(),prefix=P+u+":";userKeys().forEach(k=>localStorage.removeItem(k));Object.keys(data).forEach(k=>{let nk=k;if(o.user&&k.startsWith(P+o.user+":"))nk=prefix+k.slice((P+o.user+":").length);else if(!k.startsWith(prefix))return;if(nk===P+"session"||nk===P+"users"||nk.endsWith(":session"))return;localStorage.setItem(nk,typeof data[k]==="string"?data[k]:JSON.stringify(data[k]))});alert("Backup restaurado com sucesso.");location.reload()}catch(e){alert("Erro ao restaurar: "+e.message)}};r.readAsText(file)};
-function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"'}
-window.e365CSV=function(){const rows=[["Tipo","Data","Comanda","Taxa","OK","KM inicial","KM final","Arrancada","Valor","Descrição","Categoria"]];userKeys().forEach(k=>{const p=P+currentUser()+":",s=k.slice(p.length),d=value(k)||{};if(s.startsWith("day:")){const date=s.slice(4);(d.entries||[]).forEach(e=>rows.push(["Comanda",date,e.comanda||"",e.taxa||0,e.ok?"SIM":"NÃO",d.kmInicial||"",d.kmFinal||"",d.arrancada||0,"","",""]))}else if(s.startsWith("exp:")){const date=s.slice(4);(d.items||[]).forEach(e=>rows.push(["Gasto",date,"","","","","","",e.val||e.valor||0,e.desc||e.descricao||e.nome||"",e.cat||e.categoria||""]))}else if(s==="mechanica"){rows.push(["Mecânica","","","","","","",d.ultimaTroca||"",d.motoKm||"",d.intervalo||"",""])}});download("entrega365-dados-"+new Date().toISOString().slice(0,10)+".csv","\\ufeff"+rows.map(r=>r.map(csvCell).join(";")).join("\\r\\n"),"text/csv;charset=utf-8")};
-window.e365PDF=function(){const w=window.open("","_blank");if(!w){alert("Permita pop-ups para gerar o PDF.");return}const u=currentUser(),p=P+u+":",rows=[];userKeys().forEach(k=>{const s=k.slice(p.length),d=value(k)||{};if(s.startsWith("day:")){const date=s.slice(4);rows.push("<h2>Dia "+date+"</h2><p>KM inicial: "+(d.kmInicial||"-")+" | KM final: "+(d.kmFinal||"-")+" | Arrancada: R$ "+Number(d.arrancada||0).toFixed(2)+"</p>");(d.entries||[]).forEach(e=>rows.push("<p>Comanda: <b>"+(e.comanda||"")+"</b> | Taxa: R$ "+Number(e.taxa||0).toFixed(2)+" | OK: "+(e.ok?"SIM":"NÃO")+"</p>"))}else if(s.startsWith("exp:")){(d.items||[]).forEach(e=>rows.push("<p>Gasto "+s.slice(4)+": "+(e.desc||e.descricao||e.nome||"")+" — R$ "+Number(e.val||e.valor||0).toFixed(2)+"</p>"))}});w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Entrega365</title><style>body{font:14px Arial;padding:24px;color:#111}h1{border-bottom:3px solid #ffd000;padding-bottom:8px}h2{margin-top:22px;border-bottom:1px solid #ccc;padding-bottom:5px}</style></head><body><h1>Entrega365</h1><p>Relatório de '+u+' — '+new Date().toLocaleString("pt-BR")+'</p>'+(rows.join("")||"<p>Nenhum dado encontrado.</p>")+'<script>setTimeout(function(){print()},400)<\\/script></body></html>');w.document.close()};
-new MutationObserver(install).observe(document.documentElement,{childList:true,subtree:true});setTimeout(install,50);setInterval(install,500);
-})();</script>`;
-async function htmlResponse(request){const r=await fetch(request,{cache:"no-store"});const type=r.headers.get("content-type")||"";if(!type.includes("text/html"))return r;let h=await r.text();h=h.replaceAll("logo-moto.svg","logo-entrega365.png");h=h.replace("</head>",STYLE+"</head>").replace("</body>",SCRIPT+"</body>");return new Response(h,{status:r.status,statusText:r.statusText,headers:{"Content-Type":"text/html;charset=utf-8"}})}
-self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
-self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("entrega365-v")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()).then(()=>self.clients.matchAll({type:"window",includeUncontrolled:true}).then(cs=>Promise.all(cs.map(c=>c.navigate(c.url)))))));
-self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;const u=new URL(e.request.url);if(u.pathname.endsWith("/sw.js")){e.respondWith(fetch(e.request,{cache:"no-store"}));return}if(e.request.mode==="navigate"||u.pathname.endsWith("/index.html")){e.respondWith(htmlResponse(e.request));return}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});
+const CACHE = "entrega365-phone-auth-v1";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-moto.svg", "./logo-entrega365.png", "./phone-auth.js"];
+self.addEventListener("install", event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+self.addEventListener("activate", event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+async function injectPhoneAuth(response) {
+  const type = response.headers.get("content-type") || "";
+  if (!type.includes("text/html")) return response;
+  const html = await response.text();
+  if (html.includes('src="phone-auth.js"')) return new Response(html, {status:response.status, statusText:response.statusText, headers:response.headers});
+  const injected = html.replace(/<\/body>/i, '<script type="module" src="phone-auth.js"></script></body>');
+  const headers = new Headers(response.headers); headers.delete("content-length");
+  return new Response(injected, {status:response.status, statusText:response.statusText, headers});
+}
+self.addEventListener("fetch", event => {
+  const req = event.request; if (req.method !== "GET") return;
+  const url = new URL(req.url); if (url.origin !== self.location.origin) return;
+  if (req.mode === "navigate") {
+    event.respondWith(fetch(req).then(res => injectPhoneAuth(res)).then(res => { const copy=res.clone(); caches.open(CACHE).then(c=>c.put("./index.html",copy)).catch(()=>{}); return res; }).catch(()=>caches.match("./index.html")));
+    return;
+  }
+  event.respondWith(caches.match(req).then(cached => cached || fetch(req).then(res => { if (res.ok && /\.(js|css|svg|png|json)$/.test(url.pathname)) { const copy=res.clone(); caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{}); } return res; })));
+});
