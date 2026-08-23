@@ -1,9 +1,8 @@
-const CACHE="entrega365-v43";
-const ASSETS=["./","./index.html?v=43","./logo-moto.svg?v=43","./manifest.json?v=43"];
+const CACHE="entrega365-v44";
+const ASSETS=["./","./index.html?v=44","./logo-moto.svg?v=44","./manifest.json?v=44"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(
-  caches.keys()
-    .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+  caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
     .then(()=>self.clients.claim())
     .then(()=>self.clients.matchAll({type:"window",includeUncontrolled:true}))
     .then(clients=>Promise.all(clients.map(client=>client.navigate(client.url))))
