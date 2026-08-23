@@ -18,11 +18,20 @@ const SESSION = "dcv2:session";
 
 function fixLogo() {
   document.querySelectorAll(".biglogo,.logo").forEach(el => {
-    el.style.backgroundImage = 'url("logo-entrega365.png?v=56")';
+    el.style.backgroundImage = 'url("logo-moto.svg?v=57")';
     el.style.backgroundSize = "contain";
     el.style.backgroundPosition = "center";
     el.style.backgroundRepeat = "no-repeat";
+    el.style.backgroundColor = "transparent";
+    el.style.border = "0";
+    el.style.borderRadius = "0";
   });
+  const big = document.querySelector(".biglogo");
+  if (big) {
+    big.style.width = "min(92vw, 360px)";
+    big.style.height = "246px";
+    big.style.margin = "0 auto 10px";
+  }
 }
 
 function addGoogleButton() {
