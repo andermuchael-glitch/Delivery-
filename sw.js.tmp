@@ -1,0 +1,1 @@
+importScripts('./sw-v50.js?v=50');
