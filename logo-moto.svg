@@ -1,14 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" role="img" aria-label="Entrega365">
 <defs>
-  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD21A"/><stop offset="1" stop-color="#F0A900"/></linearGradient>
-  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#D7D7D7"/><stop offset="1" stop-color="#8E8E8E"/></linearGradient>
-  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".45"/></filter>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE01B"/><stop offset=".5" stop-color="#FFC000"/><stop offset="1" stop-color="#F09B00"/></linearGradient>
+ <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".45" stop-color="#ddd"/><stop offset="1" stop-color="#8d8d8d"/></linearGradient>
+ <linearGradient id="bike" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#30343a"/><stop offset=".55" stop-color="#111"/><stop offset="1" stop-color="#050505"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".55"/></filter>
 </defs>
-<path d="M180 470 A420 420 0 0 1 1020 470" fill="none" stroke="url(#gold)" stroke-width="14" stroke-linecap="round"/>
-<path d="M235 470 A365 365 0 0 1 965 470" fill="none" stroke="#F4B500" stroke-width="6" stroke-linecap="round"/>
-<g stroke="#F7B800" stroke-linecap="round" fill="none"><path d="M115 475h210" stroke-width="10"/><path d="M85 520h250" stroke-width="7"/><path d="M135 565h205" stroke-width="5"/></g>
-<g filter="url(#shadow)"><path d="M250 255h180l45 55v190H250z" fill="#171717" stroke="#F7B800" stroke-width="8"/><path d="M250 255h180l45 55H295z" fill="#292929" stroke="#F7B800" stroke-width="6"/><path d="M270 305h170" stroke="#F7B800" stroke-width="10"/><text x="300" y="390" font-family="Arial,sans-serif" font-size="30" font-weight="900" fill="#fff">ENTREGA<tspan fill="#FFD000">365</tspan></text></g>
-<g filter="url(#shadow)" stroke="#090909" stroke-linejoin="round"><path d="M510 135c0-70 58-112 122-98 60 13 88 70 66 122-12 28-35 47-68 53l-82-18c-25-12-38-31-38-59z" fill="#202020" stroke-width="8"/><path d="M610 55c42-2 72 20 82 54-35 11-73 9-104-5-1-17 6-34 22-49z" fill="#101010" stroke="#F5B900" stroke-width="6"/><path d="M645 77l25 64" stroke="#F5B900" stroke-width="7"/><path d="M530 210l78-20 93 54 35 115-72 30-64-86-57 70-82-42 45-91z" fill="#171717" stroke-width="10"/><path d="M535 210l-58 22-35 86 58 28 62-91" fill="#232323" stroke-width="9"/><path d="M690 235l83 70-28 40-91-60" fill="#202020" stroke-width="9"/><path d="M445 265l-86 83 29 36 102-71" fill="#202020" stroke-width="9"/><path d="M575 330l-75 145 69 30 91-116" fill="#171717" stroke-width="10"/><path d="M665 347l93 118-58 42-106-113" fill="#171717" stroke-width="10"/></g>
-<g filter="url(#shadow)"><circle cx="520" cy="585" r="112" fill="#101010" stroke="#333" stroke-width="12"/><circle cx="520" cy="585" r="72" fill="none" stroke="#F5B900" stroke-width="8"/><circle cx="910" cy="585" r="112" fill="#101010" stroke="#333" stroke-width="12"/><circle cx="910" cy="585" r="72" fill="none" stroke="#F5B900" stroke-width="8"/><path d="M510 565l130-155 140 80 130 95-80 20-170-64-90 55z" fill="#171717" stroke="#090909" stroke-width="12"/><path d="M640 410l-22 165h125l50-85" fill="#242424" stroke="#090909" stroke-width="12"/><path d="M610 390l105-34 110 72-70 95-132-30z" fill="url(#gold)" stroke="#090909" stroke-width="10"/><path d="M760 430l130-30 74 77-66 72-130-22z" fill="#191919" stroke="#090909" stroke-width="10"/><path d="M872 455l38 130" stroke="#BFC3C8" stroke-width="18"/><path d="M925 450l-15 145" stroke="#BFC3C8" stroke-width="18"/><path d="M862 423l78-6 48 44-83 25-55-28z" fill="#F7F7F7" stroke="#090909" stroke-width="8"/><path d="M900 433l52 27" stroke="#B7C2D0" stroke-width="7"/><path d="M795 402l78-25 45 17" fill="none" stroke="#0A0A0A" stroke-width="12"/><path d="M545 605l-105 48-30-25 117-72" fill="none" stroke="#777" stroke-width="24" stroke-linecap="round"/><path d="M440 635l-35 18" stroke="#D0D0D0" stroke-width="12"/></g>
-<g filter="url(#shadow)"><path d="M80 650h1040l-48 112H128z" fill="#121212" stroke="#F7B800" stroke-width="8"/><text x="115" y="730" font-family="Arial,sans-serif" font-size="92" font-weight="900" font-style="italic" fill="url(#metal)" letter-spacing="-4">ENTREGA<tspan fill="#FFC400">365</tspan></text><text x="390" y="788" font-family="Arial,sans-serif" font-size="28" font-weight="900" letter-spacing="6" fill="#FFD000">ENTREGAS QUE MOVEM VOCÊ</text></g>
+<!-- speed lines -->
+<g fill="none" stroke="url(#gold)" stroke-linecap="round" filter="url(#glow)">
+ <path d="M75 510h300" stroke-width="14"/><path d="M110 555h265" stroke-width="9"/><path d="M155 595h220" stroke-width="6"/>
+</g>
+<!-- delivery box -->
+<g filter="url(#shadow)">
+ <path d="M255 250h205l55 55v185H255z" fill="#151515" stroke="#FFC400" stroke-width="9"/>
+ <path d="M255 250h205l55 55H310z" fill="#292929" stroke="#FFC400" stroke-width="7"/>
+ <path d="M280 315h205" stroke="#FFC400" stroke-width="10"/>
+ <text x="292" y="410" fill="#fff" font-family="Arial,sans-serif" font-size="34" font-weight="900">ENTREGA<tspan fill="#FFD000">365</tspan></text>
+ </g>
+<!-- rider -->
+<g filter="url(#shadow)" stroke="#080808" stroke-linejoin="round">
+ <path d="M540 115c5-65 63-100 120-77 55 22 72 88 37 132-20 25-48 37-79 31l-59-28c-15-15-21-34-19-58z" fill="#202327" stroke-width="10"/>
+ <path d="M588 82c32-30 79-22 103 13-27 20-61 28-96 18-9-9-11-19-7-31z" fill="#0b0d10" stroke="#FFC400" stroke-width="7"/>
+ <path d="M640 82l29 66" stroke="#FFC400" stroke-width="8" fill="none"/>
+ <path d="M535 200l91-31 98 55 50 117-78 39-78-93-63 81-90-48 43-92z" fill="#15171a" stroke-width="12"/>
+ <path d="M535 205l-74 25-45 93 59 31 76-93" fill="#25282c" stroke-width="11"/>
+ <path d="M700 224l99 78-34 48-104-63" fill="#222529" stroke-width="11"/>
+ <path d="M468 260l-98 86 34 43 114-72" fill="#222529" stroke-width="11"/>
+ <path d="M590 327l-82 152 74 30 94-126" fill="#111316" stroke-width="12"/>
+ <path d="M676 341l102 124-63 47-116-111" fill="#111316" stroke-width="12"/>
+</g>
+<!-- motorcycle -->
+<g filter="url(#shadow)">
+ <circle cx="520" cy="580" r="118" fill="#0b0c0d" stroke="#2e3135" stroke-width="14"/><circle cx="520" cy="580" r="78" fill="none" stroke="#FFC000" stroke-width="9"/>
+ <circle cx="920" cy="580" r="118" fill="#0b0c0d" stroke="#2e3135" stroke-width="14"/><circle cx="920" cy="580" r="78" fill="none" stroke="#FFC000" stroke-width="9"/>
+ <path d="M505 560l132-145 151 75 145 94-86 28-177-68-100 64z" fill="url(#bike)" stroke="#070707" stroke-width="14"/>
+ <path d="M635 412l-25 165h142l57-93" fill="#272b30" stroke="#080808" stroke-width="13"/>
+ <path d="M605 392l112-38 122 76-76 103-144-30z" fill="url(#gold)" stroke="#090909" stroke-width="12"/>
+ <path d="M775 430l132-31 79 81-70 76-141-24z" fill="#141619" stroke="#080808" stroke-width="12"/>
+ <path d="M882 448l43 137" stroke="#c8cdd2" stroke-width="20"/><path d="M941 447l-17 139" stroke="#c8cdd2" stroke-width="20"/>
+ <path d="M866 414l86-6 55 47-91 28-63-32z" fill="#f7f8f9" stroke="#090909" stroke-width="9"/>
+ <path d="M899 424l59 30" stroke="#b5c0cc" stroke-width="7"/>
+ <path d="M784 398l82-27 50 19" fill="none" stroke="#070707" stroke-width="14" stroke-linecap="round"/>
+ <path d="M545 605l-113 51-31-27 125-76" fill="none" stroke="#777b80" stroke-width="26" stroke-linecap="round"/><path d="M435 637l-38 20" stroke="#d9dde0" stroke-width="13"/>
+ <path d="M625 585h130" stroke="#FFC400" stroke-width="8" stroke-linecap="round"/>
+</g>
+<!-- brand plate -->
+<g filter="url(#shadow)">
+ <path d="M65 653h1070l-52 113H117z" fill="#101112" stroke="url(#gold)" stroke-width="9"/>
+ <text x="112" y="733" font-family="Arial,sans-serif" font-size="96" font-weight="900" font-style="italic" letter-spacing="-5" fill="url(#silver)">ENTREGA<tspan fill="#FFC400">365</tspan></text>
+ <text x="390" y="789" font-family="Arial,sans-serif" font-size="28" font-weight="900" letter-spacing="5" fill="#FFD000">ENTREGAS QUE MOVEM VOCÊ</text>
+</g>
 </svg>
