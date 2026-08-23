@@ -1,5 +1,5 @@
-const CACHE="entrega365-v34";
-const ASSETS=["./","./index.html?v=34","./logo-moto.svg?v=32","./manifest.json?v=32","./ui-fixes.js?v=22","./profiles.js?v=1","./theme.js?v=8","./month-fix.js?v=2"];
+const CACHE="entrega365-v35";
+const ASSETS=["./","./index.html?v=40","./logo-moto.svg?v=40","./manifest.json?v=40","./ui-fixes.js?v=22","./profiles.js?v=1","./theme.js?v=8","./month-fix.js?v=2"];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);const code=/\.js(?:\?|$)/.test(u.pathname+u.search);if(e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||code){e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{if(e.request.mode==='navigate'&&r.headers.get('content-type')?.includes('text/html')){return r.text().then(x=>{const h=new Headers(r.headers);h.delete('content-length');return new Response(x,{status:r.status,statusText:r.statusText,headers:h})})}return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html')))}else e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})
