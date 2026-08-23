@@ -1,4 +1,4 @@
-const CACHE = "entrega365-logo-v7-original";
+const CACHE = "entrega365-logo-v8-correct";
 const AUTH = "./auth-fix.js";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.png", "./logo-moto.svg", AUTH];
 self.addEventListener("install", event => {
