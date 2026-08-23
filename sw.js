@@ -1,6 +1,6 @@
-const CACHE = "entrega365-auth-google-v3-logo";
+const CACHE = "entrega365-logo-v4";
 const AUTH = "./auth-fix.js";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.png", AUTH];
+const ASSETS = ["./", "./index.html", "./manifest.json", "./logo-entrega365.png", "./logo-moto.svg", AUTH];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
