@@ -16,9 +16,30 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 const SESSION = "dcv2:session";
 
+function improveLoginVisual() {
+  if (document.getElementById("entrega365-login-v5")) return;
+  const s = document.createElement("style");
+  s.id = "entrega365-login-v5";
+  s.textContent = `
+    .login { align-items:flex-start !important; padding:28px 14px 40px !important; overflow-y:auto; }
+    .loginbox { max-width:430px !important; }
+    .biglogo { width:min(94vw,380px) !important; height:245px !important; margin:0 auto 2px !important; border-radius:0 !important; background-color:transparent !important; border:0 !important; filter:drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+    .loginbox h1 { font-size:27px !important; letter-spacing:.1px; margin-top:0 !important; }
+    .loginbox > p { font-size:15px !important; margin:5px 0 20px !important; }
+    .loginbox .card { padding:20px !important; border-radius:22px !important; background:linear-gradient(145deg,#292929,#202020) !important; box-shadow:0 14px 40px rgba(0,0,0,.42) !important; }
+    .loginbox label { font-size:14px !important; font-weight:650; }
+    .loginbox input { min-height:52px; font-size:16px; }
+    .loginbox .primary { min-height:54px; font-size:16px; margin-top:15px !important; }
+    .loginbox .add { min-height:54px; border-color:#ffd000 !important; color:#ffd000 !important; font-size:15px; }
+    #google-login { min-height:54px !important; font-size:15px !important; border-radius:13px !important; margin-top:12px !important; }
+    .loginbox .small { margin-top:16px; font-size:12px; }
+  `;
+  document.head.appendChild(s);
+}
+
 function fixLogo() {
   document.querySelectorAll(".biglogo,.logo").forEach(el => {
-    el.style.backgroundImage = 'url("logo-moto.svg?v=57")';
+    el.style.backgroundImage = 'url("logo-moto.svg?v=58")';
     el.style.backgroundSize = "contain";
     el.style.backgroundPosition = "center";
     el.style.backgroundRepeat = "no-repeat";
@@ -28,9 +49,9 @@ function fixLogo() {
   });
   const big = document.querySelector(".biglogo");
   if (big) {
-    big.style.width = "min(92vw, 360px)";
-    big.style.height = "246px";
-    big.style.margin = "0 auto 10px";
+    big.style.width = "min(94vw, 380px)";
+    big.style.height = "245px";
+    big.style.margin = "0 auto 2px";
   }
 }
 
@@ -71,9 +92,11 @@ function addGoogleButton() {
 }
 
 function showProfessionalLogin() {
+  improveLoginVisual();
   fixLogo();
   if (localStorage.getItem(SESSION)) return;
   if (typeof window.showLogin === "function") window.showLogin();
+  improveLoginVisual();
   fixLogo();
   addGoogleButton();
 }
