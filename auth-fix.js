@@ -18,7 +18,7 @@ const SESSION = "dcv2:session";
 
 function fixLogo() {
   document.querySelectorAll(".biglogo,.logo").forEach(el => {
-    el.style.backgroundImage = 'url("logo-entrega365.png")';
+    el.style.backgroundImage = 'url("logo-entrega365.png?v=56")';
     el.style.backgroundSize = "contain";
     el.style.backgroundPosition = "center";
     el.style.backgroundRepeat = "no-repeat";
@@ -62,6 +62,7 @@ function addGoogleButton() {
 }
 
 function showProfessionalLogin() {
+  fixLogo();
   if (localStorage.getItem(SESSION)) return;
   if (typeof window.showLogin === "function") window.showLogin();
   fixLogo();
