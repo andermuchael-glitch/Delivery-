@@ -1,1 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="150" fill="#ffd000"/><circle cx="512" cy="430" r="350" fill="#161616" stroke="#ffd000" stroke-width="18"/><g fill="none" stroke="#ffd000" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"><circle cx="370" cy="535" r="88" stroke="#aaa"/><circle cx="700" cy="535" r="88" stroke="#aaa"/><path d="M370 535l85-105 105 0 70 105M455 430l-45-65M560 430l55-65 95 0M455 430l105 105M615 365l55-45"/><path d="M285 440l-80 35M275 475l-105 35M270 510l-105 35"/></g><g fill="#202020" stroke="#ffd000" stroke-width="16"><path d="M445 365c-20-75 25-150 100-160 75-10 140 45 140 120 0 55-30 90-75 105l-70 5c-45-10-80-30-95-70z"/><path d="M490 315c-10 80 5 120 65 145l55-5c45-15 70-50 75-105-40 35-105 45-195-35z"/><path d="M405 415c35-70 110-95 180-50 25 16 45 40 55 70l-55 25-100-5-80-40z"/><rect x="265" y="300" width="150" height="185" rx="18"/></g><path d="M290 330h100v30H290z" fill="#ffd000"/><text x="340" y="410" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="900">ENTREGA365</text><path d="M300 455h75" stroke="#ffd000" stroke-width="8"/><text x="512" y="675" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="900" letter-spacing="3">ENTREGA</text><text x="512" y="760" text-anchor="middle" fill="#ffd000" font-family="Arial,Helvetica,sans-serif" font-size="108" font-weight="900">365</text><text x="512" y="820" text-anchor="middle" fill="#ffd000" font-family="Arial,Helvetica,sans-serif" font-size="27" font-weight="700" letter-spacing="5">ENTREGAS QUE MOVEM VOCÊ</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<rect width="1024" height="1024" rx="150" fill="#ffd000"/>
+<circle cx="512" cy="480" r="365" fill="#171717"/>
+<!-- rodas -->
+<circle cx="350" cy="535" r="82" fill="#171717" stroke="#a7a7a7" stroke-width="22"/>
+<circle cx="690" cy="535" r="82" fill="#171717" stroke="#a7a7a7" stroke-width="22"/>
+<!-- quadro da moto -->
+<g fill="none" stroke="#ffd000" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+<path d="M350 535l100-112h108l132 112"/>
+<path d="M450 423l-42-66M558 423l62-66h92"/>
+<path d="M450 423l105 112M620 357l48-48"/>
+<path d="M265 442l-75 38M258 477l-94 35M255 510l-92 34"/>
+</g>
+<!-- piloto estilizado -->
+<g fill="#202020" stroke="#ffd000" stroke-width="15" stroke-linejoin="round">
+<circle cx="590" cy="305" r="74"/>
+<path d="M493 350c-4-55 27-91 79-102 58-12 103 22 113 74 10 52-16 96-63 113l-65 5c-34-9-57-34-64-90z"/>
+<path d="M405 416c33-69 105-96 171-57 30 18 51 45 60 78l-58 24-101-8-72-37z"/>
+<path d="M468 426l-42 91"/>
+<path d="M570 450l70 91"/>
+</g>
+<!-- bag de entrega -->
+<rect x="255" y="300" width="142" height="178" rx="17" fill="#202020" stroke="#ffd000" stroke-width="15"/>
+<path d="M278 326h96v27h-96z" fill="#ffd000"/>
+<text x="326" y="401" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="900">ENTREGA365</text>
+<!-- nome -->
+<text x="512" y="675" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="91" font-weight="900" letter-spacing="2">ENTREGA</text>
+<text x="512" y="765" text-anchor="middle" fill="#ffd000" font-family="Arial,Helvetica,sans-serif" font-size="104" font-weight="900">365</text>
+</svg>
