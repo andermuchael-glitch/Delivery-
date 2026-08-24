@@ -2,17 +2,14 @@
   "name":"Entrega365",
   "short_name":"Entrega365",
   "description":"Controle de entregas, comandas, gastos, mecânica e quilometragem.",
-  "id":"./?pwa=74",
-  "start_url":"./index.html?v=74",
+  "id":"./?pwa=75",
+  "start_url":"./index.html?v=75",
   "scope":"./",
   "display":"fullscreen",
   "display_override":["fullscreen","standalone"],
-  "background_color":"#000000",
+  "background_color":"#111111",
   "theme_color":"#ffd900",
   "lang":"pt-BR",
   "orientation":"portrait-primary",
-  "icons":[
-    {"src":"./logo-entrega365.jpg?v=74","sizes":"1536x1024","type":"image/jpeg","purpose":"any"},
-    {"src":"./logo-entrega365.jpg?v=74","sizes":"1536x1024","type":"image/jpeg","purpose":"maskable any"}
-  ]
+  "icons":[{"src":"./app-icon.svg?v=75","sizes":"512x512","type":"image/svg+xml","purpose":"any"},{"src":"./app-icon.svg?v=75","sizes":"192x192","type":"image/svg+xml","purpose":"any"}]
 }
