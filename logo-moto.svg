@@ -1,18 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Entrega365">
-<defs>
-  <filter id="bright" x="-10%" y="-10%" width="120%" height="120%">
-    <feComponentTransfer>
-      <feFuncR type="linear" slope="1.35" intercept="0.02"/>
-      <feFuncG type="linear" slope="1.35" intercept="0.02"/>
-      <feFuncB type="linear" slope="1.35" intercept="0.02"/>
-    </feComponentTransfer>
-    <feComponentTransfer>
-      <feFuncR type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
-      <feFuncG type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
-      <feFuncB type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
-    </feComponentTransfer>
-  </filter>
-</defs>
-<rect width="1024" height="1024" rx="170" fill="#ffd000"/>
-<image href="./logo-entrega365.jpg?v=74" x="-256" y="0" width="1536" height="1024" preserveAspectRatio="none" filter="url(#bright)"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#121212"/><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M145 210l60-8m-42 38l48-6m-28 36l34-5" stroke="#ffd21a" stroke-width="15"/><path d="M188 205h92v80h-92z" stroke="#fff" stroke-width="16"/><path d="M188 205l46-31 46 31" stroke="#fff" stroke-width="16"/><path d="M234 174v31" stroke="#ffd21a" stroke-width="12"/><circle cx="232" cy="330" r="45" stroke="#fff" stroke-width="16"/><circle cx="408" cy="330" r="45" stroke="#fff" stroke-width="16"/><path d="M232 330h176M278 330l28-86h82l42 86M306 244l44-52h59l32 52" stroke="#fff" stroke-width="16"/><circle cx="376" cy="125" r="32" fill="#ffd21a"/><path d="M355 162l-29 64 53 38 43-59" stroke="#ffd21a" stroke-width="30"/></g></svg>
