@@ -1,0 +1,43 @@
+name: Build PWA icons
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'logo-entrega365.jpg'
+      - '.github/workflows/build-icons.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  icons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate PNG icons from the approved logo
+        run: |
+          python -m pip install --quiet Pillow
+          python - <<'PY'
+          from PIL import Image, ImageOps
+          src = Image.open('logo-entrega365.jpg').convert('RGB')
+          for size in (512, 192, 180, 128):
+              canvas = Image.new('RGB', (size, size), '#111111')
+              logo = ImageOps.contain(src, (size - 24, size - 24), Image.Resampling.LANCZOS)
+              canvas.paste(logo, ((size-logo.width)//2, (size-logo.height)//2))
+              canvas.save(f'icon-{size}.png', 'PNG', optimize=True)
+          PY
+
+      - name: Commit generated icons
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add icon-512.png icon-192.png icon-180.png icon-128.png
+          if git diff --cached --quiet; then
+            echo 'Icons already current.'
+          else
+            git commit -m 'Gera ícones PNG reais para instalação do app [skip ci]'
+            git push
+          fi
