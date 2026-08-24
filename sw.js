@@ -1,7 +1,6 @@
-const CACHE="entrega365-logo-v12-tools";
+const CACHE="entrega365-logo-v12";
 const AUTH="./auth-fix.js";
-const TOOLS="./tools.js";
-const ASSETS=["./","./index.html","./manifest.json","./logo-entrega365.jpg","./app-icon.svg",AUTH,TOOLS];
+const ASSETS=["./","./index.html?v=61","./manifest.json?v=61","./logo-entrega365.jpg?v=61","./app-icon.svg?v=61",AUTH];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function injectAuth(response){const type=response.headers.get("content-type")||"";if(!type.includes("text/html"))return response;let html=await response.text();html=html.replaceAll("logo-moto.svg","logo-entrega365.jpg");if(html.includes(AUTH))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});const injected=html.replace(/<\/body>/i,`<script type="module" src="${AUTH}?v=12"></script></body>`);const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers})}
