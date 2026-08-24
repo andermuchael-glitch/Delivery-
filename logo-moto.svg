@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" role="img" aria-label="Entrega365"><image href="./logo-entrega365.jpg?v=69" x="0" y="0" width="1536" height="1024" preserveAspectRatio="xMidYMid meet"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Entrega365">
+<defs>
+  <filter id="bright" x="-10%" y="-10%" width="120%" height="120%">
+    <feComponentTransfer>
+      <feFuncR type="linear" slope="1.35" intercept="0.02"/>
+      <feFuncG type="linear" slope="1.35" intercept="0.02"/>
+      <feFuncB type="linear" slope="1.35" intercept="0.02"/>
+    </feComponentTransfer>
+    <feComponentTransfer>
+      <feFuncR type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
+      <feFuncG type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
+      <feFuncB type="gamma" amplitude="1.15" exponent="0.82" offset="0"/>
+    </feComponentTransfer>
+  </filter>
+</defs>
+<rect width="1024" height="1024" rx="170" fill="#ffd000"/>
+<image href="./logo-entrega365.jpg?v=74" x="-256" y="0" width="1536" height="1024" preserveAspectRatio="none" filter="url(#bright)"/>
+</svg>
