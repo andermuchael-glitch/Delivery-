@@ -1,6 +1,6 @@
-const CACHE="entrega365-logo-v18";
-const AUTH="./auth-fix.js?v=18";
-const ASSETS=["./","./index.html?v=66","./manifest.json?v=66","./logo-entrega365.jpg?v=66",AUTH];
+const CACHE="entrega365-logo-v19";
+const AUTH="./auth-fix.js?v=19";
+const ASSETS=["./","./index.html?v=67","./manifest.json?v=67","./app-icon.svg?v=67","./logo-entrega365.jpg?v=67",AUTH];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function injectAuth(response){const type=response.headers.get("content-type")||"";if(!type.includes("text/html"))return response;let html=await response.text();html=html.replaceAll("logo-moto.svg","logo-entrega365.jpg");if(html.includes("auth-fix.js"))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});const injected=html.replace(/<\/body>/i,`<script type="module" src="${AUTH}"></script></body>`);const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers})}
