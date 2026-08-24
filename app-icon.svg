@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Entrega365"><rect width="512" height="512" rx="96" fill="#111111"/><image href="./logo-entrega365.jpg" x="20" y="86" width="472" height="315" preserveAspectRatio="xMidYMid meet"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Entrega365">
+<rect width="512" height="512" rx="96" fill="#111111"/>
+<circle cx="256" cy="205" r="132" fill="none" stroke="#d6ad00" stroke-width="12"/>
+<circle cx="190" cy="300" r="36" fill="none" stroke="#ffd000" stroke-width="12"/>
+<circle cx="322" cy="300" r="36" fill="none" stroke="#ffd000" stroke-width="12"/>
+<path d="M190 300h48l30-68h45l25 68h-16l-22-48h-39l-24 48h-47m71-68 25 22 32-22" fill="none" stroke="#ffd000" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="256" y="385" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#ffffff">ENTREGA</text>
+<text x="256" y="445" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="900" fill="#ffd000">365</text>
+</svg>
