@@ -1,6 +1,6 @@
-const CACHE="entrega365-logo-v74";
+const CACHE="entrega365-pwa-v74";
 const AUTH="./auth-fix.js?v=74";
-const ASSETS=["./","./index.html?v=74","./manifest.json?v=74","./icon-72.svg?v=74",AUTH];
+const ASSETS=["./","./index.html?v=74","./manifest.json?v=74","./logo-entrega365.jpg?v=74",AUTH];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function injectAuth(response){const type=response.headers.get("content-type")||"";if(!type.includes("text/html"))return response;let html=await response.text();if(html.includes("auth-fix.js"))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});const injected=html.replace(/<\/body>/i,`<script type="module" src="${AUTH}"></script></body>`);const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers})}
