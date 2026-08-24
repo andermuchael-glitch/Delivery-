@@ -1,4 +1,4 @@
-import "./tools.js?v=12";
+import "./tools.js?v=13";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
@@ -8,10 +8,11 @@ const provider=new GoogleAuthProvider(); provider.setCustomParameters({prompt:"s
 const SESSION="dcv2:session";
 const BACKUP_VERSION=2;
 const BACKUP_MARK="Entrega365Backup";
+const LOGO="./icon-72.svg?v=74";
 
 function improveLoginVisual(){
- if(document.getElementById("entrega365-login-v10"))return;
- const s=document.createElement("style");s.id="entrega365-login-v10";s.textContent=`
+ if(document.getElementById("entrega365-login-v11"))return;
+ const s=document.createElement("style");s.id="entrega365-login-v11";s.textContent=`
  .login{align-items:flex-start!important;padding:28px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}
  .biglogo{width:min(94vw,380px)!important;height:245px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
  .biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox h1{font-size:27px!important;margin-top:0!important}.loginbox>p{font-size:15px!important;margin:5px 0 20px!important}
@@ -23,9 +24,9 @@ function fixLogo(){
   el.style.background="none";el.style.border="0";el.style.borderRadius="0";el.style.overflow="visible";
   if(el.classList.contains("biglogo")){
    el.innerHTML="";
-   const img=document.createElement("img");img.src="./logo-entrega365.jpg?v=10";img.alt="Entrega365";img.decoding="async";img.loading="eager";el.appendChild(img);
+   const img=document.createElement("img");img.src=LOGO;img.alt="Entrega365";img.decoding="async";img.loading="eager";el.appendChild(img);
   }else{
-   el.style.backgroundImage='url("./logo-entrega365.jpg?v=10")';el.style.backgroundSize="contain";el.style.backgroundPosition="center";el.style.backgroundRepeat="no-repeat";
+   el.style.backgroundImage=`url("${LOGO}")`;el.style.backgroundSize="contain";el.style.backgroundPosition="center";el.style.backgroundRepeat="no-repeat";
   }
  });
  const big=document.querySelector(".biglogo");if(big){big.style.width="min(94vw,380px)";big.style.height="245px";big.style.margin="0 auto 2px"}
