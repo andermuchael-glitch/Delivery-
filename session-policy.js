@@ -1,0 +1,1 @@
+(function(){window.addEventListener('pagehide',()=>{try{const s=JSON.parse(localStorage.getItem('entrega365:settings')||'{}');if(s.stayConnected===false)localStorage.removeItem('dcv2:session')}catch{}})})();
