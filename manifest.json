@@ -2,8 +2,8 @@
   "name":"Entrega365",
   "short_name":"Entrega365",
   "description":"Controle de entregas, comandas, gastos, mecânica, calendário, agenda e calculadora.",
-  "id":"./?pwa=79",
-  "start_url":"./index.html?v=79",
+  "id":"./?pwa=80",
+  "start_url":"./index.html?v=80",
   "scope":"./",
   "display":"fullscreen",
   "display_override":["fullscreen","standalone"],
@@ -11,5 +11,5 @@
   "theme_color":"#ffd21a",
   "lang":"pt-BR",
   "orientation":"portrait-primary",
-  "icons":[{"src":"./app-icon.svg?v=79","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"},{"src":"./app-icon.svg?v=79","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons":[{"src":"./app-icon.svg?v=80","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"},{"src":"./app-icon.svg?v=80","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}]
 }
