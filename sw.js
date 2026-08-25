@@ -1,6 +1,6 @@
-const CACHE="entrega365-pwa-v80";
-const AUTH="./auth-fix.js?v=80",BRAND="./brand-update.js?v=80",FEATURES="./entrega365-features.js?v=80",DRIVE="./drive-backup.js?v=80",SESSION="./session-policy.js?v=80";
-const ASSETS=["./","./index.html?v=80","./manifest.json?v=80","./app-icon.svg?v=80","./icon-72.svg?v=80","./logo-entrega365.jpg?v=80",AUTH,BRAND,FEATURES,DRIVE,SESSION];
+const CACHE="entrega365-pwa-v81";
+const AUTH="./auth-fix.js?v=81",BRAND="./brand-update.js?v=81",FEATURES="./entrega365-features.js?v=81",DRIVE="./drive-backup.js?v=81",SESSION="./session-policy.js?v=81",THEME="./entrega365-theme-v2.js?v=81";
+const ASSETS=["./","./index.html?v=81","./manifest.json?v=81","./app-icon.svg?v=81","./icon-72.svg?v=81","./logo-entrega365.jpg?v=81",AUTH,BRAND,FEATURES,DRIVE,SESSION,THEME];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function injectAuth(response){const type=response.headers.get("content-type")||"";if(!type.includes("text/html"))return response;let html=await response.text();if(html.includes("auth-fix.js"))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});const injected=html.replace(/<\/body>/i,`<script type="module" src="${AUTH}"></script><script src="${BRAND}"></script></body>`);const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers})}
