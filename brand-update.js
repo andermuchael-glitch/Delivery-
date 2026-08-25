@@ -1,5 +1,5 @@
-const FULL_LOGO="./logo-entrega365.svg?v=76";
-const ICON_LOGO="./icon-72.svg?v=76";
+const FULL_LOGO="./logo-entrega365.jpg?v=84";
+const ICON_LOGO="./app-icon.svg?v=84";
 function applyEntrega365Brand(){
   document.querySelectorAll(".biglogo").forEach(el=>{
     el.style.background="none";
@@ -14,8 +14,8 @@ function applyEntrega365Brand(){
     img.loading="eager";
     img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";
     el.appendChild(img);
-    el.style.width="min(94vw,380px)";
-    el.style.height="245px";
+    el.style.width="min(94vw,520px)";
+    el.style.height="300px";
   });
   document.querySelectorAll(".logo").forEach(el=>{
     el.style.background="none";
@@ -24,12 +24,11 @@ function applyEntrega365Brand(){
     el.style.backgroundPosition="center";
     el.style.backgroundRepeat="no-repeat";
     el.style.border="0";
-    el.style.borderRadius="12px";
     el.style.boxShadow="none";
   });
-  let icon=document.querySelector('link[rel="icon"]');
-  if(icon)icon.href="./app-icon.svg?v=76";
+  const icon=document.querySelector('link[rel="icon"]');
+  if(icon)icon.href=ICON_LOGO;
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(applyEntrega365Brand,120));
-else setTimeout(applyEntrega365Brand,120);
-setTimeout(applyEntrega365Brand,500);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyEntrega365Brand);
+else applyEntrega365Brand();
+setTimeout(applyEntrega365Brand,250);
