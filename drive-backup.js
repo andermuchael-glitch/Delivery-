@@ -4,7 +4,6 @@ const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 const DRIVE_API="https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD="https://www.googleapis.com/upload/drive/v3/files";
 const FOLDER_NAME="Entrega365";
-const FOLDER_QUERY="appProperties has { key='entrega365' and value='backup-folder' } and mimeType='application/vnd.google-apps.folder' and trashed=false";
 
 export function initDriveBackup(auth){
   if(!auth || window.__entrega365DriveReady)return;
@@ -15,25 +14,24 @@ export function initDriveBackup(auth){
     if(!user)throw new Error("login");
     const prefix="dcv2:"+user+":",days={},expenses={};
     for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);if(!k?.startsWith(prefix))continue;
+      const k=localStorage.key(i); if(!k?.startsWith(prefix))continue;
       const r=k.slice(prefix.length);
       try{
         if(r.startsWith("day:"))days[r.slice(4)]=JSON.parse(localStorage.getItem(k));
         else if(r.startsWith("exp:"))expenses[r.slice(4)]=JSON.parse(localStorage.getItem(k));
       }catch{}
     }
-    let mechanica={};try{mechanica=JSON.parse(localStorage.getItem(prefix+"mechanica"))||{}}catch{}
-    return {backupVersion:4,format:"Entrega365Backup",app:"Entrega365",user,days,expenses,mechanica,exportedAt:new Date().toISOString()};
+    let mechanica={}; try{mechanica=JSON.parse(localStorage.getItem(prefix+"mechanica"))||{}}catch{}
+    return {backupVersion:5,format:"Entrega365Backup",app:"Entrega365",user,days,expenses,mechanica,exportedAt:new Date().toISOString()};
   }
 
   async function getDriveToken(){
     const current=auth.currentUser;
     if(!current)throw new Error("login");
-    const isGoogle=current.providerData?.some(p=>p.providerId==="google.com");
-    if(!isGoogle)throw new Error("google");
+    if(!current.providerData?.some(p=>p.providerId==="google.com"))throw new Error("google");
     const provider=new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
-    provider.setCustomParameters({prompt:"consent",access_type:"offline"});
+    provider.setCustomParameters({prompt:"consent"});
     const result=await reauthenticateWithPopup(current,provider);
     const credential=GoogleAuthProvider.credentialFromResult(result);
     if(!credential?.accessToken)throw new Error("token");
@@ -42,20 +40,28 @@ export function initDriveBackup(auth){
 
   async function driveFetch(url,token,options={}){
     const res=await fetch(url,{...options,headers:{Authorization:`Bearer ${token}`,...(options.headers||{})}});
-    if(!res.ok){let detail="";try{detail=await res.text()}catch{}const e=new Error(`drive_${res.status}`);e.detail=detail;throw e}
+    if(!res.ok){let detail="";try{detail=await res.text()}catch{}const e=new Error(`drive_${res.status}`);e.detail=detail;throw e;}
     return res.status===204?null:res.json();
   }
 
   async function getOrCreateFolder(token){
-    const list=await driveFetch(`${DRIVE_API}?q=${encodeURIComponent(FOLDER_QUERY)}&spaces=drive&fields=files(id,name)&pageSize=10`,token);
-    if(list.files?.[0]?.id)return list.files[0].id;
-    const folder=await driveFetch(`${DRIVE_API}?fields=id,name`,token,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:FOLDER_NAME,mimeType:"application/vnd.google-apps.folder",appProperties:{entrega365:"backup-folder"}})});
+    // Search by both name and our private marker. With drive.file this finds folders created by this app.
+    const q=`name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and appProperties has { key='entrega365' and value='backup-folder' }`;
+    const list=await driveFetch(`${DRIVE_API}?q=${encodeURIComponent(q)}&spaces=drive&fields=files(id,name,mimeType,parents)&pageSize=10`,token);
+    if(list.files?.length)return list.files[0].id;
+
+    const folder=await driveFetch(`${DRIVE_API}?fields=id,name,mimeType,parents`,token,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name:FOLDER_NAME,mimeType:"application/vnd.google-apps.folder",appProperties:{entrega365:"backup-folder"}})
+    });
+    if(!folder?.id)throw new Error("folder");
     return folder.id;
   }
 
   async function findBackup(token,folderId){
     const q=`'${folderId}' in parents and name='entrega365-backup.json' and trashed=false`;
-    const list=await driveFetch(`${DRIVE_API}?q=${encodeURIComponent(q)}&spaces=drive&fields=files(id,name,webViewLink,modifiedTime)&pageSize=10`,token);
+    const list=await driveFetch(`${DRIVE_API}?q=${encodeURIComponent(q)}&spaces=drive&fields=files(id,name,parents,webViewLink,modifiedTime)&pageSize=10`,token);
     return list.files?.[0]||null;
   }
 
@@ -68,7 +74,7 @@ export function initDriveBackup(auth){
       blob,
       `\r\n--${boundary}--`
     ]);
-    const url=fileId?`${DRIVE_UPLOAD}/${encodeURIComponent(fileId)}?uploadType=multipart&fields=id,name,webViewLink,modifiedTime`:`${DRIVE_UPLOAD}?uploadType=multipart&fields=id,name,webViewLink,modifiedTime`;
+    const url=fileId?`${DRIVE_UPLOAD}/${encodeURIComponent(fileId)}?uploadType=multipart&fields=id,name,parents,webViewLink,modifiedTime`:`${DRIVE_UPLOAD}?uploadType=multipart&fields=id,name,parents,webViewLink,modifiedTime`;
     return driveFetch(url,token,{method:fileId?"PATCH":"POST",headers:{"Content-Type":`multipart/related; boundary=${boundary}`},body});
   }
 
@@ -78,24 +84,28 @@ export function initDriveBackup(auth){
     const payload=JSON.stringify(makeBackup(),null,2);
     const blob=new Blob([payload],{type:"application/json"});
     const existing=await findBackup(token,folderId);
-    const metadata=existing?{name:"entrega365-backup.json",mimeType:"application/json"}:{name:"entrega365-backup.json",mimeType:"application/json",parents:[folderId]};
-    return uploadMultipart(token,metadata,blob,existing?.id||null);
+    const metadata=existing
+      ? {name:"entrega365-backup.json",mimeType:"application/json"}
+      : {name:"entrega365-backup.json",mimeType:"application/json",parents:[folderId],appProperties:{entrega365:"backup"}};
+    const file=await uploadMultipart(token,metadata,blob,existing?.id||null);
+    if(!file?.id)throw new Error("upload");
+    return {...file,folderId};
   }
 
   window.entrega365SaveBackupToDrive=async()=>{
     try{
       const file=await saveToDrive();
-      const link=file?.webViewLink?`\n\nAbrir no Google Drive:\n${file.webViewLink}`:"";
-      alert(`Backup do Entrega365 salvo com sucesso no Google Drive!${link}`);
+      alert(`Backup salvo no Google Drive.\n\nPasta: ${FOLDER_NAME}\nArquivo: entrega365-backup.json`);
       return file;
     }catch(e){
       console.error("Entrega365 Drive backup",e);
       let msg="Não foi possível salvar o backup no Google Drive.";
-      if(e.message==="google")msg="O backup no Google Drive exige que o Entrega365 esteja conectado a uma Conta Google.";
+      if(e.message==="google")msg="O backup no Google Drive exige login com uma Conta Google.";
       else if(e.message==="login")msg="Faça login no Entrega365 antes de salvar o backup.";
-      else if(e.message==="token")msg="O Google não retornou a autorização do Drive. Tente novamente e aceite a permissão do Google Drive.";
-      else if(e.message==="drive_403")msg="O Google recusou o acesso ao Drive. Confirme que o escopo drive.file está configurado e que a conta autorizou o Entrega365.";
-      else if(e.message==="drive_401")msg="A autorização do Google Drive expirou. Toque novamente em Backup no Drive para autorizar.";
+      else if(e.message==="token")msg="O Google não retornou a autorização do Drive. Tente novamente e aceite a permissão.";
+      else if(e.message==="drive_403")msg="O Google recusou o acesso. Confirme a permissão drive.file.";
+      else if(e.message==="drive_401")msg="A autorização do Google Drive expirou. Tente novamente.";
+      else if(e.message==="folder")msg="Não foi possível criar a pasta Entrega365 no Google Drive.";
       alert(msg);
       throw e;
     }
