@@ -1,13 +1,5 @@
 const MP_API = 'https://api.mercadopago.com';
 
-function json(res, status = 200) {
-  return {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify(res)
-  };
-}
-
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
@@ -21,6 +13,8 @@ module.exports = async (req, res) => {
     }
 
     const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+    const notificationUrl = `${origin}/api/mp-webhook?source_news=webhooks`;
+
     const response = await fetch(`${MP_API}/preapproval`, {
       method: 'POST',
       headers: {
@@ -37,7 +31,8 @@ module.exports = async (req, res) => {
           transaction_amount: 9.90,
           currency_id: 'BRL'
         },
-        back_url: `${origin}/?pro=return`
+        back_url: `${origin}/?pro=return`,
+        notification_url: notificationUrl
       })
     });
 
