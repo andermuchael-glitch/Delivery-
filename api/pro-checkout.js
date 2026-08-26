@@ -2,14 +2,19 @@ const MP_API = 'https://api.mercadopago.com';
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ error: 'method_not_allowed' });
 
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
   if (!token) return res.status(503).json({ error: 'payment_not_configured', message: 'Mercado Pago ainda não foi configurado no servidor.' });
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const email = String(body.email || '').trim().toLowerCase();
+    const email = String(req.method === 'GET' ? (req.query?.email || '') : (body.email || '')).trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'valid_email_required', message: 'Use um usuário de login que seja um e-mail válido.' });
     }
