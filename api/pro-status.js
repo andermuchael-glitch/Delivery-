@@ -18,8 +18,8 @@ module.exports = async (req, res) => {
     const data = await response.json();
     if (!response.ok) return res.status(response.status).json({ error: 'subscription_lookup_failed' });
 
-    const payerEmail = String(data.payer_email || '').toLowerCase();
-    const ownerMatches = payerEmail && payerEmail === email;
+    const reference = String(data.external_reference || '').toLowerCase();
+    const ownerMatches = reference === `entrega365:${email}`;
     const active = ownerMatches && ['authorized', 'active'].includes(String(data.status || '').toLowerCase());
 
     return res.status(200).json({
