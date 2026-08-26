@@ -8,7 +8,13 @@
   const setPlan=v=>localStorage.setItem(PLAN_KEY,v);
   const getSub=()=>localStorage.getItem(SUB_KEY)||'';
   const setSub=v=>localStorage.setItem(SUB_KEY,v);
-  const getUser=()=>localStorage.getItem('dcv2:session')||'';
+  function getUser(){
+    const session=localStorage.getItem('dcv2:session')||'';
+    const savedEmail=localStorage.getItem('entrega365:email')||'';
+    const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim());
+    if(validEmail(savedEmail)) return savedEmail.trim();
+    return session;
+  }
   const css=()=>{if(document.getElementById('e365procss'))return;const s=document.createElement('style');s.id='e365procss';s.textContent=`
   .e365probtn{position:relative!important;color:#111!important;background:linear-gradient(135deg,#ffd000,#f2b800)!important;border-color:#ffd000!important;font-weight:900!important}
   .e365probadge{position:absolute;top:-6px;right:-4px;background:#111;color:#ffd000;border:1px solid #ffd000;border-radius:999px;padding:1px 5px;font-size:8px;font-weight:900}
