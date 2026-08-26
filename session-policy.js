@@ -1,1 +1,6 @@
-(function(){window.addEventListener('pagehide',()=>{try{const s=JSON.parse(localStorage.getItem('entrega365:settings')||'{}');if(s.stayConnected===false)localStorage.removeItem('dcv2:session')}catch{}})})();
+/* A sessão do Entrega365 só deve ser encerrada pelo botão Sair. */
+(function(){
+  // Não remova dcv2:session em pagehide/unload: esses eventos também
+  // acontecem durante o retorno do OAuth (Google) e podem apagar a sessão
+  // recém-criada antes do app terminar de inicializar.
+})();
