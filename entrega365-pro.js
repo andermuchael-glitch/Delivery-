@@ -70,28 +70,42 @@
     }
   }
 
-  async function checkSubscription(){
-    const mail=email(),sub=getSub();
-    if(!mail||!sub){alert('Não encontrei uma assinatura vinculada a este usuário.');return}
+  async function fetchSubscriptionStatus(){
+    const mail=email();
+    if(!mail)return null;
+    const sub=getSub();
+    const query=`/api/pro-status?email=${encodeURIComponent(mail)}${sub?`&subscription_id=${encodeURIComponent(sub)}`:''}`;
+    const r=await fetch(query,{cache:'no-store'});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.message||'Não foi possível consultar a assinatura.');
+    if(d.subscription_id)setSub(d.subscription_id);
+    setPlan(d.active?'active':'free');
+    return d;
+  }
+
+  async function checkSubscription(showMessage=true){
+    const mail=email();
+    if(!mail){alert('Para verificar o PRO, entre usando um e-mail válido como usuário.');return}
     const b=document.getElementById('e365procheck');if(b){b.disabled=true;b.textContent='VERIFICANDO...'}
     try{
-      const r=await fetch(`/api/pro-status?email=${encodeURIComponent(mail)}&subscription_id=${encodeURIComponent(sub)}`,{cache:'no-store'});
-      const d=await r.json();
-      if(!r.ok)throw new Error(d.message||'Não foi possível consultar a assinatura.');
-      setPlan(d.active?'active':'free');
-      alert(d.active?'Assinatura PRO ativa.':'A assinatura ainda não está autorizada.');
+      const d=await fetchSubscriptionStatus();
+      if(showMessage)alert(d?.active?'Assinatura PRO ativa.':'A assinatura ainda não está autorizada.');
       open();
-    }catch(e){alert(e.message||'Falha ao verificar assinatura.')}finally{if(b){b.disabled=false;b.textContent='ATUALIZAR STATUS'}}
+    }catch(e){if(showMessage)alert(e.message||'Falha ao verificar assinatura.')}finally{if(b){b.disabled=false;b.textContent='ATUALIZAR STATUS'}}
   }
 
   function bind(){
     document.getElementById('e365probuy')?.addEventListener('click',startSubscription);
-    document.getElementById('e365procheck')?.addEventListener('click',checkSubscription);
+    document.getElementById('e365procheck')?.addEventListener('click',()=>checkSubscription(true));
     document.getElementById('e365prolegacy')?.addEventListener('click',()=>window.open(PAYMENT_LINK,'_blank','noopener,noreferrer'));
   }
   function open(){css();if(typeof window.shell==='function'){window.shell(screen());bind()}else setTimeout(open,100)}
-  function install(){css();const actions=document.querySelector('.actions');if(actions&&!actions.querySelector('.e365probtn')){const b=document.createElement('button');b.className='ico e365probtn';b.title='Entrega365 PRO';b.innerHTML='PRO<span class="e365probadge">+</span>';b.onclick=open;actions.prepend(b)}const tabs=document.querySelector('.tabs');if(tabs&&!tabs.querySelector('[data-pro]')){const b=document.createElement('button');b.className='tab';b.dataset.pro='1';b.innerHTML='<b>⭐</b>PRO';b.onclick=open;tabs.appendChild(b)}}
+  async function install(){css();const actions=document.querySelector('.actions');if(actions&&!actions.querySelector('.e365probtn')){const b=document.createElement('button');b.className='ico e365probtn';b.title='Entrega365 PRO';b.innerHTML='PRO<span class="e365probadge">+</span>';b.onclick=open;actions.prepend(b)}const tabs=document.querySelector('.tabs');if(tabs&&!tabs.querySelector('[data-pro]')){const b=document.createElement('button');b.className='tab';b.dataset.pro='1';b.innerHTML='<b>⭐</b>PRO';b.onclick=open;tabs.appendChild(b)}
+    if(location.search.includes('pro=return') && email()){
+      try{await fetchSubscriptionStatus();history.replaceState({},document.title,location.pathname)}catch(e){console.warn('PRO return status check failed',e)}
+    }
+  }
   window.e365Pro=open;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,150));else setTimeout(install,150);
-  setInterval(install,1500);
+  setInterval(install,3000);
 })();
