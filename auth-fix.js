@@ -2,10 +2,10 @@ import "./tools.js?v=15";
 import "./entrega365-features.js?v=82";
 import "./session-policy.js?v=82";
 import "./entrega365-theme-v2.js?v=82";
-import "./entrega365-pro.js?v=1";
+import "./entrega365-pro.js?v=2";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:"entrega365.firebaseapp.com",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
+const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3QOjiv8_ZySPYU",authDomain:"entrega365.firebaseapp.com",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
 const auth=getAuth(initializeApp(firebaseConfig)),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});
 const SESSION="dcv2:session",FULL_LOGO="./logo-entrega365.jpg?v=84",ICON_LOGO="./app-icon.svg?v=84";
 function improveLoginVisual(){if(document.getElementById("entrega365-login-v14"))return;const s=document.createElement("style");s.id="entrega365-login-v14";s.textContent=`.login{align-items:flex-start!important;padding:28px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.loginbox input{min-height:52px;font-size:16px}.loginbox .primary{min-height:54px;font-size:16px;margin-top:15px!important}`;document.head.appendChild(s)}
