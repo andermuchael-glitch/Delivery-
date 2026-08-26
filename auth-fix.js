@@ -2,7 +2,7 @@ import "./tools.js?v=15";
 import "./entrega365-features.js?v=82";
 import "./session-policy.js?v=82";
 import "./entrega365-theme-v2.js?v=82";
-import "./entrega365-pro.js?v=2";
+import "./entrega365-pro.js?v=3";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:"entrega365.firebaseapp.com",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
@@ -14,6 +14,18 @@ function addGoogleButton(){const card=document.querySelector(".loginbox .card");
 function addSavedGoogle(){const card=document.querySelector(".loginbox .card"),email=localStorage.getItem("entrega365:lastGoogleAccount");if(!card||!email||document.getElementById("saved-google"))return;const d=document.createElement("div");d.id="saved-google";d.style.cssText="margin:0 0 10px;padding:10px 12px;border:1px solid #444;border-radius:12px;color:#aaa;font-size:12px;text-align:left";d.innerHTML=`Conta Google salva: <b style="color:#fff">${email.replace(/</g,'&lt;')}</b>`;card.prepend(d)}
 function addBackupButton(){const card=document.querySelector(".loginbox .card");if(!card||document.getElementById("backup-login"))return;const input=document.createElement("input");input.type="file";input.accept=".json";input.style.display="none";const b=document.createElement("button");b.id="backup-login";b.type="button";b.textContent="ENTRAR / RESTAURAR BACKUP";b.className="add";b.style.cssText="width:100%;margin-top:10px";b.onclick=()=>input.click();card.append(input,b);input.onchange=async()=>{const f=input.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.user)throw 0;const p="dcv2:"+d.user+":";Object.entries(d.days||{}).forEach(([k,v])=>localStorage.setItem(p+"day:"+k,JSON.stringify(v)));Object.entries(d.expenses||{}).forEach(([k,v])=>localStorage.setItem(p+"exp:"+k,JSON.stringify(v)));if(d.mechanica)localStorage.setItem(p+"mechanica",JSON.stringify(d.mechanica));localStorage.setItem(SESSION,d.user);location.reload()}catch{alert("Backup inválido ou corrompido.")}}}
 function setupLogin(){improveLoginVisual();fixLogo();if(localStorage.getItem(SESSION))return;if(typeof window.showLogin==="function")window.showLogin();improveLoginVisual();fixLogo();addGoogleButton();addSavedGoogle();addBackupButton();setTimeout(fixLogo,200)}
-window.backup=window.backup||function(){};onAuthStateChanged(auth,u=>{if(u&&!localStorage.getItem(SESSION)){localStorage.setItem(SESSION,"google:"+u.uid);localStorage.setItem("entrega365:firebaseUid",u.uid);localStorage.setItem("entrega365:email",u.email||"");localStorage.setItem("entrega365:displayName",u.displayName||"");localStorage.setItem("entrega365:lastGoogleAccount",u.email||"");location.reload()}});const oldLogout=window.logout;window.logout=async()=>{try{await signOut(auth)}catch{}if(oldLogout)oldLogout();else{localStorage.removeItem(SESSION);location.reload()}};
+window.backup=window.backup||function(){};
+onAuthStateChanged(auth,u=>{
+  if(!u)return;
+  localStorage.setItem("entrega365:firebaseUid",u.uid);
+  localStorage.setItem("entrega365:email",u.email||"");
+  localStorage.setItem("entrega365:displayName",u.displayName||"");
+  localStorage.setItem("entrega365:lastGoogleAccount",u.email||"");
+  if(!localStorage.getItem(SESSION)){
+    localStorage.setItem(SESSION,"google:"+u.uid);
+    location.reload();
+  }
+});
+const oldLogout=window.logout;window.logout=async()=>{try{await signOut(auth)}catch{}if(oldLogout)oldLogout();else{localStorage.removeItem(SESSION);location.reload()}};
 import("./drive-backup.js?v=83").then(m=>m.initDriveBackup(auth)).catch(e=>console.warn("Drive backup indisponível",e));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(setupLogin,80));else setTimeout(setupLogin,80);
