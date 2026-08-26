@@ -31,6 +31,15 @@
 
   function email(){const u=getUser().trim();return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u)?u.toLowerCase():''}
   function statusText(){return getPlan()==='active'?'PRO ATIVO':'PLANO GRATUITO'}
+  async function readJson(r){
+    const raw=await r.text();
+    let data=null;
+    try{data=raw?JSON.parse(raw):null}catch(_){
+      const ct=(r.headers.get('content-type')||'').toLowerCase();
+      throw new Error(`O servidor não retornou JSON (HTTP ${r.status}${ct?`, ${ct}`:''}). Verifique se o domínio está apontando para a implantação atual.`);
+    }
+    return data||{};
+  }
 
   function screen(){
     const active=getPlan()==='active';
@@ -64,9 +73,9 @@
     if(!mail){alert('Para assinar o PRO automaticamente, entre usando um e-mail válido como usuário.');return}
     const b=document.getElementById('e365probuy');if(b){b.disabled=true;b.textContent='ABRINDO MERCADO PAGO...'}
     try{
-      const r=await fetch('/api/pro-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:mail})});
-      const d=await r.json();
-      if(!r.ok||!d.init_point)throw new Error(d.message||'Não foi possível iniciar a assinatura.');
+      const r=await fetch('/api/pro-checkout',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email:mail}),cache:'no-store'});
+      const d=await readJson(r);
+      if(!r.ok||!d.init_point)throw new Error(d.message||`Não foi possível iniciar a assinatura (HTTP ${r.status}).`);
       if(d.subscription_id)setSub(d.subscription_id);
       location.href=d.init_point;
     }catch(e){
@@ -81,8 +90,8 @@
     if(!mail)return null;
     const sub=getSub();
     const query=`/api/pro-status?email=${encodeURIComponent(mail)}${sub?`&subscription_id=${encodeURIComponent(sub)}`:''}`;
-    const r=await fetch(query,{cache:'no-store'});
-    const d=await r.json();
+    const r=await fetch(query,{cache:'no-store',headers:{'Accept':'application/json'}});
+    const d=await readJson(r);
     if(!r.ok)throw new Error(d.message||'Não foi possível consultar a assinatura.');
     if(d.subscription_id)setSub(d.subscription_id);
     setPlan(d.active?'active':'free');
