@@ -3,6 +3,7 @@ import "./entrega365-features.js?v=85";
 import "./session-policy.js?v=89";
 import "./entrega365-theme-v2.js?v=85";
 import "./entrega365-pro.js?v=8";
+import "./mobile-layout-fix.css?v=1";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
