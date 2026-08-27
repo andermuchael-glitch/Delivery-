@@ -1,0 +1,22 @@
+/* Entrega365 - correção definitiva de largura no celular */
+@media (max-width: 700px){
+  html,body,#app{width:100%!important;min-width:0!important;max-width:none!important;overflow-x:hidden!important}
+  main{
+    display:block!important;
+    width:calc(100vw - 20px)!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-left:10px!important;
+    margin-right:10px!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  main > *, main .card, main .grid, main .kmgrid{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+  }
+  .card{box-sizing:border-box!important}
+  .grid,.kmgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  .tablehead,.entry{min-width:0!important}
+}
