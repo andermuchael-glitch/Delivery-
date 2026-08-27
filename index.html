@@ -118,3 +118,522 @@ main{max-width:600px;margin:auto;padding:16px 12px}
   border:1px solid var(--line);
   border-radius:var(--radius);
   padding:16px;
+  margin-bottom:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.title{font-weight:800;font-size:16px;margin:0 0 14px;color:#fff;display:flex;align-items:center;gap:8px}
+.muted{color:var(--muted)}
+.small{font-size:11px;color:var(--muted)}
+
+/* GRID & STATS */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.stat .v{font-size:22px;font-weight:900;margin-top:4px}
+.stat .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.blue{color:#64d2ff}.green{color:var(--green)}.yellow{color:var(--accent)}.red{color:var(--red)}
+
+/* BUTTONS & INPUTS */
+.primary{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#121212;
+  font-weight:900;
+  font-size:15px;
+  padding:14px;
+  letter-spacing:.3px;
+  box-shadow:0 6px 20px rgba(255,208,0,.25);
+  margin-top:10px;
+}
+.primary:hover{opacity:.95}
+.add{
+  width:100%;
+  padding:12px;
+  border:1px dashed #555;
+  background:rgba(255,255,255,.03);
+  color:var(--accent);
+  border-radius:12px;
+  font-weight:800;
+  font-size:13px;
+  margin-top:10px;
+}
+.add:hover{border-color:var(--accent);background:rgba(255,208,0,.05)}
+
+input,select{
+  width:100%;
+  background:#171717;
+  border:1px solid #3d3d3d;
+  color:#fff;
+  border-radius:10px;
+  padding:12px 11px;
+  outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+input:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(255,208,0,.15);
+}
+
+.password-wrapper{position:relative;width:100%}
+.password-toggle{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:16px;
+  padding:5px;
+}
+
+/* DAY NAV */
+.daynav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.navbtn{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:#fff;
+  border-radius:10px;
+  width:42px;
+  height:42px;
+  font-size:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.daycenter{text-align:center}
+.daycenter strong{display:block;font-size:15px;margin-bottom:2px}
+.daycenter input{color:var(--muted);background:transparent;border:0;font-size:11px;padding:2px;text-align:center;width:auto}
+
+/* TABLES & ENTRIES */
+.tablehead,.entry{display:grid;grid-template-columns:1fr 1fr 40px 36px;gap:8px;align-items:center}
+.tablehead{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;padding:0 4px 8px;border-bottom:1px solid var(--line)}
+.entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.entry:last-of-type{border-bottom:0}
+.check{width:22px;height:22px;accent-color:var(--accent);cursor:pointer;margin:auto}
+.trash{border:0;background:transparent;color:var(--red);font-size:18px;display:inline-flex;align-items:center;justify-content:center;height:36px;width:36px;border-radius:8px}
+.trash:hover{background:rgba(255,69,58,.1)}
+
+/* SUMMARY & KM */
+.line{height:1px;background:var(--line);margin:14px 0}
+.row{display:flex;gap:8px;align-items:center}.between{justify-content:space-between}
+.sum{display:flex;justify-content:space-between;padding:6px 0;color:#ccc;font-size:13px}
+.sum.total{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-size:17px;font-weight:900;color:#fff}
+.kmgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kmresult{margin-top:10px;padding:14px;border:1px solid var(--line);background:var(--panel);border-radius:12px;display:flex;justify-content:space-between;align-items:center}
+.kmresult b{font-size:22px;color:var(--accent)}
+
+/* LOGIN SCREEN */
+.login{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px 12px;
+  background:radial-gradient(circle at 50% 15%,#333 0,var(--bg) 50%);
+}
+.loginbox{width:100%;max-width:380px;text-align:center}
+.biglogo{
+  width:130px;
+  height:130px;
+  margin:0 auto 12px;
+  background:url("logo-moto.svg") center/contain no-repeat;
+  border-radius:50%;
+  border:3px solid var(--accent);
+  box-shadow:0 0 25px rgba(255,208,0,.3);
+}
+.loginbox h1{margin:0;font-size:26px;font-weight:900;letter-spacing:.5px}
+.loginbox p{color:var(--muted);margin:6px 0 20px;font-size:13px}
+.loginbox .card{text-align:left;padding:22px}
+.loginbox label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.google-btn{
+  width:100%;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:#fff;
+  border-radius:12px;
+  padding:12px;
+  font-weight:700;
+  font-size:13px;
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.google-btn:hover{background:#333}
+
+/* MECHANIC & NOTICES */
+.mechhero{display:flex;gap:14px;align-items:center}
+.mechicon{font-size:32px;background:rgba(255,208,0,.1);padding:12px;border-radius:14px;color:var(--accent)}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border:0}
+.bigblue{font-size:22px;font-weight:900;color:var(--accent)}
+.status{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:900;font-size:11px;letter-spacing:.5px}
+.ok{background:rgba(76,217,100,.15);color:var(--green);border:1px solid rgba(76,217,100,.3)}
+.att{background:rgba(255,208,0,.15);color:var(--accent);border:1px solid rgba(255,208,0,.3)}
+.over{background:rgba(255,69,58,.15);color:var(--red);border:1px solid rgba(255,69,58,.3)}
+.notice{padding:12px 14px;border-radius:12px;background:var(--panel);color:var(--muted);font-size:12px;border:1px solid var(--line);line-height:1.4}
+
+/* MONTH VIEW */
+.monthnav{display:flex;justify-content:space-between;align-items:center}
+.monthnav strong{text-transform:capitalize;font-size:16px}
+.dayitem{display:grid;grid-template-columns:1.2fr .9fr 1fr;gap:6px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.dayitem:last-child{border:0}
+.right{text-align:right}
+.dayvalue{font-weight:900;color:var(--accent)}
+
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px}
+
+@media(max-width:390px){
+  main{padding-left:8px;padding-right:8px}
+  .grid{gap:8px}
+  .stat{padding:10px}
+  .stat .v{font-size:18px}
+  .entry{grid-template-columns:1fr 1fr 36px 30px;gap:6px}
+  .tablehead{grid-template-columns:1fr 1fr 36px 30px}
+}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+"use strict";
+const K="dcv2:", $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const brl=n=>(Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const pad=n=>String(n).padStart(2,"0"), today=()=>{let d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);return dt.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",weekday:"short"})};
+const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(K+user+":"+k))??f}catch{return f}};
+const save=(k,v)=>localStorage.setItem(K+user+":"+k,JSON.stringify(v));
+let user=localStorage.getItem(K+"session"), view="day", day=today(), expDay=today(), month=new Date(), loginMode="login", showPass=false;
+
+const defDay=k=>({date:k,entries:[],arrancada:0,kmInicial:"",kmFinal:""});
+const defExp=k=>({date:k,items:[]});
+const defMech=()=>({ultimaTroca:"",intervalo:"",motoKm:""});
+const getDay=k=>load("day:"+k,defDay(k)), getExp=k=>load("exp:"+k,defExp(k)), getMech=()=>load("mechanica",defMech());
+function users(){return load("users",{})} function setUsers(v){save("users",v)}
+function login(u,p){let us=users();return us[u]&&us[u].p===btoa(unescape(encodeURIComponent(p)))}
+
+/* LOGIN SCREEN IMPROVED */
+function showLogin(){
+  document.body.innerHTML=`
+  <div id="app">
+    <div class="login">
+      <div class="loginbox">
+        <div class="biglogo"></div>
+        <h1>Entrega365</h1>
+        <p>${loginMode==="login"?"Controle suas entregas de forma simples":"Crie sua conta neste dispositivo"}</p>
+        <div class="card">
+          <label>Usuário</label>
+          <input id="u" autocomplete="username" placeholder="Digite seu usuário">
+          <label>Senha</label>
+          <div class="password-wrapper">
+            <input id="p" type="${showPass?"text":"password"}" autocomplete="${loginMode==="login"?"current-password":"new-password"}" placeholder="••••••••">
+            <button type="button" class="password-toggle" id="togglePass">${showPass?"🙈":"👁️"}</button>
+          </div>
+          <button class="primary" id="go">${loginMode==="login"?"ENTRAR":"CRIAR CONTA"}</button>
+          <button class="add" id="switch">${loginMode==="login"?"Criar novo usuário":"Já tenho uma conta"}</button>
+          <button class="google-btn" id="restoreBackupBtn">📁 Entrar / Restaurar Backup</button>
+        </div>
+        <div class="small">Dados salvos localmente neste dispositivo.</div>
+      </div>
+    </div>
+  </div>`;
+
+  $("#togglePass").onclick=()=>{showPass=!showPass;showLogin()};
+  $("#go").onclick=()=>{
+    let u=$("#u").value.trim().toLowerCase(),p=$("#p").value;
+    if(!u||!p)return alert("Preencha usuário e senha.");
+    let us=users();
+    if(loginMode==="register"){
+      if(us[u])return alert("Usuário já existe.");
+      us[u]={p:btoa(unescape(encodeURIComponent(p)))};
+      setUsers(us)
+    }else if(!login(u,p)){
+      return alert("Usuário ou senha inválidos.");
+    }
+    user=u;
+    localStorage.setItem(K+"session",u);
+    location.reload();
+  };
+  $("#switch").onclick=()=>{loginMode=loginMode==="login"?"register":"login";showLogin()};
+  $("#restoreBackupBtn").onclick=()=>{
+    let inp=document.createElement("input");
+    inp.type="file";inp.accept=".json";
+    inp.onchange=e=>{
+      let file=e.target.files[0];
+      if(!file)return;
+      let reader=new FileReader();
+      reader.onload=evt=>{
+        try{
+          let data=JSON.parse(evt.target.result);
+          if(!data.user)return alert("Arquivo de backup inválido.");
+          let u=data.user;
+          if(data.days)Object.keys(data.days).forEach(k=>localStorage.setItem(K+u+":day:"+k,JSON.stringify(data.days[k])));
+          if(data.expenses)Object.keys(data.expenses).forEach(k=>localStorage.setItem(K+u+":exp:"+k,JSON.stringify(data.expenses[k])));
+          if(data.mechanica)localStorage.setItem(K+u+":mechanica",JSON.stringify(data.mechanica));
+          user=u;
+          localStorage.setItem(K+"session",u);
+          alert("Backup restaurado com sucesso para o usuário: "+u);
+          location.reload();
+        }catch(err){alert("Erro ao ler arquivo de backup.")}
+      };
+      reader.readAsText(file);
+    };
+    inp.click();
+  };
+}
+
+function totals(d){
+  let taxas=d.entries.reduce((s,e)=>s+(+e.taxa||0),0);
+  let km=(+d.kmFinal||0)-(+d.kmInicial||0);
+  return{taxas,ent:d.entries.length,conf:d.entries.filter(e=>e.ok).length,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
+}
+function saveDayAnd(k,d){save("day:"+k,d)}
+
+function shell(content){
+  document.body.innerHTML=`
+  <div id="app">
+    <header>
+      <div class="head">
+        <div class="logo"></div>
+        <div>
+          <div class="brand">Entrega365</div>
+          <div class="sub">👤 ${esc(user)}</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="ico" onclick="backup()" title="Baixar Backup">⬇</button>
+        <button class="ico" onclick="logout()" title="Sair">⏻</button>
+      </div>
+    </header>
+    <main>${content}</main>
+    <nav class="tabs">
+      ${tab("day","📋","Dia")}
+      ${tab("expenses","💸","Gastos")}
+      ${tab("mechanic","🔧","Mecânica")}
+      ${tab("month","📊","Mês")}
+    </nav>
+  </div>`
+}
+
+function tab(v,i,t){return `<button class="tab ${view===v?"active":""}" onclick="go('${v}')"><b>${i}</b>${t}</button>`}
+function go(v){view=v;render()}
+
+function renderDay(){
+  let d=getDay(day),t=totals(d);
+  let rows=d.entries.map(e=>`
+    <div class="entry" data-id="${e.id}">
+      <input data-f="comanda" type="number" inputmode="numeric" placeholder="Nº" value="${esc(e.comanda||"")}">
+      <input data-f="taxa" type="number" inputmode="decimal" placeholder="Taxa R$" value="${esc(e.taxa||"")}">
+      <input class="check" data-f="ok" type="checkbox" ${e.ok?"checked":""}>
+      <button class="trash" data-remove title="Excluir">✕</button>
+    </div>`).join("");
+
+  return `
+  <div class="daynav">
+    <button class="navbtn" onclick="shiftDay(-1)">‹</button>
+    <div class="daycenter">
+      <strong>${dateLabel(day)}</strong>
+      <input id="date" type="date" value="${day}">
+    </div>
+    <button class="navbtn" onclick="shiftDay(1)">›</button>
+  </div>
+  
+  <div class="card">
+    <div class="title">📍 Quilometragem do dia</div>
+    <div class="kmgrid">
+      <div>
+        <div class="small">KM inicial</div>
+        <input id="kmi" type="number" inputmode="numeric" value="${esc(d.kmInicial)}" placeholder="Ex.: 45280">
+      </div>
+      <div>
+        <div class="small">KM final</div>
+        <input id="kmf" type="number" inputmode="numeric" value="${esc(d.kmFinal)}" placeholder="Ex.: 45397">
+      </div>
+    </div>
+    <div class="kmresult">
+      <span>Total rodado</span>
+      <b>${t.km} km</b>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row between">
+      <div class="title" style="margin:0">📦 Comandas</div>
+      <span class="small">${t.conf}/${t.ent} conferidas</span>
+    </div>
+    <div class="line" style="margin:10px 0"></div>
+    <div class="tablehead">
+      <span>Comanda</span>
+      <span>Taxa</span>
+      <span style="text-align:center">OK</span>
+      <span></span>
+    </div>
+    ${rows||`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
+    <button class="add" id="add">+ Nova comanda</button>
+    <div class="line"></div>
+    <div class="row between">
+      <span>Arrancada / Diária</span>
+      <div style="width:120px"><input id="arr" type="number" inputmode="decimal" value="${d.arrancada||0}"></div>
+    </div>
+    <div class="sum"><span>Entregas realizadas</span><b>${t.ent}</b></div>
+    <div class="sum"><span>Soma das taxas</span><b>${brl(t.taxas)}</b></div>
+    <div class="sum"><span>Arrancada</span><b>${brl(t.arr)}</b></div>
+    <div class="sum total"><span>Total líquido do dia</span><b>${brl(t.total)}</b></div>
+  </div>`
+}
+
+function bindDay(){
+  let d=getDay(day);
+  $("#date").onchange=e=>{day=e.target.value;render()};
+  ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
+  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});saveDayAnd(day,d);render()};
+  document.querySelectorAll(".entry").forEach(r=>{
+    let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
+    r.querySelectorAll("input").forEach(i=>i.onchange=ev=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
+    r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);saveDayAnd(day,d);render()}
+  })
+}
+
+function shiftDay(n){let [y,m,d]=day.split("-").map(Number),x=new Date(y,m-1,d+n);day=`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;render()}
+
+function renderExpenses(){
+  let d=getExp(expDay),rows=d.items.map(e=>`
+    <div class="entry" data-id="${e.id}" style="grid-template-columns:1.2fr 1fr 1fr 32px">
+      <select data-f="cat">
+        <option ${e.cat==="combustivel"?"selected":""} value="combustivel">⛽ Combustível</option>
+        <option ${e.cat==="manutencao"?"selected":""} value="manutencao">🔧 Manutenção</option>
+        <option ${e.cat==="alimentacao"?"selected":""} value="alimentacao">🍔 Alimentação</option>
+        <option ${e.cat==="outros"?"selected":""} value="outros">📦 Outros</option>
+      </select>
+      <input data-f="desc" placeholder="Detalhe" value="${esc(e.desc||"")}">
+      <input data-f="val" type="number" inputmode="decimal" placeholder="R$" value="${esc(e.val||"")}">
+      <button class="trash" data-remove title="Excluir">✕</button>
+    </div>`).join("");
+  let total=d.items.reduce((s,e)=>s+(+e.val||0),0);
+
+  return `
+  <div class="daynav">
+    <button class="navbtn" onclick="shiftExp(-1)">‹</button>
+    <div class="daycenter">
+      <strong>${dateLabel(expDay)}</strong>
+      <input id="expdate" type="date" value="${expDay}">
+    </div>
+    <button class="navbtn" onclick="shiftExp(1)">›</button>
+  </div>
+  <div class="card">
+    <div class="title">💸 Controle de Gastos</div>
+    ${rows||'<div class="empty">Nenhum gasto registrado neste dia.</div>'}
+    <button class="add" id="addexp">+ Novo gasto</button>
+    <div class="sum total"><span>Total de gastos no dia</span><b style="color:var(--red)">${brl(total)}</b></div>
+  </div>`
+}
+
+function bindExpenses(){
+  let d=getExp(expDay);
+  $("#expdate").onchange=e=>{expDay=e.target.value;render()};
+  $("#addexp").onclick=()=>{d.items.push({id:crypto.randomUUID(),cat:"combustivel",desc:"",val:""});save("exp:"+expDay,d);render()};
+  document.querySelectorAll(".entry").forEach(r=>{
+    let id=r.dataset.id,e=d.items.find(x=>x.id===id);
+    r.querySelectorAll("input,select").forEach(i=>i.onchange=()=>{e[i.dataset.f]=i.value;save("exp:"+expDay,d);render()});
+    r.querySelector("[data-remove]").onclick=()=>{d.items=d.items.filter(x=>x.id!==id);save("exp:"+expDay,d);render()}
+  })
+}
+
+function shiftExp(n){let [y,m,d]=expDay.split("-").map(Number),x=new Date(y,m-1,d+n);expDay=`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;render()}
+
+function renderMechanic(){
+  let m=getMech(),d=getDay(day),km=+d.kmFinal||+m.motoKm||0,last=+m.ultimaTroca||0,int=+m.intervalo||0,next=last+int,rest=next?next-km:0,status=!next?"":rest<=0?"over":rest<=300?"att":"ok",label=status==="over"?"TROCA VENCIDA":status==="att"?"ATENÇÃO - PRÓXIMO":"EM DIA";
+  return `
+  <div class="card mechhero">
+    <div class="mechicon">🔧</div>
+    <div>
+      <div class="title" style="margin:0">Manutenção da Moto</div>
+      <div class="muted">Acompanhamento e troca de óleo</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="title">🛢️ Troca de Óleo</div>
+    <div class="kv"><span>KM da última troca</span><input id="last" style="width:130px" type="number" value="${esc(m.ultimaTroca)}"></div>
+    <div class="kv"><span>Intervalo recomendado (km)</span><input id="int" style="width:130px" type="number" value="${esc(m.intervalo)}" placeholder="Ex.: 3000"></div>
+    <div class="kv"><span>Próxima troca</span><b class="bigblue">${next?next.toLocaleString("pt-BR")+" km":"—"}</b></div>
+    <div class="kv"><span>KM atual da moto</span><b>${km?km.toLocaleString("pt-BR")+" km":"—"}</b></div>
+    <div class="kv"><span>Restante</span><b class="${rest<=300?"yellow":"blue"}">${next?(rest>0?rest.toLocaleString("pt-BR")+" km":"0 km"):"—"}</b></div>
+    ${next?`<div style="margin-top:12px"><span class="status ${status}">${label}</span></div>`:""}
+    <button class="primary" id="savemech">SALVAR CONFIGURAÇÃO</button>
+  </div>
+  <div class="notice">ℹ️ A KM final registrada no fechamento do dia é sincronizada automaticamente como KM atual da sua moto.</div>`
+}
+
+function bindMechanic(){
+  $("#last").onchange=()=>{let m=getMech();m.ultimaTroca=$("#last").value;save("mechanica",m);render()};
+  $("#int").onchange=()=>{let m=getMech();m.intervalo=$("#int").value;save("mechanica",m);render()};
+  $("#savemech").onclick=()=>alert("Configuração salva com sucesso.")
+}
+
+function monthKeys(){
+  let p=`${month.getFullYear()}-${pad(month.getMonth()+1)}-`;
+  let ks=[];
+  for(let i=0;i<localStorage.length;i++){
+    let k=localStorage.key(i);
+    if(k?.startsWith(K+user+":day:")&&k.slice((K+user+":day:").length).startsWith(p))ks.push(k.slice((K+user+":day:").length))
+  }
+  return [...new Set(ks)].sort().reverse()
+}
+
+function renderMonth(){
+  let ks=monthKeys(),ds=ks.map(getDay),km=ds.reduce((s,d)=>s+totals(d).km,0),ent=ds.reduce((s,d)=>s+d.entries.length,0),tax=ds.reduce((s,d)=>s+totals(d).taxas,0),arr=ds.reduce((s,d)=>s+(+d.arrancada||0),0),exp=0;
+  ks.forEach(k=>{exp+=getExp(k).items.reduce((s,e)=>s+(+e.val||0),0)});
+  let saldo = (tax + arr) - exp;
+
+  return `
+  <div class="card">
+    <div class="monthnav">
+      <button class="navbtn" onclick="shiftMonth(-1)">‹</button>
+      <strong>${month.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}</strong>
+      <button class="navbtn" onclick="shiftMonth(1)">›</button>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="stat"><div class="l">Entregas</div><div class="v blue">${ent}</div></div>
+    <div class="stat"><div class="l">Ganhos</div><div class="v green">${brl(tax+arr)}</div></div>
+    <div class="stat"><div class="l">Gastos</div><div class="v red">${brl(exp)}</div></div>
+    <div class="stat"><div class="l">Lucro Líquido</div><div class="v ${saldo>=0?'green':'red'}">${brl(saldo)}</div></div>
+  </div>
+  <div class="card">
+    <div class="title">📅 Resumo do Mês</div>
+    ${ks.map(k=>{let t=totals(getDay(k));return `<div class="dayitem"><span>${dateLabel(k)}</span><span>${t.ent} entregas</span><b class="right dayvalue">${brl(t.total)}</b></div>`}).join("")||'<div class="empty">Nenhum registro encontrado para este mês.</div>'}
+  </div>`
+}
+
+function shiftMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);render()}
+
+function backup(){
+  let data={user,days:{},expenses:{},mechanica:getMech(),exportedAt:new Date().toISOString()};
+  for(let i=0;i<localStorage.length;i++){
+    let k=localStorage.key(i);
+    let pre=K+user+":";
+    if(k?.startsWith(pre+"day:"))data.days[k.slice((pre+"day:").length)]=JSON.parse(localStorage.getItem(k));
+    if(k?.startsWith(pre+"exp:"))data.expenses[k.slice((pre+"exp:").length)]=JSON.parse(localStorage.getItem(k))
+  }
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  a.download=`entrega365-backup-${today()}.json`;
+  a.click()
+}
+
+function logout(){localStorage.removeItem(K+"session");location.reload()}
+
+function render(){
+  if(!user)return showLogin();
+  let c=view==="day"?renderDay():view==="expenses"?renderExpenses():view==="mechanic"?renderMechanic():renderMonth();
+  shell(c);
+  if(view==="day")bindDay();
+  if(view==="expenses")bindExpenses();
+  if(view==="mechanic")bindMechanic()
+}
+
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+render();
+</script></body></html>
