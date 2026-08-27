@@ -1,6 +1,6 @@
-const CACHE="entrega365-pwa-v100";
-const AUTH="./auth-fix.js?v=100",BRAND="./brand-update.js?v=100",FEATURES="./entrega365-features.js?v=100",DRIVE="./drive-backup.js?v=100",SESSION="./session-policy.js?v=100",THEME="./entrega365-theme-v2.js?v=100",PRO="./entrega365-pro.js?v=100";
-const ASSETS=["./login-google.html?v=100","./index.html?v=100","./manifest.json?v=100","./app-icon.svg?v=100","./icon-72.svg?v=100","./logo-entrega365.jpg?v=100",AUTH,BRAND,FEATURES,DRIVE,SESSION,THEME,PRO];
+const CACHE="entrega365-pwa-v101";
+const AUTH="./auth-fix.js?v=101",BRAND="./brand-update.js?v=101",FEATURES="./entrega365-features.js?v=101",DRIVE="./drive-backup.js?v=101",SESSION="./session-policy.js?v=101",THEME="./entrega365-theme-v2.js?v=101",PRO="./entrega365-pro.js?v=101";
+const ASSETS=["./login-google.html?v=101","./index.html?v=101","./manifest.json?v=101","./app-icon.svg?v=101","./icon-72.svg?v=101","./logo-entrega365.jpg?v=101",AUTH,BRAND,FEATURES,DRIVE,SESSION,THEME,PRO];
 
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))).then(()=>self.clients.claim()))));
@@ -29,14 +29,17 @@ self.addEventListener("fetch",e=>{
   }
 
   if(req.mode==="navigate"){
-    e.respondWith(
-      fetch(req,{cache:"no-store"})
-        .then(injectScripts)
-        .catch(()=>{
-          if(path==="/"||path==="/login-google.html")return caches.match("./login-google.html?v=100");
-          return caches.match("./index.html?v=100");
-        })
-    );
+    e.respondWith((async()=>{
+      try{
+        // A raiz sempre é a porta de entrada do login Google. Não permita que
+        // uma versão antiga/cacheada do index.html apareça primeiro.
+        const target=path==="/"?new Request(new URL("/login-google.html?v=101",self.location.origin),{method:"GET",headers:req.headers}):req;
+        return await injectScripts(await fetch(target,{cache:"no-store"}));
+      }catch{
+        if(path==="/"||path==="/login-google.html")return caches.match("./login-google.html?v=101");
+        return caches.match("./index.html?v=101");
+      }
+    })());
     return;
   }
 
