@@ -1,14 +1,23 @@
-import { GoogleAuthProvider, reauthenticateWithPopup } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import { GoogleAuthProvider, reauthenticateWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 const DRIVE_API="https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD="https://www.googleapis.com/upload/drive/v3/files";
 const FOLDER_NAME="Entrega365";
 const BACKUP_NAME="entrega365-backup.json";
+const DRIVE_ENABLED_KEY="entrega365:driveAutoBackup";
+const DRIVE_LAST_KEY="entrega365:driveLastBackup";
 
 export function initDriveBackup(auth){
   if(!auth || window.__entrega365DriveReady)return;
   window.__entrega365DriveReady=true;
+
+  let accessToken=null;
+  let accessTokenExpiresAt=0;
+  let saving=false;
+  let saveTimer=null;
+  let driveFileId=null;
+  let currentAuthUser=null;
 
   function makeBackup(){
     const user=localStorage.getItem("dcv2:session");
@@ -23,20 +32,24 @@ export function initDriveBackup(auth){
       }catch{}
     }
     let mechanica={};try{mechanica=JSON.parse(localStorage.getItem(prefix+"mechanica"))||{}}catch{}
-    return {backupVersion:5,format:"Entrega365Backup",app:"Entrega365",user,days,expenses,mechanica,exportedAt:new Date().toISOString()};
+    return {backupVersion:6,format:"Entrega365Backup",app:"Entrega365",user,days,expenses,mechanica,exportedAt:new Date().toISOString()};
   }
 
-  async function getDriveToken(){
-    const current=auth.currentUser;
-    if(!current)throw new Error("login");
-    if(!current.providerData?.some(p=>p.providerId==="google.com"))throw new Error("google");
+  function isGoogleUser(){return !!currentAuthUser?.providerData?.some(p=>p.providerId==="google.com");}
+
+  async function getDriveToken(force=false){
+    if(!currentAuthUser)throw new Error("login");
+    if(!isGoogleUser())throw new Error("google");
+    if(!force && accessToken && Date.now()<accessTokenExpiresAt-60000)return accessToken;
     const provider=new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
     provider.setCustomParameters({prompt:"consent"});
-    const result=await reauthenticateWithPopup(current,provider);
+    const result=await reauthenticateWithPopup(currentAuthUser,provider);
     const credential=GoogleAuthProvider.credentialFromResult(result);
     if(!credential?.accessToken)throw new Error("token");
-    return credential.accessToken;
+    accessToken=credential.accessToken;
+    accessTokenExpiresAt=Date.now()+3500*1000;
+    return accessToken;
   }
 
   async function driveFetch(url,token,options={}){
@@ -73,16 +86,92 @@ export function initDriveBackup(auth){
     return driveFetch(url,token,{method:fileId?"PATCH":"POST",headers:{"Content-Type":`multipart/related; boundary=${boundary}`},body});
   }
 
-  async function saveToDrive(){
-    const token=await getDriveToken();
-    const folderId=await getOrCreateFolder(token);
-    const payload=JSON.stringify(makeBackup(),null,2);
-    const blob=new Blob([payload],{type:"application/json"});
-    const existing=await findBackup(token,folderId);
-    const metadata=existing?{name:BACKUP_NAME,mimeType:"application/json"}:{name:BACKUP_NAME,mimeType:"application/json",parents:[folderId],appProperties:{entrega365:"backup"}};
-    const file=await uploadMultipart(token,metadata,blob,existing?.id||null);
-    if(!file?.id)throw new Error("upload");
-    return {...file,folderId};
+  async function saveToDrive({interactive=false}={}){
+    if(saving)return null;
+    if(!currentAuthUser)throw new Error("login");
+    if(!isGoogleUser())throw new Error("google");
+    saving=true;
+    try{
+      const token=await getDriveToken(false);
+      const folderId=await getOrCreateFolder(token);
+      const payload=JSON.stringify(makeBackup(),null,2);
+      const blob=new Blob([payload],{type:"application/json"});
+      const existing=driveFileId?{id:driveFileId}:await findBackup(token,folderId);
+      const metadata=existing?{name:BACKUP_NAME,mimeType:"application/json"}:{name:BACKUP_NAME,mimeType:"application/json",parents:[folderId],appProperties:{entrega365:"backup"}};
+      const file=await uploadMultipart(token,metadata,blob,existing?.id||null);
+      if(!file?.id)throw new Error("upload");
+      driveFileId=file.id;
+      localStorage.setItem(DRIVE_LAST_KEY,file.modifiedTime||new Date().toISOString());
+      if(interactive)alert(`Backup salvo no Google Drive.\n\nPasta: ${FOLDER_NAME}\nArquivo: ${BACKUP_NAME}`);
+      return {...file,folderId};
+    }catch(e){
+      if(e.message==="drive_401"||e.message==="drive_403")accessToken=null;
+      throw e;
+    }finally{saving=false;}
+  }
+
+  function scheduleAutoSave(){
+    if(localStorage.getItem(DRIVE_ENABLED_KEY)!=="1")return;
+    if(!currentAuthUser||!isGoogleUser())return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(async()=>{
+      try{
+        await saveToDrive();
+        setDriveStatus("☁️ Backup automático salvo");
+      }catch(e){
+        console.warn("Entrega365 Drive auto backup",e);
+        if(e.message==="drive_401"||e.message==="drive_403"){
+          accessToken=null;
+          setDriveStatus("☁️ Autorize o Google Drive novamente");
+        }else if(e.message!=="login"&&e.message!=="google")setDriveStatus("☁️ Backup automático aguardando autorização");
+      }
+    },900);
+  }
+
+  function setDriveStatus(text){const el=document.querySelector("[data-drive-status]");if(el)el.textContent=text;}
+
+  function addStatus(){
+    const actions=document.querySelector(".actions");
+    if(!actions||actions.querySelector("[data-drive-status]"))return;
+    const el=document.createElement("span");
+    el.setAttribute("data-drive-status","1");
+    el.title="Status do backup automático";
+    el.style.cssText="display:inline-flex;align-items:center;max-width:145px;padding:0 8px;border:1px solid #333;border-radius:10px;color:#a0a0a0;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+    el.textContent=localStorage.getItem(DRIVE_ENABLED_KEY)==="1"?"☁️ Backup automático ativo":"☁️ Drive não conectado";
+    actions.insertBefore(el,actions.firstChild);
+  }
+
+  function addButton(text,title,handler,attribute){
+    const actions=document.querySelector(".actions");
+    if(!actions||actions.querySelector(`[${attribute}]`))return;
+    const b=document.createElement("button");
+    b.className="ico";b.setAttribute(attribute,"1");b.title=title;b.setAttribute("aria-label",title);b.textContent=text;b.onclick=handler;
+    actions.insertBefore(b,actions.firstChild);
+  }
+
+  function addButtons(){
+    addButton("☁️","Ativar e salvar backup no Google Drive",async()=>{
+      try{
+        localStorage.setItem(DRIVE_ENABLED_KEY,"1");
+        setDriveStatus("☁️ Autorizando Google Drive...");
+        await saveToDrive({interactive:true});
+        setDriveStatus("☁️ Backup automático ativo");
+      }catch(e){
+        localStorage.removeItem(DRIVE_ENABLED_KEY);
+        console.error("Entrega365 Drive backup",e);
+        let msg="Não foi possível ativar o backup no Google Drive.";
+        if(e.message==="google")msg="O backup automático exige que você esteja conectado ao Entrega365 com uma Conta Google.";
+        else if(e.message==="login")msg="Faça login no Entrega365 antes de ativar o backup.";
+        else if(e.message==="token")msg="O Google não retornou a autorização do Drive. Tente novamente e aceite a permissão.";
+        else if(e.message==="drive_403")msg="O Google recusou o acesso. Verifique se o Google Drive API está habilitado no projeto Entrega365.";
+        else if(e.message==="drive_401")msg="A autorização do Google Drive expirou. Tente novamente.";
+        else if(e.message==="folder")msg="Não foi possível criar a pasta Entrega365 no Google Drive.";
+        alert(msg);
+        setDriveStatus("☁️ Drive não conectado");
+      }
+    },"data-drive-backup");
+    addButton("↩️","Restaurar último backup do Google Drive",()=>window.entrega365RestoreBackupFromDrive(),"data-drive-restore");
+    addStatus();
   }
 
   async function downloadBackup(token,fileId){
@@ -94,7 +183,7 @@ export function initDriveBackup(auth){
   function restoreBackup(data){
     if(!data||data.format!=="Entrega365Backup"||!data.user)throw new Error("invalid_backup");
     const current=localStorage.getItem("dcv2:session");
-    if(current&&data.user!==current)throw new Error("different_account");
+    if(current&&data.user!==current&&current.startsWith("google:")===false)throw new Error("different_account");
     const prefix="dcv2:"+data.user+":";
     Object.keys(localStorage).forEach(k=>{if(k.startsWith(prefix+"day:")||k.startsWith(prefix+"exp:"))localStorage.removeItem(k)});
     Object.entries(data.days||{}).forEach(([k,v])=>localStorage.setItem(prefix+"day:"+k,JSON.stringify(v)));
@@ -106,26 +195,20 @@ export function initDriveBackup(auth){
 
   window.entrega365SaveBackupToDrive=async()=>{
     try{
-      const file=await saveToDrive();
-      alert(`Backup salvo no Google Drive.\n\nPasta: ${FOLDER_NAME}\nArquivo: ${BACKUP_NAME}`);
+      localStorage.setItem(DRIVE_ENABLED_KEY,"1");
+      const file=await saveToDrive({interactive:true});
+      setDriveStatus("☁️ Backup automático ativo");
       return file;
     }catch(e){
+      localStorage.removeItem(DRIVE_ENABLED_KEY);
       console.error("Entrega365 Drive backup",e);
-      let msg="Não foi possível salvar o backup no Google Drive.";
-      if(e.message==="google")msg="O backup no Google Drive exige login com uma Conta Google.";
-      else if(e.message==="login")msg="Faça login no Entrega365 antes de salvar o backup.";
-      else if(e.message==="token")msg="O Google não retornou a autorização do Drive. Tente novamente e aceite a permissão.";
-      else if(e.message==="drive_403")msg="O Google recusou o acesso. Confirme a permissão drive.file.";
-      else if(e.message==="drive_401")msg="A autorização do Google Drive expirou. Tente novamente.";
-      else if(e.message==="folder")msg="Não foi possível criar a pasta Entrega365 no Google Drive.";
-      alert(msg);
       throw e;
     }
   };
 
   window.entrega365RestoreBackupFromDrive=async()=>{
     try{
-      const token=await getDriveToken();
+      const token=await getDriveToken(true);
       const folder=await findFolder(token);
       if(!folder)throw new Error("no_folder");
       const file=await findBackup(token,folder.id);
@@ -148,26 +231,40 @@ export function initDriveBackup(auth){
       else if(e.message==="no_folder")msg=`A pasta ${FOLDER_NAME} não foi encontrada no Google Drive.`;
       else if(e.message==="no_backup")msg=`Não encontrei ${BACKUP_NAME} dentro da pasta ${FOLDER_NAME}.`;
       else if(e.message==="invalid_backup")msg="O arquivo encontrado não é um backup válido do Entrega365.";
-      else if(e.message==="different_account")msg="Este backup pertence a outra conta do Entrega365. Entre com a conta correta antes de restaurar.";
-      else if(e.message==="drive_403")msg="O Google recusou o acesso ao backup. Autorize novamente o Google Drive.";
+      else if(e.message==="drive_403")msg="O Google recusou o acesso ao backup. Verifique se o Google Drive API está habilitado e autorize novamente.";
+      else if(e.message==="drive_401")msg="A autorização do Google Drive expirou. Tente novamente.";
       alert(msg);
       throw e;
     }
   };
 
-  function addButton(text,title,handler,attribute){
-    const actions=document.querySelector(".actions");
-    if(!actions||actions.querySelector(`[${attribute}]`))return;
-    const b=document.createElement("button");
-    b.className="ico";b.setAttribute(attribute,"1");b.title=title;b.setAttribute("aria-label",title);b.textContent=text;
-    b.onclick=handler;
-    actions.insertBefore(b,actions.firstChild);
+  function installAutoSaveHook(){
+    if(window.__entrega365DriveHook)return;
+    window.__entrega365DriveHook=true;
+    const originalSetItem=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){
+      const result=originalSetItem.call(this,key,value);
+      if(this===localStorage&&typeof key==="string"){
+        const session=localStorage.getItem("dcv2:session");
+        if(session&&((key.startsWith("dcv2:"+session+":day:")||key.startsWith("dcv2:"+session+":exp:")||key==="dcv2:"+session+":mechanica")))scheduleAutoSave();
+      }
+      return result;
+    };
   }
 
-  function addButtons(){
-    addButton("☁️","Salvar backup no Google Drive",()=>window.entrega365SaveBackupToDrive(),"data-drive-backup");
-    addButton("↩️","Restaurar backup do Google Drive",()=>window.entrega365RestoreBackupFromDrive(),"data-drive-restore");
+  function handleAuth(u){
+    currentAuthUser=u||null;
+    if(!u){accessToken=null;accessTokenExpiresAt=0;return;}
+    addButtons();
+    if(localStorage.getItem(DRIVE_ENABLED_KEY)==="1"){
+      setDriveStatus("☁️ Backup automático ativo");
+      scheduleAutoSave();
+    }
   }
+
+  installAutoSaveHook();
   addButtons();
-  new MutationObserver(addButtons).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(()=>addButtons()).observe(document.body,{childList:true,subtree:true});
+  onAuthStateChanged(auth,handleAuth);
+  handleAuth(auth.currentUser);
 }
