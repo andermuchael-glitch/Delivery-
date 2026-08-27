@@ -5,7 +5,7 @@ import "./entrega365-theme-v2.js?v=85";
 import "./entrega365-pro.js?v=8";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:"entrega365.com.br",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
+const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:"entrega365.firebaseapp.com",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),provider=new GoogleAuthProvider();
 provider.setCustomParameters({prompt:"select_account"});
 const SESSION="dcv2:session",FULL_LOGO="./logo-entrega365.jpg?v=91",ICON_LOGO="./app-icon.svg?v=91";
