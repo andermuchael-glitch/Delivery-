@@ -35,7 +35,8 @@ function renderGoogleOnlyLogin(){
     </div>`;
   root.querySelector("#google-login").onclick=()=>startGoogleLogin(true);
   fixLogo();
-}\nfunction setupLogin(){loadMobileCss();improveLoginVisual();if(redirectProcessing)return;if(localStorage.getItem(SESSION))return;renderGoogleOnlyLogin();fixLogo()}
+}
+function setupLogin(){loadMobileCss();improveLoginVisual();if(redirectProcessing)return;if(localStorage.getItem(SESSION))return;renderGoogleOnlyLogin();fixLogo()}
 window.backup=window.backup||function(){};
 onAuthStateChanged(auth,u=>{if(u)saveGoogleUser(u)});
 const oldLogout=window.logout;window.logout=async()=>{try{await signOut(auth)}catch{}localStorage.removeItem(SESSION);if(oldLogout)oldLogout();else location.reload()};
