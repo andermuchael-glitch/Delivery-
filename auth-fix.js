@@ -2,7 +2,7 @@ import "./tools.js?v=106";
 import "./entrega365-features.js?v=106";
 import "./session-policy.js?v=106";
 import "./entrega365-theme-v2.js?v=106";
-import "./entrega365-pro.js?v=107";
+import "./entrega365-pro.js?v=108";
 import "./pro-sync.js?v=106";
 import "./establishments.js?v=106";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
