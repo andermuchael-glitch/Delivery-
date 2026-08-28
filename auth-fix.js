@@ -1,28 +1,29 @@
-import "./tools.js?v=102";
-import "./entrega365-features.js?v=102";
-import "./session-policy.js?v=102";
-import "./entrega365-theme-v2.js?v=102";
-import "./entrega365-pro.js?v=102";
+import "./tools.js?v=104";
+import "./entrega365-features.js?v=104";
+import "./session-policy.js?v=104";
+import "./entrega365-theme-v2.js?v=104";
+import "./entrega365-pro.js?v=104";
+import "./pro-sync.js?v=104";
+import "./establishments.js?v=104";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth,GoogleAuthProvider,signInWithRedirect,getRedirectResult,setPersistence,browserLocalPersistence,signOut,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:"www.entrega365.com.br",projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
 const auth=getAuth(initializeApp(firebaseConfig));
-const SESSION="dcv2:session",FULL_LOGO="./logo-entrega365.jpg?v=102",ICON_LOGO="./app-icon.svg?v=102";
+const SESSION="dcv2:session",FULL_LOGO="./logo-entrega365.jpg?v=104",ICON_LOGO="./app-icon.svg?v=104";
 let redirectProcessing=true;
-
-function loadMobileCss(){if(document.querySelector('link[data-e365-mobile-css]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='./mobile-layout-fix.css?v=102';l.dataset.e365MobileCss='1';document.head.appendChild(l)}
+function loadMobileCss(){if(document.querySelector('link[data-e365-mobile-css]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='./mobile-layout-fix.css?v=104';l.dataset.e365MobileCss='1';document.head.appendChild(l)}
 function improveLoginVisual(){if(document.getElementById("entrega365-login-v26"))return;const s=document.createElement("style");s.id="entrega365-login-v26";s.textContent=`.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-account,.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900}.google-account{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #444;background:#262626;color:#fff}.google-account:hover,.google-new:hover{border-color:#ffd000}.google-icon{width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:#4285f4;font-weight:900;font-size:18px;flex:none}.google-main{flex:1;min-width:0}.google-main b,.google-main small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.google-main small{color:#aaa;font-weight:500;margin-top:2px}.google-new{border:1px solid #555;background:#1e1e1e;color:#ffd000}`;document.head.appendChild(s)}
 function fixLogo(){document.querySelectorAll(".biglogo").forEach(el=>{if(el.querySelector("img"))return;el.style.background="none";el.style.border="0";el.style.borderRadius="0";el.style.boxShadow="none";el.innerHTML="";const img=document.createElement("img");img.src=FULL_LOGO;img.alt="Entrega365";img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";el.appendChild(img)});const icon=document.querySelector('link[rel="icon"]');if(icon)icon.href=ICON_LOGO}
 function saveGoogleUser(u){localStorage.setItem("entrega365:firebaseUid",u.uid);localStorage.setItem("entrega365:email",u.email||"");localStorage.setItem("entrega365:displayName",u.displayName||"");localStorage.setItem("entrega365:lastGoogleAccount",u.email||"");localStorage.setItem(SESSION,"google:"+u.uid)}
 function authError(e){console.error("Entrega365 Google auth:",e);const code=e?.code||"unknown";const map={"auth/unauthorized-domain":"O domínio de autenticação ainda não está autorizado no Firebase.","auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.","auth/network-request-failed":"Falha de conexão. Verifique a internet.","auth/invalid-api-key":"A configuração do Firebase está inválida.","auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.","auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.","auth/timeout":"O login demorou demais para concluir."};alert(`Não foi possível entrar com Google.\n\n${map[code]||"Erro: "+code}`)}
-async function finishRedirectLogin(){try{await setPersistence(auth,browserLocalPersistence);const result=await getRedirectResult(auth);if(result?.user){saveGoogleUser(result.user);location.replace("/index.html?v=102");return true}}catch(e){authError(e)}finally{redirectProcessing=false}return false}
+async function finishRedirectLogin(){try{await setPersistence(auth,browserLocalPersistence);const result=await getRedirectResult(auth);if(result?.user){saveGoogleUser(result.user);location.replace("/index.html?v=104");return true}}catch(e){authError(e)}finally{redirectProcessing=false}return false}
 async function startGoogleLogin(useChooser=true){const b=document.querySelector("[data-google-action]");try{if(b){b.disabled=true;const t=b.querySelector(".google-label");if(t)t.textContent="CONECTANDO GOOGLE..."}await setPersistence(auth,browserLocalPersistence);const p=new GoogleAuthProvider();if(useChooser)p.setCustomParameters({prompt:"select_account"});await signInWithRedirect(auth,p)}catch(e){console.error("Entrega365 Google redirect:",e);if(b){b.disabled=false;const t=b.querySelector(".google-label");if(t)t.textContent="ENTRAR COM GOOGLE"}redirectProcessing=false;authError(e)}}
 function renderGoogleOnlyLogin(){const root=document.getElementById("app");if(!root)return;const email=localStorage.getItem("entrega365:lastGoogleAccount")||localStorage.getItem("entrega365:email")||"";const account=email?`<button type="button" class="google-account" data-google-action="1"><span class="google-icon">G</span><span class="google-main"><b>${email.replace(/</g,"&lt;")}</b><small>Toque para entrar com esta conta</small></span><span>›</span></button>`:`<button id="google-login" type="button" class="google-new" data-google-action="1"><span class="google-label">ENTRAR COM GOOGLE</span></button>`;root.innerHTML=`<div class="google-only">${account}<button id="google-change" type="button" class="google-new" data-google-action="1">${email?"USAR OUTRA CONTA GOOGLE":"ENTRAR COM GOOGLE"}</button></div>`;const accountBtn=root.querySelector(".google-account");if(accountBtn)accountBtn.onclick=()=>startGoogleLogin(false);const main=root.querySelector("#google-login");if(main)main.onclick=()=>startGoogleLogin(true);const change=root.querySelector("#google-change");if(change)change.onclick=()=>startGoogleLogin(true)}
 function setupLogin(){loadMobileCss();improveLoginVisual();if(redirectProcessing)return;if(localStorage.getItem(SESSION))return;renderGoogleOnlyLogin();fixLogo()}
 window.backup=window.backup||function(){};
 onAuthStateChanged(auth,u=>{if(u)saveGoogleUser(u)});
 const oldLogout=window.logout;window.logout=async()=>{try{await signOut(auth)}catch{}localStorage.removeItem(SESSION);if(oldLogout)oldLogout();else location.reload()};
-import("./drive-backup.js?v=102").then(m=>m.initDriveBackup(auth)).catch(e=>console.warn("Drive backup indisponível",e));
+import("./drive-backup.js?v=104").then(m=>m.initDriveBackup(auth)).catch(e=>console.warn("Drive backup indisponível",e));
 const legacySession=localStorage.getItem(SESSION);if(legacySession&&!legacySession.startsWith("google:"))localStorage.removeItem(SESSION);
 (async()=>{await finishRedirectLogin();setupLogin();})();
