@@ -15,7 +15,59 @@
   async function readJson(r){const raw=await r.text();try{return raw?JSON.parse(raw):{}}catch{throw new Error('Servidor não retornou JSON (HTTP '+r.status+').')}}
   async function status(){const mail=email();if(!mail)throw new Error('Entre usando sua conta Google para verificar o PRO.');if(isAdmin()){setPlan('active');localStorage.setItem(SYNC_KEY,String(Date.now()));return{active:true,admin:true}}const r=await fetch('/api/pro-status?email='+encodeURIComponent(mail)+(sub()?'&subscription_id='+encodeURIComponent(sub()):''),{cache:'no-store'}),d=await readJson(r);if(!r.ok)throw new Error(d.message||'Não foi possível consultar a assinatura.');if(d.subscription_id)localStorage.setItem(SUB_KEY,String(d.subscription_id));setPlan(d.active?'active':'free');localStorage.setItem(SYNC_KEY,String(Date.now()));return d}
   async function buy(){const mail=email();if(!mail)return alert('Entre usando sua conta Google antes de assinar.');try{const r=await fetch('/api/pro-checkout',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email:mail}),cache:'no-store'}),d=await readJson(r);if(!r.ok||!d.init_point)throw new Error(d.message||'Não foi possível iniciar a assinatura.');if(d.subscription_id)localStorage.setItem(SUB_KEY,String(d.subscription_id));location.href=d.init_point}catch(e){alert(e.message)}}
-  function report(){const u=localStorage.getItem('dcv2:session')||'';let days=0,entries=0,earn=0;for(let i=0;i<366;i++){const d=new Date();d.setDate(d.getDate()-i);const k='dcv2:'+u+':day:'+d.toISOString().slice(0,10);try{const x=JSON.parse(localStorage.getItem(k)||'null');if(x){days++;(x.entries||[]).forEach(e=>{entries++;earn+=Number(e.valor||e.value||e.total||0)||0})}}catch{}}alert('RELATÓRIO PRO\n\nDias registrados: '+days+'\nEntregas lançadas: '+entries+'\nGanhos encontrados: '+earn.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}))}
+  function report(){
+    const uid=localStorage.getItem('dcv2:session')||'';
+    const ests=(()=>{try{return JSON.parse(localStorage.getItem('entrega365:establishments:'+uid)||'[]')}catch{return[]}})();
+    const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    const brl=n=>(Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
+    function collect(days,est){
+      const out={days:0,entries:0,earn:0,expenses:0,km:0,cats:{},daily:[],byEst:{}}, from=new Date();from.setHours(0,0,0,0);from.setDate(from.getDate()-days+1);
+      const prefix='dcv2:'+uid+':';
+      for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i)||'';if(!key.startsWith(prefix))continue;
+        let rest=key.slice(prefix.length),eid='principal',kind='',date='';
+        let m=rest.match(/^est:([^:]+):(day|exp):(\d{4}-\d{2}-\d{2})$/);
+        if(m){eid=m[1];kind=m[2];date=m[3]}else{m=rest.match(/^(day|exp):(\d{4}-\d{2}-\d{2})$/);if(!m)continue;kind=m[1];date=m[2]}
+        if(est!=='all'&&eid!==est)continue;
+        const dt=new Date(date+'T12:00:00');if(dt<from)continue;
+        const d=read(key)||{};
+        out.byEst[eid]=out.byEst[eid]||{earn:0,entries:0,expenses:0,km:0};
+        const row=out.daily.find(x=>x.date===date)||(()=>{const x={date,earn:0,expenses:0,entries:0,km:0};out.daily.push(x);return x})();
+        if(kind==='day'){
+          out.days++;const es=Array.isArray(d.entries)?d.entries:[];
+          const earn=es.reduce((s,e)=>s+(Number(e.taxa)||0),0)+(Number(d.arrancada)||0);
+          const km=Math.max(0,(Number(d.kmFinal)||0)-(Number(d.kmInicial)||0));
+          out.entries+=es.length;out.earn+=earn;out.km+=km;row.earn+=earn;row.entries+=es.length;row.km+=km;out.byEst[eid].earn+=earn;out.byEst[eid].entries+=es.length;out.byEst[eid].km+=km;
+        }else{
+          const items=Array.isArray(d.items)?d.items:[];items.forEach(e=>{const v=Number(e.val??e.valor)||0,c=e.cat||e.categoria||'outros';out.expenses+=v;row.expenses+=v;out.cats[c]=(out.cats[c]||0)+v;out.byEst[eid].expenses+=v});
+        }
+      }
+      out.daily.sort((a,b)=>a.date.localeCompare(b.date));return out;
+    }
+    function render(){
+      const root=document.getElementById('e365proreport');if(!root)return;
+      const days=Number(root.querySelector('[data-range]').value),est=root.querySelector('[data-est]').value,d=collect(days,est),profit=d.earn-d.expenses,avgEntry=d.entries?d.earn/d.entries:0,costKm=d.km?d.expenses/d.km:0,profitKm=d.km?profit/d.km:0;
+      const best=[...d.daily].sort((a,b)=>(b.earn-b.expenses)-(a.earn-a.expenses))[0],max=Math.max(1,...d.daily.map(x=>Math.max(x.earn,x.expenses)));
+      const catLabel={combustivel:'⛽ Combustível',manutencao:'🔧 Manutenção',alimentacao:'🍔 Alimentação',outros:'📦 Outros'};
+      root.innerHTML='<div class="e365prohero"><div class="e365protag">RELATÓRIOS AVANÇADOS</div><div class="e365protitle">📊 Dashboard PRO</div><div class="muted">Análise financeira, produtividade, quilometragem e custos.</div><div class="e365reportfilters"><select data-range><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="365">Últimos 12 meses</option></select><select data-est><option value="all">Todos os estabelecimentos</option><option value="principal">Principal</option>'+ests.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')+'</select></div></div>'+
+      '<div class="e365reportgrid">'+[
+        ['💰 Ganhos',brl(d.earn),'green'],['📉 Gastos',brl(d.expenses),'red'],['💵 Lucro líquido',brl(profit),profit>=0?'green':'red'],
+        ['📦 Entregas',d.entries,'blue'],['🛵 KM rodados',d.km.toLocaleString('pt-BR')+' km','blue'],['🎯 Ganho/entrega',brl(avgEntry),'yellow'],
+        ['⛽ Custo/KM',brl(costKm),'red'],['📈 Lucro/KM',brl(profitKm),profitKm>=0?'green':'red']
+      ].map(x=>'<div class="e365reportstat"><span>'+x[0]+'</span><b class="'+x[2]+'">'+x[1]+'</b></div>').join('')+'</div>'+
+      '<div class="card"><div class="title">📈 Ganhos × Gastos × Lucro</div><div class="e365chart">'+(d.daily.length?d.daily.map(x=>{const p=x.earn-x.expenses;return '<div class="e365barrow"><div class="e365barlabel">'+x.date.slice(5).split('-').reverse().join('/')+'</div><div class="e365bars"><i class="earn" style="width:'+Math.max(2,x.earn/max*100)+'%"></i><i class="expense" style="width:'+Math.max(2,x.expenses/max*100)+'%"></i><i class="profit" style="width:'+Math.max(2,Math.max(0,p)/max*100)+'%"></i></div><small>'+brl(p)+'</small></div>'}).join(''):'<div class="empty">Ainda não há dados neste período.</div>')+'</div><div class="e365legend"><span>🟩 Ganhos</span><span>🟥 Gastos</span><span>🟦 Lucro</span></div></div>'+
+      '<div class="e365reportcols"><div class="card"><div class="title">💸 Gastos por categoria</div>'+Object.keys(d.cats).length?Object.entries(d.cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="sum"><span>'+catLabel[k]||k+'</span><b class="red">'+brl(v)+'</b></div>').join(''):'<div class="empty">Nenhum gasto registrado.</div>'+'</div>'+
+      '<div class="card"><div class="title">🏆 Destaques</div><div class="sum"><span>Dias trabalhados</span><b>'+d.daily.filter(x=>x.entries||x.earn).length+'</b></div><div class="sum"><span>Média diária</span><b>'+brl(d.days?d.earn/Math.max(1,d.daily.filter(x=>x.earn).length):0)+'</b></div><div class="sum"><span>Melhor dia</span><b>'+ (best?best.date.split('-').reverse().join('/'):'—')+'</b></div><div class="sum"><span>Resultado do melhor dia</span><b class="green">'+brl(best?best.earn-best.expenses:0)+'</b></div></div></div>'+
+      (est==='all'&&Object.keys(d.byEst).length>1?'<div class="card"><div class="title">🏪 Ranking de estabelecimentos</div>'+Object.entries(d.byEst).sort((a,b)=>(b[1].earn-b[1].expenses)-(a[1].earn-a[1].expenses)).map(([id,x])=>{const name=id==='principal'?'Principal':(ests.find(e=>e.id===id)?.name||id);return '<div class="sum"><span>'+esc(name)+'</span><b>'+brl(x.earn-x.expenses)+' · '+x.entries+' entregas</b></div>'}).join('')+'</div>':'')+
+      '<div class="e365proactions"><button class="e365proprimary" id="e365reportprint">🖨️ IMPRIMIR / PDF</button><button class="e365prosecondary" id="e365reportclose">VOLTAR</button></div>';
+      root.querySelector('[data-range]').value=days;root.querySelector('[data-est]').value=est;
+      root.querySelector('[data-range]').onchange=render;root.querySelector('[data-est]').onchange=render;
+      root.querySelector('#e365reportprint').onclick=()=>window.print();root.querySelector('#e365reportclose').onclick=()=>window.e365Pro();
+    }
+    if(typeof window.shell==='function')window.shell('<div id="e365proreport"></div>');else{fallback();const f=document.getElementById('e365profallback');f.querySelector('main').innerHTML='<div id="e365proreport"></div>'}
+    render();
+  }
   function exportData(){const u=localStorage.getItem('dcv2:session')||'';const data={exportadoEm:new Date().toISOString(),usuario:email(),dados:{}};Object.keys(localStorage).filter(k=>k.startsWith('dcv2:'+u+':')).forEach(k=>data.dados[k]=localStorage.getItem(k));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='entrega365-pro-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   function bind(root=document){root.querySelector('#e365probuy')?.addEventListener('click',buy);root.querySelector('#e365prolegacy')?.addEventListener('click',()=>window.open(PAYMENT_LINK,'_blank','noopener,noreferrer'));root.querySelector('#e365procheck')?.addEventListener('click',async()=>{try{const d=await status();alert(d.active?'Assinatura PRO ativa.':'Assinatura ainda não autorizada.');open()}catch(e){alert(e.message)}});root.querySelector('#e365estopen')?.addEventListener('click',()=>window.e365Establishments?.openNew?window.e365Establishments.openNew():alert('Recurso de estabelecimentos carregando.'));root.querySelector('#e365report')?.addEventListener('click',report);root.querySelector('#e365export')?.addEventListener('click',exportData);root.querySelector('#e365backup')?.addEventListener('click',()=>window.entrega365SaveBackupToDrive?window.entrega365SaveBackupToDrive().catch(()=>{}):alert('Backup do Google Drive carregando.'));root.querySelector('#e365ads')?.addEventListener('click',()=>alert('PRO: anúncios desativados para esta conta.'));root.querySelector('#e365security')?.addEventListener('click',()=>alert('Conta PRO reconhecida e recursos profissionais habilitados.'));root.querySelector('#e365proclose')?.addEventListener('click',()=>window.go?.('day'))}
   function open(){css();if(typeof window.shell==='function'){window.shell(panel());bind()}else fallback()}
