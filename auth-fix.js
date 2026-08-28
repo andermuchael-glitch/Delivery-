@@ -18,8 +18,24 @@ function saveGoogleUser(u){localStorage.setItem("entrega365:firebaseUid",u.uid);
 function authError(e){console.error("Entrega365 Google auth:",e);const code=e?.code||"unknown";const map={"auth/unauthorized-domain":"O domínio de autenticação ainda não está autorizado no Firebase.","auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.","auth/network-request-failed":"Falha de conexão. Verifique a internet.","auth/invalid-api-key":"A configuração do Firebase está inválida.","auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.","auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.","auth/timeout":"O login demorou demais para concluir."};alert(`Não foi possível entrar com Google.\n\n${map[code]||"Erro: "+code}`)}
 async function finishRedirectLogin(){try{await setPersistence(auth,browserLocalPersistence);const result=await getRedirectResult(auth);if(result?.user){saveGoogleUser(result.user);location.replace("/index.html");return true}}catch(e){authError(e)}finally{redirectProcessing=false}return false}
 async function startGoogleLogin(useChooser=true){const b=document.querySelector("[data-google-action]");try{if(b){b.disabled=true;const t=b.querySelector(".google-label");if(t)t.textContent="CONECTANDO GOOGLE..."}await setPersistence(auth,browserLocalPersistence);const p=new GoogleAuthProvider();if(useChooser)p.setCustomParameters({prompt:"select_account"});await signInWithRedirect(auth,p)}catch(e){console.error("Entrega365 Google redirect:",e);if(b){b.disabled=false;const t=b.querySelector(".google-label");if(t)t.textContent="ENTRAR COM GOOGLE"}redirectProcessing=false;authError(e)}}
-function renderGoogleOnlyLogin(){const root=document.getElementById("app");if(!root)return;const email=localStorage.getItem("entrega365:lastGoogleAccount")||localStorage.getItem("entrega365:email")||"";const account=email?`<button type="button" class="google-account" data-google-action="1"><span class="google-icon">G</span><span class="google-main"><b>${email.replace(/</g,"&lt;")}</b><small>Toque para entrar com esta conta</small></span><span>›</span></button><button id="google-change" type="button" class="google-new" data-google-action="1">USAR OUTRA CONTA GOOGLE</button>`:`<button id="google-login" type="button" class="google-new" data-google-action="1"><span class="google-label">ENTRAR COM GOOGLE</span></button>`;root.innerHTML=`<div class="google-only">${account}</div>`;const accountBtn=root.querySelector(".google-account");if(accountBtn)accountBtn.onclick=()=>startGoogleLogin(false);const main=root.querySelector("#google-login");if(main)main.onclick=()=>startGoogleLogin(true);const change=root.querySelector("#google-change");if(change)change.onclick=()=>startGoogleLogin(true)}
-function setupLogin(){loadMobileCss();improveLoginVisual();if(redirectProcessing)return;if(localStorage.getItem(SESSION))return;renderGoogleOnlyLogin();fixLogo()}
+function renderGoogleOnlyLogin(){
+  const root=document.getElementById("app");if(!root)return;
+  root.innerHTML=`
+    <div class="login">
+      <div class="loginbox">
+        <div class="biglogo"></div>
+        <h1>Entrega365</h1>
+        <p>Entre com sua conta Google para continuar</p>
+        <div class="card google-only">
+          <button id="google-login" type="button" class="google-new" data-google-action="1">
+            <span class="google-label">ENTRAR COM GOOGLE</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  root.querySelector("#google-login").onclick=()=>startGoogleLogin(true);
+  fixLogo();
+}\nfunction setupLogin(){loadMobileCss();improveLoginVisual();if(redirectProcessing)return;if(localStorage.getItem(SESSION))return;renderGoogleOnlyLogin();fixLogo()}
 window.backup=window.backup||function(){};
 onAuthStateChanged(auth,u=>{if(u)saveGoogleUser(u)});
 const oldLogout=window.logout;window.logout=async()=>{try{await signOut(auth)}catch{}localStorage.removeItem(SESSION);if(oldLogout)oldLogout();else location.reload()};
