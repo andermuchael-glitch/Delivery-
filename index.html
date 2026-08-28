@@ -634,23 +634,23 @@ function render(){
   if(view==="mechanic")bindMechanic()
 }
 
-if("serviceWorker"in navigator)window.addEventListener("load",()=>(async()=>{try{
-  const mark="entrega365:runtime-v112";
-  if(localStorage.getItem(mark)!=="1"){
-    const regs=await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r=>r.unregister()));
-    if("caches" in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)))}
-    localStorage.setItem(mark,"1");
+if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{try{
+  const regs=await navigator.serviceWorker.getRegistrations();
+  await Promise.all(regs.map(r=>r.unregister()));
+  if("caches" in window){
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  await navigator.serviceWorker.register("sw.js?v=112",{updateViaCache:"none"});
-}catch(e){console.warn("SW update:",e)}})());
+  localStorage.setItem("entrega365:runtime-v113",String(Date.now()));
+}catch(e){console.warn("Cache cleanup:",e)}})()});
 render();
-</script><script type="module" src="./auth-fix.js?v=112"></script>
-<script src="./brand-update.js?v=112"></script>
-<script src="./entrega365-features.js?v=112"></script>
-<script src="./session-policy.js?v=112"></script>
-<script src="./entrega365-theme-v2.js?v=112"></script>
-<script src="./entrega365-pro.js?v=112"></script>
-<script src="./admin-pro.js?v=112"></script>
-<script src="./pro-sync.js?v=112"></script>
-<script src="./establishments.js?v=112"></script></body></html>
+</script><script type="module" src="./auth-fix.js?v=113"></script>
+<script src="./brand-update.js?v=113"></script>
+<script src="./entrega365-features.js?v=113"></script>
+<script type="module" src="./drive-backup.js?v=113"></script>
+<script src="./session-policy.js?v=113"></script>
+<script src="./entrega365-theme-v2.js?v=113"></script>
+<script src="./entrega365-pro.js?v=113"></script>
+<script src="./admin-pro.js?v=113"></script>
+<script src="./pro-sync.js?v=113"></script>
+<script src="./establishments.js?v=113"></script></body></html>
