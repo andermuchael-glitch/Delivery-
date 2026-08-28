@@ -1,4 +1,4 @@
-const CACHE="entrega365-pwa-v111";
+const CACHE="entrega365-pwa-v112";
 const AUTH="./auth-fix.js?v=110",BRAND="./brand-update.js?v=110",FEATURES="./entrega365-features.js?v=110",DRIVE="./drive-backup.js?v=110",SESSION="./session-policy.js?v=110",THEME="./entrega365-theme-v2.js?v=110",PRO="./entrega365-pro.js?v=110",ADMIN="./admin-pro.js?v=110",PROSYNC="./pro-sync.js?v=110",EST="./establishments.js?v=110";
 const ASSETS=["./login-google.html?v=110","./index.html?v=110","./manifest.json?v=110","./app-icon.svg?v=110","./icon-72.svg?v=110","./logo-entrega365.jpg?v=110",AUTH,BRAND,FEATURES,DRIVE,SESSION,THEME,PRO,ADMIN,PROSYNC,EST];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
