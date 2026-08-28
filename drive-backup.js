@@ -20,7 +20,13 @@ export function initDriveBackup(auth){
     const p=new GoogleAuthProvider();
     p.addScope(DRIVE_SCOPE);
     p.setCustomParameters({login_hint:email()||undefined,prompt:"consent"});
-    const r=await reauthenticateWithPopup(user,p);
+    let r;
+    try{r=await reauthenticateWithPopup(user,p)}
+    catch(e){
+      if(e?.code==="auth/popup-closed-by-user")throw Error("google_popup_closed");
+      if(e?.code==="auth/popup-blocked")throw Error("google_popup_blocked");
+      throw e;
+    }
     const c=GoogleAuthProvider.credentialFromResult(r);
     if(!c?.accessToken)throw Error("drive_token");
     storeToken(c.accessToken,Date.now()+3500000);
@@ -106,7 +112,7 @@ export function initDriveBackup(auth){
 
   function add(){
     const a=document.querySelector(".actions");if(!a)return;
-    if(!a.querySelector("[data-drive-backup]")){const b=document.createElement("button");b.className="ico";b.dataset.driveBackup="1";b.title="Salvar backup no Google Drive";b.textContent="☁️";b.onclick=()=>save(true).catch(e=>alert("Drive: "+(e?.message||"unknown")));a.prepend(b)}
+    if(!a.querySelector("[data-drive-backup]")){const b=document.createElement("button");b.className="ico";b.dataset.driveBackup="1";b.title="Salvar backup no Google Drive";b.textContent="☁️";b.onclick=()=>save(true).catch(e=>{const m=e?.message||"unknown";alert(m==="google_popup_closed"?"A janela do Google foi fechada antes da autorização. Tente novamente e conclua a autorização.":m==="google_popup_blocked"?"Permita pop-ups para entrega365.com.br e tente novamente.":"Drive: "+m)});a.prepend(b)}
     if(!a.querySelector("[data-drive-restore]")){const b=document.createElement("button");b.className="ico";b.dataset.driveRestore="1";b.title="Restaurar backup do Google Drive";b.textContent="↩️";b.onclick=restore;a.prepend(b)}
   }
   let attempts=0;const iv=setInterval(()=>{add();if(++attempts>=40)clearInterval(iv)},250);
