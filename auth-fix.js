@@ -1,10 +1,11 @@
-import "./tools.js?v=123";
+import "./tools.js?v=133";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
   signOut,
@@ -24,51 +25,38 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
-const LOGIN_REDIRECT_KEY="entrega365:googleRedirectPending";
-// Usa o domínio padrão do Firebase para o helper OAuth. Isso evita que o navegador móvel navegue a aba principal para /__/auth no domínio do Vercel.
-const FULL_LOGO="./logo-entrega365.jpg?v=123";
-const ICON_LOGO="./app-icon.svg?v=123";
+const LOGIN_PENDING="entrega365:googleLoginPending";
+const FULL_LOGO="./logo-entrega365.jpg?v=133";
 
-let authStateSeen=false;
-let authUser=null;
-let redirectChecked=false;
-let appRendered=false;
-let acceptedUser=null;
+let currentUser=null;
+let loginInProgress=false;
+let appUserUid=null;
+let initialAuthResolved=false;
 
 function setLoading(){
   const root=document.getElementById("app");
   if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão com segurança.</div></div></div></div>';
 }
 
-function loadMobileCss(){
-  if(document.querySelector("link[data-e365-mobile-css]"))return;
-  const l=document.createElement("link");
-  l.rel="stylesheet"; l.href="./mobile-layout-fix.css?v=123"; l.dataset.e365MobileCss="1";
-  document.head.appendChild(l);
-}
-
-function improveLoginVisual(){
-  if(document.getElementById("entrega365-login-v123"))return;
+function loadLoginStyle(){
+  if(document.getElementById("entrega365-login-v133"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v123";
-  s.textContent=`.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:hover{border-color:#ffd000}.google-new:disabled{opacity:.65}`;
+  s.id="entrega365-login-v133";
+  s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
 
-function fixLogo(){
-  document.querySelectorAll(".biglogo").forEach(el=>{
-    if(el.querySelector("img"))return;
-    el.style.background="none"; el.style.border="0"; el.style.borderRadius="0"; el.style.boxShadow="none"; el.innerHTML="";
-    const img=document.createElement("img");
-    img.src=FULL_LOGO; img.alt="Entrega365"; img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";
-    el.appendChild(img);
-  });
-  const icon=document.querySelector('link[rel="icon"]');
-  if(icon)icon.href=ICON_LOGO;
+function showLogin(){
+  if(currentUser)return;
+  appUserUid=null;
+  loadLoginStyle();
+  const root=document.getElementById("app");
+  if(!root)return;
+  root.innerHTML='<div class="login"><div class="loginbox"><div class="biglogo"><img src="'+FULL_LOGO+'" alt="Entrega365"></div><h1>Entrega365</h1><p>Entre com sua conta Google para continuar</p><div class="card google-only"><button id="google-login" type="button" class="google-new"><span class="google-label">ENTRAR COM GOOGLE</span></button></div></div></div>';
+  root.querySelector("#google-login").onclick=startGoogleLogin;
 }
 
-function saveGoogleUser(u){
-  if(!u)return;
+function persistUser(u){
   localStorage.setItem("entrega365:firebaseUid",u.uid);
   localStorage.setItem("entrega365:email",u.email||"");
   localStorage.setItem("entrega365:displayName",u.displayName||"");
@@ -76,13 +64,30 @@ function saveGoogleUser(u){
   localStorage.setItem(SESSION,"google:"+u.uid);
 }
 
-function clearGoogleSession(){
+function clearSession(){
   localStorage.removeItem(SESSION);
   localStorage.removeItem("entrega365:firebaseUid");
   localStorage.removeItem("entrega365:email");
   localStorage.removeItem("entrega365:displayName");
   localStorage.removeItem("entrega365:driveAccessToken");
   localStorage.removeItem("entrega365:driveAccessTokenExp");
+  sessionStorage.removeItem(LOGIN_PENDING);
+}
+
+function openApp(u){
+  if(!u)return;
+  currentUser=u;
+  persistUser(u);
+  loginInProgress=false;
+  sessionStorage.removeItem(LOGIN_PENDING);
+
+  // Não renderize novamente para o mesmo usuário: isso elimina o ciclo de
+  // renderização que causava "Maximum call stack size exceeded".
+  if(appUserUid===u.uid)return;
+  appUserUid=u.uid;
+
+  window.__e365SetUser?.("google:"+u.uid);
+  if(typeof window.render==="function")window.render();
 }
 
 function authError(e){
@@ -90,134 +95,79 @@ function authError(e){
   const code=e?.code||"unknown";
   const detail=[e?.name,e?.message].filter(Boolean).join(": ")||"sem detalhes";
   const map={
-    "auth/unauthorized-domain":"O domínio de autenticação ainda não está autorizado no Firebase.",
+    "auth/unauthorized-domain":"O domínio ainda não está autorizado no Firebase.",
     "auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.",
-    "auth/network-request-failed":"Falha de conexão. Verifique a internet.",
-    "auth/invalid-api-key":"A configuração do Firebase está inválida.",
+    "auth/network-request-failed":"Falha de conexão. Verifique sua internet.",
     "auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.",
-    "auth/popup-blocked":"O navegador bloqueou a autenticação.",
-    "auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.",
-    "auth/timeout":"O login demorou demais para concluir."
+    "auth/invalid-api-key":"A configuração do Firebase está inválida."
   };
-  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio.")+"\n\nCódigo: "+code+"\nDetalhe: "+detail);
+  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente.")+"\n\nCódigo: "+code+"\nDetalhe: "+detail);
 }
 
 async function startGoogleLogin(){
-  const b=document.querySelector("[data-google-action]");
+  if(loginInProgress)return;
+  loginInProgress=true;
+  const b=document.querySelector("#google-login");
+  if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}
   try{
-    if(b){b.disabled=true; const t=b.querySelector(".google-label"); if(t)t.textContent="CONECTANDO GOOGLE...";}
     await setPersistence(auth,browserLocalPersistence);
-    const p=new GoogleAuthProvider();
-    p.setCustomParameters({prompt:"select_account"});
-
-    // O helper OAuth usa o domínio padrão entrega365.firebaseapp.com, isolado do
-    // domínio do Vercel e do handler /__/auth que estava assumindo a aba principal.
-    const result=await signInWithPopup(auth,p);
-    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-    authStateSeen=true;
-    authUser=result.user||auth.currentUser||null;
-    acceptedUser=authUser||acceptedUser;
-    redirectChecked=true;
-    if(authUser)renderAppForUser(authUser);
-    else renderGoogleOnlyLogin();
+    const provider=new GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+    sessionStorage.setItem(LOGIN_PENDING,"1");
+    await signInWithRedirect(auth,provider);
   }catch(e){
-    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-    if(b){b.disabled=false; const t=b.querySelector(".google-label"); if(t)t.textContent="ENTRAR COM GOOGLE";}
+    loginInProgress=false;
+    sessionStorage.removeItem(LOGIN_PENDING);
+    if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}
     authError(e);
   }
 }
 
-function renderGoogleOnlyLogin(){
-  appRendered=false;
-  loadMobileCss(); improveLoginVisual();
-  const root=document.getElementById("app"); if(!root)return;
-  root.innerHTML=`<div class="login"><div class="loginbox"><div class="biglogo"></div><h1>Entrega365</h1><p>Entre com sua conta Google para continuar</p><div class="card google-only"><button id="google-login" type="button" class="google-new" data-google-action="1"><span class="google-label">ENTRAR COM GOOGLE</span></button></div></div></div>`;
-  root.querySelector("#google-login").onclick=startGoogleLogin;
-  fixLogo();
-}
-
-function renderAppForUser(u){
-  if(!u)return renderGoogleOnlyLogin();
-  acceptedUser=u;
-  authUser=u;
-  authStateSeen=true;
-  saveGoogleUser(u);
-  // Garanta também a sessão legada antes de renderizar. Assim qualquer reload
-  // durante a troca de contexto do OAuth abre o app em vez da tela inicial.
-  localStorage.setItem(SESSION,"google:"+u.uid);
-  // A página isolada de login não carrega o aplicativo principal.
-  // Após autenticar, volte explicitamente para o index para concluir a sessão.
-  if(location.pathname.endsWith("/login-google.html")){
-    location.replace("/index.html");
-    return;
-  }
-  window.__e365SetUser?.("google:"+u.uid);
-  if(typeof window.render==="function")window.render();
-  fixLogo();
-  appRendered=true;
-}
-
-function settle(){
-  if(!redirectChecked)return;
-  if(authStateSeen){
-    if(authUser)renderAppForUser(authUser); else renderGoogleOnlyLogin();
-    return;
-  }
-  setLoading();
-}
-
-window.logout=async()=>{
-  try{await signOut(auth)}catch(e){console.warn("Firebase signOut:",e)}
+window.entrega365SignOut=async()=>{
+  try{await signOut(auth);}
+  catch(e){console.warn("Firebase signOut:",e);}
   finally{
-    acceptedUser=null;
-    authUser=null;
-    clearGoogleSession();
+    currentUser=null;
+    appUserUid=null;
+    clearSession();
     window.__e365SetUser?.(null);
-    renderGoogleOnlyLogin();
+    location.replace(location.pathname||"/");
   }
 };
 
 window.entrega365Auth={auth};
 
 onAuthStateChanged(auth,u=>{
-  authStateSeen=true;
-  // Em alguns Chrome Android o evento inicial "null" pode chegar atrasado,
-  // depois de signInWithPopup já ter retornado um usuário válido. Não deixe
-  // esse evento antigo desfazer um login que acabou de ser concluído.
-  if(!u && acceptedUser){
-    authUser=acceptedUser;
-    if(redirectChecked && !appRendered)settle();
-    return;
+  currentUser=u||null;
+  initialAuthResolved=true;
+  if(u){
+    openApp(u);
+  }else if(!loginInProgress && !sessionStorage.getItem(LOGIN_PENDING)){
+    showLogin();
   }
-  authUser=u||null;
-  if(u)acceptedUser=u;
-  if(redirectChecked)settle();
 });
 
 (async()=>{
   setLoading();
+  try{await setPersistence(auth,browserLocalPersistence);}
+  catch(e){console.warn("Persistence setup:",e);}
+
+  // Consome o resultado do redirect uma única vez. Não há chamada de login
+  // dentro do observer de autenticação, evitando recursão.
   try{
-    await setPersistence(auth,browserLocalPersistence);
+    const result=await getRedirectResult(auth);
+    if(result?.user)openApp(result.user);
   }catch(e){
-    console.warn("Persistence setup:",e);
+    sessionStorage.removeItem(LOGIN_PENDING);
+    loginInProgress=false;
+    authError(e);
   }
 
-  // Não usar getRedirectResult: o handler customizado /__/auth entra em
-  // recursão neste Chrome Android. A autenticação agora é concluída pelo popup.
-  sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-  redirectChecked=true;
-  settle();
-
   setTimeout(()=>{
-    if(!authStateSeen){
-      authStateSeen=true;
-      authUser=auth.currentUser||null;
-      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-      settle();
-    }
-  },8000);
+    if(!initialAuthResolved && !currentUser && !sessionStorage.getItem(LOGIN_PENDING))showLogin();
+  },1200);
 })();
 
-import("./drive-backup.js?v=123")
+import("./drive-backup.js?v=133")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
