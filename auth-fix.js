@@ -33,6 +33,7 @@ let authStateSeen=false;
 let authUser=null;
 let redirectChecked=false;
 let appRendered=false;
+let acceptedUser=null;
 
 function setLoading(){
   const root=document.getElementById("app");
@@ -115,6 +116,7 @@ async function startGoogleLogin(){
     sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
     authStateSeen=true;
     authUser=result.user||auth.currentUser||null;
+    acceptedUser=authUser||acceptedUser;
     redirectChecked=true;
     if(authUser)renderAppForUser(authUser);
     else renderGoogleOnlyLogin();
@@ -136,6 +138,9 @@ function renderGoogleOnlyLogin(){
 
 function renderAppForUser(u){
   if(!u)return renderGoogleOnlyLogin();
+  acceptedUser=u;
+  authUser=u;
+  authStateSeen=true;
   saveGoogleUser(u);
   // Garanta também a sessão legada antes de renderizar. Assim qualquer reload
   // durante a troca de contexto do OAuth abre o app em vez da tela inicial.
@@ -164,6 +169,8 @@ function settle(){
 window.logout=async()=>{
   try{await signOut(auth)}catch(e){console.warn("Firebase signOut:",e)}
   finally{
+    acceptedUser=null;
+    authUser=null;
     clearGoogleSession();
     window.__e365SetUser?.(null);
     renderGoogleOnlyLogin();
@@ -174,7 +181,16 @@ window.entrega365Auth={auth};
 
 onAuthStateChanged(auth,u=>{
   authStateSeen=true;
+  // Em alguns Chrome Android o evento inicial "null" pode chegar atrasado,
+  // depois de signInWithPopup já ter retornado um usuário válido. Não deixe
+  // esse evento antigo desfazer um login que acabou de ser concluído.
+  if(!u && acceptedUser){
+    authUser=acceptedUser;
+    if(redirectChecked && !appRendered)settle();
+    return;
+  }
   authUser=u||null;
+  if(u)acceptedUser=u;
   if(redirectChecked)settle();
 });
 
