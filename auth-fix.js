@@ -5,6 +5,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   setPersistence,
   browserLocalPersistence,
@@ -104,11 +105,19 @@ async function startGoogleLogin(){
   const b=document.querySelector("[data-google-action]");
   try{
     if(b){b.disabled=true; const t=b.querySelector(".google-label"); if(t)t.textContent="CONECTANDO GOOGLE...";}
-    sessionStorage.setItem(LOGIN_REDIRECT_KEY,"1");
     await setPersistence(auth,browserLocalPersistence);
     const p=new GoogleAuthProvider();
     p.setCustomParameters({prompt:"select_account"});
-    await signInWithRedirect(auth,p);
+
+    // No Chrome Android, o fluxo por popup evita perder o estado da sessão
+    // durante a navegação entre o domínio do app e o handler do Firebase.
+    const result=await signInWithPopup(auth,p);
+    if(!result?.user)throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/internal-error"});
+    saveGoogleUser(result.user);
+    authUser=result.user;
+    authStateSeen=true;
+    redirectChecked=true;
+    renderAppForUser(result.user);
   }catch(e){
     sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
     if(b){b.disabled=false; const t=b.querySelector(".google-label"); if(t)t.textContent="ENTRAR COM GOOGLE";}
