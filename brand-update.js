@@ -1,5 +1,5 @@
-const FULL_LOGO="./logo-entrega365.jpg?v=118";
-const ICON_LOGO="./app-icon.svg?v=118";
+const FULL_LOGO="./logo-entrega365.jpg?v=122";
+const ICON_LOGO="./app-icon.svg?v=122";
 function applyEntrega365Brand(){
   document.querySelectorAll(".biglogo").forEach(el=>{
     el.style.background="none";
