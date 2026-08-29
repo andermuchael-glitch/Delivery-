@@ -234,6 +234,6 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=148")
+import("./drive-backup.js?v=151")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
