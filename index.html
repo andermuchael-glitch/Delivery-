@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v158">
+<meta name="entrega365-release" content="v159">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -297,7 +297,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v158";</script>
+<script>window.__ENTREGA365_RELEASE__="v159";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -671,7 +671,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v158",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v159",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=158"></script>
