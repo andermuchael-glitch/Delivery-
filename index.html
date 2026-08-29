@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v153">
+<meta name="entrega365-release" content="v154">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -297,7 +297,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v153";</script>
+<script>window.__ENTREGA365_RELEASE__="v154";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -317,7 +317,7 @@ window.e365OpenPro=()=>{
   if(!s){
     s=document.createElement("script");
     s.id=id;
-    s.src="./entrega365-pro.js?v=153";
+    s.src="./entrega365-pro.js?v=154";
     s.onload=()=>window.e365Pro?.();
     s.onerror=()=>alert("Não foi possível carregar os recursos PRO. Atualize a página e tente novamente.");
     document.head.appendChild(s);
@@ -663,14 +663,14 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v153",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v154",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
-</script><script type="module" src="./auth-fix.js?v=153"></script>
-<script src="./brand-update.js?v=153"></script>
-<script src="./entrega365-features.js?v=153"></script>
-<script src="./session-policy.js?v=153"></script>
-<script src="./entrega365-theme-v2.js?v=153"></script>
-<script src="./entrega365-pro.js?v=153"></script>
-<script src="./pro-sync.js?v=153"></script>
-<script src="./establishments.js?v=153"></script></body></html>
+</script><script src="./establishments.js?v=154"></script>
+<script type="module" src="./auth-fix.js?v=154"></script>
+<script src="./brand-update.js?v=154"></script>
+<script src="./entrega365-features.js?v=154"></script>
+<script src="./session-policy.js?v=154"></script>
+<script src="./entrega365-theme-v2.js?v=154"></script>
+<script src="./entrega365-pro.js?v=154"></script>
+<script src="./pro-sync.js?v=154"></script></body></html>
