@@ -39,6 +39,7 @@ const auth=initializeAuth(app,{
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
 const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
+const DRIVE_APPDATA_SCOPE="https://www.googleapis.com/auth/drive.appdata";
 const FULL_LOGO="./logo-entrega365.jpg?v=148";
 
 let currentUser=null;
@@ -75,7 +76,7 @@ function getSessionUid(){
   return value.startsWith("google:")?value.slice("google:".length):"";
 }
 
-function persistDriveCredential(result){try{const c=GoogleAuthProvider.credentialFromResult(result);if(c?.accessToken){localStorage.setItem("entrega365:driveAccessToken",c.accessToken);localStorage.setItem("entrega365:driveAccessTokenExp",String(Date.now()+3500000));}}catch(e){console.warn("Drive credential:",e)}}
+function persistDriveCredential(result){try{const c=GoogleAuthProvider.credentialFromResult(result);if(c?.accessToken){localStorage.setItem("entrega365:driveAccessToken",c.accessToken);localStorage.setItem("entrega365:driveAccessTokenExp",String(Date.now()+3500000));window.dispatchEvent(new Event("e365-drive-token"));}}catch(e){console.warn("Drive credential:",e)}}
 
 function persistUser(u){
   localStorage.setItem("entrega365:firebaseUid",u.uid);
@@ -153,7 +154,8 @@ async function startGoogleLogin(){
   try{
     const provider=new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
-    provider.setCustomParameters({prompt:"select_account"});
+    provider.addScope(DRIVE_APPDATA_SCOPE);
+    provider.setCustomParameters({prompt:"select_account",include_granted_scopes:"true"});
     const result=await signInWithPopup(auth,provider);
     if(result?.user){
       persistDriveCredential(result);
@@ -239,6 +241,6 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=153")
+import("./drive-backup.js?v=154")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
