@@ -172,7 +172,6 @@ function renderAppForUser(u){
   }
 }
 
-const oldLogout=window.logout;
 window.logout=async()=>{
   try{
     await signOut(auth);
@@ -180,7 +179,6 @@ window.logout=async()=>{
     console.warn("Firebase signOut:",e);
   }finally{
     clearGoogleSession();
-    try{ if(typeof oldLogout==="function") oldLogout(); }catch{}
     window.user=null;
     renderGoogleOnlyLogin();
   }
