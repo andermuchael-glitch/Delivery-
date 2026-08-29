@@ -121,5 +121,6 @@
   window.e365ProStatus=status;
   window.e365OpenProPanel=open;
   css();
-  if(!window.__e365ProObserver){window.__e365ProObserver=new MutationObserver(()=>install());window.__e365ProObserver.observe(document.documentElement,{childList:true,subtree:true});}\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+  if(!window.__e365ProObserver){window.__e365ProObserver=new MutationObserver(()=>install());window.__e365ProObserver.observe(document.documentElement,{childList:true,subtree:true});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
