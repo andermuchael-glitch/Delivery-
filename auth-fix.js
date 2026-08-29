@@ -1,10 +1,10 @@
-import "./tools.js?v=117";
-import "./entrega365-features.js?v=117";
-import "./session-policy.js?v=117";
-import "./entrega365-theme-v2.js?v=117";
-import "./entrega365-pro.js?v=117";
-import "./pro-sync.js?v=117";
-import "./establishments.js?v=117";
+import "./tools.js?v=118";
+import "./entrega365-features.js?v=118";
+import "./session-policy.js?v=118";
+import "./entrega365-theme-v2.js?v=118";
+import "./entrega365-pro.js?v=118";
+import "./pro-sync.js?v=118";
+import "./establishments.js?v=118";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -30,8 +30,8 @@ const firebaseConfig={
 
 const auth=getAuth(initializeApp(firebaseConfig));
 const SESSION="dcv2:session";
-const FULL_LOGO="./logo-entrega365.jpg?v=117";
-const ICON_LOGO="./app-icon.svg?v=117";
+const FULL_LOGO="./logo-entrega365.jpg?v=118";
+const ICON_LOGO="./app-icon.svg?v=118";
 
 let redirectProcessing=true;
 let navigating=false;
@@ -40,7 +40,7 @@ function loadMobileCss(){
   if(document.querySelector('link[data-e365-mobile-css]'))return;
   const l=document.createElement('link');
   l.rel='stylesheet';
-  l.href='./mobile-layout-fix.css?v=117';
+  l.href='./mobile-layout-fix.css?v=118';
   l.dataset.e365MobileCss='1';
   document.head.appendChild(l);
 }
@@ -108,7 +108,7 @@ function authError(e){
 function goToApp(){
   if(navigating)return;
   navigating=true;
-  location.replace("/index.html?e365auth=117");
+  location.replace("/index.html?e365auth=118");
 }
 
 function legacyLoginVisible(){
@@ -214,7 +214,7 @@ onAuthStateChanged(auth,u=>{
   }
 });
 
-import("./drive-backup.js?v=117")
+import("./drive-backup.js?v=118")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
 
