@@ -5,7 +5,6 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
   signOut,
@@ -173,27 +172,26 @@ onAuthStateChanged(auth,u=>{
 
 (async()=>{
   setLoading();
-  const pendingLogin=sessionStorage.getItem(LOGIN_REDIRECT_KEY)==="1";
   try{
     await setPersistence(auth,browserLocalPersistence);
-    const result=await getRedirectResult(auth);
-    if(result?.user)saveGoogleUser(result.user);
-    if(result?.user||pendingLogin)sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
   }catch(e){
-    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-    if(pendingLogin)authError(e);
-    else console.warn("Redirect result ignored:",e);
-  }finally{
-    redirectChecked=true;
-    settle();
-    setTimeout(()=>{
-      if(!authStateSeen){
-        authStateSeen=true;
-        authUser=auth.currentUser||null;
-        settle();
-      }
-    },7000);
+    console.warn("Persistence setup:",e);
   }
+
+  // Não chame getRedirectResult() aqui. Neste fluxo com authDomain personalizado
+  // e proxy /__/auth, o estado persistido é suficiente e o callback abaixo
+  // recebe o usuário após o retorno do Google. Evitamos assim a recursão
+  // interna que estava gerando "Maximum call stack size exceeded".
+  redirectChecked=true;
+
+  setTimeout(()=>{
+    if(!authStateSeen){
+      authStateSeen=true;
+      authUser=auth.currentUser||null;
+      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+      settle();
+    }
+  },8000);
 })();
 
 import("./drive-backup.js?v=123")
