@@ -8,10 +8,6 @@
     {
       "source": "/__/firebase/:path*",
       "destination": "https://entrega365.firebaseapp.com/__/firebase/:path*"
-    },
-    {
-      "source": "/",
-      "destination": "/login-google.html"
     }
   ],
   "headers": [
