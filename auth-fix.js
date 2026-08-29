@@ -38,6 +38,7 @@ const auth=initializeAuth(app,{
 
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
+const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 const FULL_LOGO="./logo-entrega365.jpg?v=148";
 
 let currentUser=null;
@@ -74,6 +75,8 @@ function getSessionUid(){
   return value.startsWith("google:")?value.slice("google:".length):"";
 }
 
+function persistDriveCredential(result){try{const c=GoogleAuthProvider.credentialFromResult(result);if(c?.accessToken){localStorage.setItem("entrega365:driveAccessToken",c.accessToken);localStorage.setItem("entrega365:driveAccessTokenExp",String(Date.now()+3500000));}}catch(e){console.warn("Drive credential:",e)}}
+
 function persistUser(u){
   localStorage.setItem("entrega365:firebaseUid",u.uid);
   localStorage.setItem("entrega365:email",u.email||"");
@@ -106,6 +109,7 @@ function openApp(u,{persist=true}={}){
   appUserUid=u.uid;
   window.__e365SetUser?.("google:"+u.uid);
   if(typeof window.render==="function")window.render();
+  setTimeout(()=>window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e)),250);
 }
 
 function openSavedSession(){
@@ -143,9 +147,11 @@ async function startGoogleLogin(){
   if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}
   try{
     const provider=new GoogleAuthProvider();
+    provider.addScope(DRIVE_SCOPE);
     provider.setCustomParameters({prompt:"select_account"});
     const result=await signInWithPopup(auth,provider);
     if(result?.user){
+      persistDriveCredential(result);
       /*
        * O resultado do popup é uma autenticação concluída. Renderizamos o app
        * imediatamente e mantemos a sessão local mesmo que o SDK emita um
