@@ -72,7 +72,7 @@
   function exportData(){const u=localStorage.getItem('dcv2:session')||'';const data={exportadoEm:new Date().toISOString(),usuario:email(),dados:{}};Object.keys(localStorage).filter(k=>k.startsWith('dcv2:'+u+':')).forEach(k=>data.dados[k]=localStorage.getItem(k));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='entrega365-pro-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   function bind(root=document){root.querySelector('#e365probuy')?.addEventListener('click',buy);root.querySelector('#e365prolegacy')?.addEventListener('click',()=>window.open(PAYMENT_LINK,'_blank','noopener,noreferrer'));root.querySelector('#e365procheck')?.addEventListener('click',async()=>{try{const d=await status();alert(d.active?'Assinatura PRO ativa.':'Assinatura ainda não autorizada.');open()}catch(e){alert(e.message)}});root.querySelector('#e365estopen')?.addEventListener('click',()=>window.e365Establishments?.openNew?window.e365Establishments.openNew():alert('Recurso de estabelecimentos carregando.'));root.querySelector('#e365report')?.addEventListener('click',report);root.querySelector('#e365export')?.addEventListener('click',exportData);root.querySelector('#e365backup')?.addEventListener('click',()=>window.entrega365SaveBackupToDrive?window.entrega365SaveBackupToDrive().catch(()=>{}):alert('Backup do Google Drive carregando.'));root.querySelector('#e365ads')?.addEventListener('click',()=>alert('PRO: anúncios desativados para esta conta.'));root.querySelector('#e365security')?.addEventListener('click',()=>alert('Conta PRO reconhecida e recursos profissionais habilitados.'));root.querySelector('#e365proclose')?.addEventListener('click',()=>window.go?.('day'))}
   let opening=false;
-  function showPanel(){if(typeof window.shell==='function'){window.shell(panel());bind()}else fallback()}
+  function showPanel(){const sh=window.__e365BaseShell||window.shell;if(typeof sh==='function'){sh(panel());bind()}else fallback()}
   async function open(){
     if(opening)return;
     opening=true;
@@ -91,7 +91,7 @@
       b.className='ico e365probtn';
       b.title='Entrega365 PRO';
       b.innerHTML='PRO<span class="e365probadge">+</span>';
-      actions.prepend(b);
+      b.onclick=function(ev){ev.preventDefault();ev.stopPropagation();open()};actions.prepend(b);
     }
     const tabs=document.querySelector('.tabs');
     if(tabs&&!tabs.querySelector('[data-pro]')){
@@ -100,7 +100,7 @@
       b.className='tab';
       b.dataset.pro='1';
       b.innerHTML='<b>⭐</b>PRO';
-      tabs.appendChild(b);
+      b.onclick=function(ev){ev.preventDefault();ev.stopPropagation();open()};tabs.appendChild(b);
     }
   }
   // Delegação no document: o app recria o <body> a cada aba, então listeners presos
@@ -117,5 +117,5 @@
   window.e365ProStatus=status;
   window.e365OpenProPanel=open;
   css();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+  if(!window.__e365ProObserver){window.__e365ProObserver=new MutationObserver(()=>install());window.__e365ProObserver.observe(document.documentElement,{childList:true,subtree:true});}\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
