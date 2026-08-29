@@ -1,21 +1,17 @@
-import "./tools.js?v=145";
+import "./tools.js?v=146";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
   signInWithPopup,
-  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
-const OFFICIAL_HOSTS=new Set(["entrega365.com.br","www.entrega365.com.br"]);
-const IS_OFFICIAL_HOST=OFFICIAL_HOSTS.has(location.hostname);
-const AUTH_DOMAIN=IS_OFFICIAL_HOST ? "entrega365.com.br" : "entrega365.firebaseapp.com";
+const AUTH_DOMAIN="entrega365.firebaseapp.com";
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
@@ -31,7 +27,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=145";
+const FULL_LOGO="./logo-entrega365.jpg?v=146";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -120,18 +116,11 @@ async function startGoogleLogin(){
     await setPersistence(auth,browserLocalPersistence);
     const provider=new GoogleAuthProvider();
     provider.setCustomParameters({prompt:"select_account"});
-
-    if(IS_OFFICIAL_HOST){
-      sessionStorage.setItem(LOGIN_PENDING,"1");
-      await signInWithRedirect(auth,provider);
-      return;
-    }
-
     const result=await signInWithPopup(auth,provider);
     if(result?.user)openApp(result.user);
+    else throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/no-user"});
   }catch(e){
     loginInProgress=false;
-    sessionStorage.removeItem(LOGIN_PENDING);
     if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}
     authError(e);
   }
@@ -165,13 +154,6 @@ function finishWithoutUser(){
   showLogin();
 }
 
-function withTimeout(promise,ms){
-  return Promise.race([
-    promise,
-    new Promise(resolve=>setTimeout(()=>resolve({__timeout:true}),ms))
-  ]);
-}
-
 onAuthStateChanged(auth,u=>{
   if(u){
     openApp(u);
@@ -189,55 +171,28 @@ onAuthStateChanged(auth,u=>{
 });
 
 (async function startAuthRecovery(){
-  const pending=sessionStorage.getItem(LOGIN_PENDING)==="1";
-
   try{
     await setPersistence(auth,browserLocalPersistence);
 
-    if(IS_OFFICIAL_HOST){
-      // Em alguns Chromium getRedirectResult pode ficar pendente quando o
-      // handler OAuth demora a responder. O timeout impede a tela infinita;
-      // se o Firebase concluir depois, onAuthStateChanged ainda abre o app.
-      const result=await withTimeout(getRedirectResult(auth),5000);
-      if(result?.user){
-        openApp(result.user);
-        return;
-      }
-    }
-
+    // Primeiro utiliza a sessão local já restaurada pelo Firebase.
     if(auth.currentUser){
       openApp(auth.currentUser);
       return;
     }
+
+    // O onAuthStateChanged é a fonte de verdade. Aguarde a restauração inicial
+    // sem depender do fluxo getRedirectResult, que estava falhando no Chromium.
+    setLoading();
+    startupTimer=setTimeout(()=>{
+      if(auth.currentUser)openApp(auth.currentUser);
+      else finishWithoutUser();
+    },4000);
   }catch(e){
-    console.error("Redirect result:",e);
-    sessionStorage.removeItem(LOGIN_PENDING);
-    recoveryFinished=true;
-    stopStartupWait();
-    authError(e);
-    showLogin();
-    return;
-  }
-
-  if(!pending){
+    console.error("Firebase startup:",e);
     finishWithoutUser();
-    return;
   }
-
-  setLoading();
-
-  authPoll=setInterval(()=>{
-    if(auth.currentUser)openApp(auth.currentUser);
-  },200);
-
-  // Mesmo se o handler OAuth nunca responder, o navegador volta para a tela
-  // de login em poucos segundos em vez de permanecer preso em "Carregando".
-  startupTimer=setTimeout(()=>{
-    if(auth.currentUser)openApp(auth.currentUser);
-    else finishWithoutUser();
-  },5000);
 })();
 
-import("./drive-backup.js?v=145")
+import("./drive-backup.js?v=146")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
