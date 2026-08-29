@@ -1,4 +1,4 @@
-import "./tools.js?v=122";
+import "./tools.js?v=123";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -25,12 +25,14 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
-const FULL_LOGO="./logo-entrega365.jpg?v=122";
-const ICON_LOGO="./app-icon.svg?v=122";
+const LOGIN_REDIRECT_KEY="entrega365:googleRedirectPending";
+const FULL_LOGO="./logo-entrega365.jpg?v=123";
+const ICON_LOGO="./app-icon.svg?v=123";
 
-let authReady=false;
-let redirectHandled=false;
-let rendering=false;
+let authStateSeen=false;
+let authUser=null;
+let redirectChecked=false;
+let appRendered=false;
 
 function setLoading(){
   const root=document.getElementById("app");
@@ -38,43 +40,26 @@ function setLoading(){
 }
 
 function loadMobileCss(){
-  if(document.querySelector('link[data-e365-mobile-css]'))return;
-  const l=document.createElement('link');
-  l.rel='stylesheet';
-  l.href='./mobile-layout-fix.css?v=122';
-  l.dataset.e365MobileCss='1';
+  if(document.querySelector("link[data-e365-mobile-css]"))return;
+  const l=document.createElement("link");
+  l.rel="stylesheet"; l.href="./mobile-layout-fix.css?v=123"; l.dataset.e365MobileCss="1";
   document.head.appendChild(l);
 }
 
 function improveLoginVisual(){
-  if(document.getElementById("entrega365-login-v122"))return;
+  if(document.getElementById("entrega365-login-v123"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v122";
-  s.textContent=`
-    .login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}
-    .loginbox{max-width:430px!important}
-    .biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}
-    .biglogo img{display:block;width:100%;height:100%;object-fit:contain}
-    .loginbox .card{padding:20px!important;border-radius:22px!important}
-    .google-only{display:flex;flex-direction:column;gap:10px}
-    .google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}
-    .google-new:hover{border-color:#ffd000}
-  `;
+  s.id="entrega365-login-v123";
+  s.textContent=`.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:hover{border-color:#ffd000}.google-new:disabled{opacity:.65}`;
   document.head.appendChild(s);
 }
 
 function fixLogo(){
   document.querySelectorAll(".biglogo").forEach(el=>{
     if(el.querySelector("img"))return;
-    el.style.background="none";
-    el.style.border="0";
-    el.style.borderRadius="0";
-    el.style.boxShadow="none";
-    el.innerHTML="";
+    el.style.background="none"; el.style.border="0"; el.style.borderRadius="0"; el.style.boxShadow="none"; el.innerHTML="";
     const img=document.createElement("img");
-    img.src=FULL_LOGO;
-    img.alt="Entrega365";
-    img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";
+    img.src=FULL_LOGO; img.alt="Entrega365"; img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";
     el.appendChild(img);
   });
   const icon=document.querySelector('link[rel="icon"]');
@@ -112,72 +97,55 @@ function authError(e){
     "auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.",
     "auth/timeout":"O login demorou demais para concluir."
   };
-  alert("Não foi possível entrar com Google.\n\n"+(map[code]||("Erro: "+code)));
+  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio."));
 }
 
 async function startGoogleLogin(){
   const b=document.querySelector("[data-google-action]");
   try{
-    if(b){
-      b.disabled=true;
-      const t=b.querySelector(".google-label");
-      if(t)t.textContent="CONECTANDO GOOGLE...";
-    }
+    if(b){b.disabled=true; const t=b.querySelector(".google-label"); if(t)t.textContent="CONECTANDO GOOGLE...";}
+    sessionStorage.setItem(LOGIN_REDIRECT_KEY,"1");
     await setPersistence(auth,browserLocalPersistence);
     const p=new GoogleAuthProvider();
     p.setCustomParameters({prompt:"select_account"});
     await signInWithRedirect(auth,p);
   }catch(e){
-    if(b){
-      b.disabled=false;
-      const t=b.querySelector(".google-label");
-      if(t)t.textContent="ENTRAR COM GOOGLE";
-    }
+    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    if(b){b.disabled=false; const t=b.querySelector(".google-label"); if(t)t.textContent="ENTRAR COM GOOGLE";}
     authError(e);
   }
 }
 
 function renderGoogleOnlyLogin(){
-  loadMobileCss();
-  improveLoginVisual();
-  const root=document.getElementById("app");
-  if(!root)return;
-  root.innerHTML=`
-    <div class="login">
-      <div class="loginbox">
-        <div class="biglogo"></div>
-        <h1>Entrega365</h1>
-        <p>Entre com sua conta Google para continuar</p>
-        <div class="card google-only">
-          <button id="google-login" type="button" class="google-new" data-google-action="1">
-            <span class="google-label">ENTRAR COM GOOGLE</span>
-          </button>
-        </div>
-      </div>
-    </div>`;
+  appRendered=false;
+  loadMobileCss(); improveLoginVisual();
+  const root=document.getElementById("app"); if(!root)return;
+  root.innerHTML=`<div class="login"><div class="loginbox"><div class="biglogo"></div><h1>Entrega365</h1><p>Entre com sua conta Google para continuar</p><div class="card google-only"><button id="google-login" type="button" class="google-new" data-google-action="1"><span class="google-label">ENTRAR COM GOOGLE</span></button></div></div></div>`;
   root.querySelector("#google-login").onclick=startGoogleLogin;
   fixLogo();
 }
 
 function renderAppForUser(u){
-  if(rendering)return;
-  rendering=true;
+  if(!u)return renderGoogleOnlyLogin();
   saveGoogleUser(u);
-  try{
-    window.__e365SetUser?.("google:"+u.uid);
-    if(typeof window.render==="function")window.render();
-    fixLogo();
-  }finally{
-    setTimeout(()=>{rendering=false},0);
+  window.__e365SetUser?.("google:"+u.uid);
+  if(typeof window.render==="function")window.render();
+  fixLogo();
+  appRendered=true;
+}
+
+function settle(){
+  if(!redirectChecked)return;
+  if(authStateSeen){
+    if(authUser)renderAppForUser(authUser); else renderGoogleOnlyLogin();
+    return;
   }
+  setLoading();
 }
 
 window.logout=async()=>{
-  try{
-    await signOut(auth);
-  }catch(e){
-    console.warn("Firebase signOut:",e);
-  }finally{
+  try{await signOut(auth)}catch(e){console.warn("Firebase signOut:",e)}
+  finally{
     clearGoogleSession();
     window.__e365SetUser?.(null);
     renderGoogleOnlyLogin();
@@ -187,33 +155,36 @@ window.logout=async()=>{
 window.entrega365Auth={auth};
 
 onAuthStateChanged(auth,u=>{
-  authReady=true;
-  if(u){
-    renderAppForUser(u);
-  }else{
-    clearGoogleSession();
-    renderGoogleOnlyLogin();
-  }
+  authStateSeen=true;
+  authUser=u||null;
+  if(redirectChecked)settle();
 });
 
 (async()=>{
   setLoading();
+  const pendingLogin=sessionStorage.getItem(LOGIN_REDIRECT_KEY)==="1";
   try{
     await setPersistence(auth,browserLocalPersistence);
     const result=await getRedirectResult(auth);
     if(result?.user)saveGoogleUser(result.user);
+    if(result?.user||pendingLogin)sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
   }catch(e){
-    authError(e);
+    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    if(pendingLogin)authError(e);
+    else console.warn("Redirect result ignored:",e);
   }finally{
-    redirectHandled=true;
-    if(!authReady){
-      const u=auth.currentUser;
-      if(u)renderAppForUser(u);
-      else renderGoogleOnlyLogin();
-    }
+    redirectChecked=true;
+    settle();
+    setTimeout(()=>{
+      if(!authStateSeen){
+        authStateSeen=true;
+        authUser=auth.currentUser||null;
+        settle();
+      }
+    },7000);
   }
 })();
 
-import("./drive-backup.js?v=122")
+import("./drive-backup.js?v=123")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
