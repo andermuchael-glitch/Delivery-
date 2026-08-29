@@ -131,6 +131,12 @@ function renderGoogleOnlyLogin(){
 function renderAppForUser(u){
   if(!u)return renderGoogleOnlyLogin();
   saveGoogleUser(u);
+  // A página isolada de login não carrega o aplicativo principal.
+  // Após autenticar, volte explicitamente para o index para concluir a sessão.
+  if(location.pathname.endsWith("/login-google.html")){
+    location.replace("/index.html");
+    return;
+  }
   window.__e365SetUser?.("google:"+u.uid);
   if(typeof window.render==="function")window.render();
   fixLogo();
