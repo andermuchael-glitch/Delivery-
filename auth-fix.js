@@ -1,10 +1,4 @@
-import "./tools.js?v=118";
-import "./entrega365-features.js?v=118";
-import "./session-policy.js?v=118";
-import "./entrega365-theme-v2.js?v=118";
-import "./entrega365-pro.js?v=118";
-import "./pro-sync.js?v=118";
-import "./establishments.js?v=118";
+import "./tools.js?v=122";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -28,27 +22,34 @@ const firebaseConfig={
   measurementId:"G-RPRXBXXDJK"
 };
 
-const auth=getAuth(initializeApp(firebaseConfig));
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 const SESSION="dcv2:session";
-const FULL_LOGO="./logo-entrega365.jpg?v=118";
-const ICON_LOGO="./app-icon.svg?v=118";
+const FULL_LOGO="./logo-entrega365.jpg?v=122";
+const ICON_LOGO="./app-icon.svg?v=122";
 
-let redirectProcessing=true;
-let navigating=false;
+let authReady=false;
+let redirectHandled=false;
+let rendering=false;
+
+function setLoading(){
+  const root=document.getElementById("app");
+  if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão com segurança.</div></div></div></div>';
+}
 
 function loadMobileCss(){
   if(document.querySelector('link[data-e365-mobile-css]'))return;
   const l=document.createElement('link');
   l.rel='stylesheet';
-  l.href='./mobile-layout-fix.css?v=118';
+  l.href='./mobile-layout-fix.css?v=122';
   l.dataset.e365MobileCss='1';
   document.head.appendChild(l);
 }
 
 function improveLoginVisual(){
-  if(document.getElementById("entrega365-login-v117"))return;
+  if(document.getElementById("entrega365-login-v122"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v117";
+  s.id="entrega365-login-v122";
   s.textContent=`
     .login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}
     .loginbox{max-width:430px!important}
@@ -89,6 +90,15 @@ function saveGoogleUser(u){
   localStorage.setItem(SESSION,"google:"+u.uid);
 }
 
+function clearGoogleSession(){
+  localStorage.removeItem(SESSION);
+  localStorage.removeItem("entrega365:firebaseUid");
+  localStorage.removeItem("entrega365:email");
+  localStorage.removeItem("entrega365:displayName");
+  localStorage.removeItem("entrega365:driveAccessToken");
+  localStorage.removeItem("entrega365:driveAccessTokenExp");
+}
+
 function authError(e){
   console.error("Entrega365 Google auth:",e);
   const code=e?.code||"unknown";
@@ -98,39 +108,11 @@ function authError(e){
     "auth/network-request-failed":"Falha de conexão. Verifique a internet.",
     "auth/invalid-api-key":"A configuração do Firebase está inválida.",
     "auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.",
-    "auth/popup-blocked":"O navegador bloqueou a janela de autenticação.",
+    "auth/popup-blocked":"O navegador bloqueou a autenticação.",
     "auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.",
     "auth/timeout":"O login demorou demais para concluir."
   };
   alert("Não foi possível entrar com Google.\n\n"+(map[code]||("Erro: "+code)));
-}
-
-function goToApp(){
-  if(navigating)return;
-  navigating=true;
-  location.replace("/index.html?e365auth=118");
-}
-
-function legacyLoginVisible(){
-  return !!document.querySelector("#u") ||
-    (!!document.querySelector(".login") && !document.querySelector("[data-google-action]"));
-}
-
-async function finishRedirectLogin(){
-  try{
-    await setPersistence(auth,browserLocalPersistence);
-    const result=await getRedirectResult(auth);
-    if(result?.user){
-      saveGoogleUser(result.user);
-      goToApp();
-      return true;
-    }
-  }catch(e){
-    authError(e);
-  }finally{
-    redirectProcessing=false;
-  }
-  return false;
 }
 
 async function startGoogleLogin(){
@@ -151,12 +133,13 @@ async function startGoogleLogin(){
       const t=b.querySelector(".google-label");
       if(t)t.textContent="ENTRAR COM GOOGLE";
     }
-    redirectProcessing=false;
     authError(e);
   }
 }
 
 function renderGoogleOnlyLogin(){
+  loadMobileCss();
+  improveLoginVisual();
   const root=document.getElementById("app");
   if(!root)return;
   root.innerHTML=`
@@ -176,54 +159,63 @@ function renderGoogleOnlyLogin(){
   fixLogo();
 }
 
-function setupLogin(){
-  loadMobileCss();
-  improveLoginVisual();
-  if(redirectProcessing)return;
-
-  if(localStorage.getItem(SESSION)){
-    if(legacyLoginVisible())goToApp();
-    return;
+function renderAppForUser(u){
+  if(rendering)return;
+  rendering=true;
+  saveGoogleUser(u);
+  try{
+    window.user="google:"+u.uid;
+    if(typeof window.render==="function")window.render();
+    fixLogo();
+  }finally{
+    setTimeout(()=>{rendering=false},0);
   }
-
-  renderGoogleOnlyLogin();
-  fixLogo();
 }
-
-window.backup=window.backup||function(){};
 
 const oldLogout=window.logout;
 window.logout=async()=>{
-  try{await signOut(auth)}catch(e){console.warn("Firebase signOut:",e)}
-  localStorage.removeItem(SESSION);
-  localStorage.removeItem("entrega365:firebaseUid");
-  localStorage.removeItem("entrega365:email");
-  localStorage.removeItem("entrega365:displayName");
-  if(oldLogout)oldLogout();
-  else location.replace("/");
+  try{
+    await signOut(auth);
+  }catch(e){
+    console.warn("Firebase signOut:",e);
+  }finally{
+    clearGoogleSession();
+    try{ if(typeof oldLogout==="function") oldLogout(); }catch{}
+    window.user=null;
+    renderGoogleOnlyLogin();
+  }
 };
 
-onAuthStateChanged(auth,u=>{
-  if(!u)return;
-  saveGoogleUser(u);
+window.entrega365Auth={auth};
 
-  // Fallback importante: alguns navegadores podem não devolver getRedirectResult,
-  // mas o observador já recebe o usuário autenticado.
-  if(!redirectProcessing && (location.pathname.endsWith("login-google.html") || legacyLoginVisible())){
-    goToApp();
+onAuthStateChanged(auth,u=>{
+  authReady=true;
+  if(u){
+    renderAppForUser(u);
+  }else{
+    clearGoogleSession();
+    renderGoogleOnlyLogin();
   }
 });
 
-import("./drive-backup.js?v=118")
+(async()=>{
+  setLoading();
+  try{
+    await setPersistence(auth,browserLocalPersistence);
+    const result=await getRedirectResult(auth);
+    if(result?.user)saveGoogleUser(result.user);
+  }catch(e){
+    authError(e);
+  }finally{
+    redirectHandled=true;
+    if(!authReady){
+      const u=auth.currentUser;
+      if(u)renderAppForUser(u);
+      else renderGoogleOnlyLogin();
+    }
+  }
+})();
+
+import("./drive-backup.js?v=122")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
-
-const legacySession=localStorage.getItem(SESSION);
-if(legacySession&&!legacySession.startsWith("google:")){
-  localStorage.removeItem(SESSION);
-}
-
-(async()=>{
-  const done=await finishRedirectLogin();
-  if(!done)setupLogin();
-})();
