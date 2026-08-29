@@ -14,7 +14,7 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  authDomain:"entrega365.firebaseapp.com",
+  authDomain:"www.entrega365.com.br",
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -26,6 +26,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_REDIRECT_KEY="entrega365:googleRedirectPending";
+// O authDomain deve permanecer na mesma origem do aplicativo. O Vercel encaminha /__/auth para o handler do Firebase, evitando perda de estado do OAuth em Chrome Android.
 const FULL_LOGO="./logo-entrega365.jpg?v=123";
 const ICON_LOGO="./app-icon.svg?v=123";
 
