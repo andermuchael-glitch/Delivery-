@@ -1,4 +1,4 @@
-import "./tools.js?v=133";
+import "./tools.js?v=134";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -26,7 +26,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=133";
+const FULL_LOGO="./logo-entrega365.jpg?v=134";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -41,7 +41,7 @@ function setLoading(){
 function loadLoginStyle(){
   if(document.getElementById("entrega365-login-v133"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v133";
+  s.id="entrega365-login-v134";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
@@ -138,36 +138,49 @@ window.entrega365SignOut=async()=>{
 window.entrega365Auth={auth};
 
 onAuthStateChanged(auth,u=>{
-  currentUser=u||null;
   initialAuthResolved=true;
+  currentUser=u||null;
   if(u){
     openApp(u);
-  }else if(!loginInProgress && !sessionStorage.getItem(LOGIN_PENDING)){
-    showLogin();
+    return;
   }
+
+  // Se não houver usuário autenticado, nunca deixe a tela presa em
+  // "Verificando sua sessão". O retorno do OAuth pode manter um marcador
+  // antigo no sessionStorage em alguns navegadores Android.
+  loginInProgress=false;
+  sessionStorage.removeItem(LOGIN_PENDING);
+  showLogin();
 });
 
+// Inicialização sem bloquear a interface aguardando getRedirectResult().
+// O observer acima é a fonte principal do estado autenticado e continua
+// funcionando após o retorno do signInWithRedirect.
 (async()=>{
   setLoading();
   try{await setPersistence(auth,browserLocalPersistence);}
   catch(e){console.warn("Persistence setup:",e);}
 
-  // Consome o resultado do redirect uma única vez. Não há chamada de login
-  // dentro do observer de autenticação, evitando recursão.
-  try{
-    const result=await getRedirectResult(auth);
-    if(result?.user)openApp(result.user);
-  }catch(e){
-    sessionStorage.removeItem(LOGIN_PENDING);
-    loginInProgress=false;
-    authError(e);
-  }
+  getRedirectResult(auth)
+    .then(result=>{if(result?.user)openApp(result.user);})
+    .catch(e=>{
+      sessionStorage.removeItem(LOGIN_PENDING);
+      loginInProgress=false;
+      console.warn("Redirect result:",e);
+      if(!currentUser)authError(e);
+    });
 
+  // Failsafe: mesmo se o SDK ou o resolver de redirect demorar/travar,
+  // a tela de login volta a ficar utilizável.
   setTimeout(()=>{
-    if(!initialAuthResolved && !currentUser && !sessionStorage.getItem(LOGIN_PENDING))showLogin();
-  },1200);
+    if(!currentUser && !initialAuthResolved){
+      loginInProgress=false;
+      sessionStorage.removeItem(LOGIN_PENDING);
+      showLogin();
+    }
+  },2500);
 })();
 
-import("./drive-backup.js?v=133")
+import("./drive-backup.js?v=134")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
