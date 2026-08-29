@@ -3,6 +3,7 @@ import "./tools.js?v=148";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   initializeAuth,
+  getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   browserLocalPersistence,
@@ -31,10 +32,16 @@ const app=initializeApp(firebaseConfig);
  * dependente de armazenamento que alguns Chromium móveis/Brave tratam de
  * forma diferente durante o retorno do popup.
  */
-const auth=initializeAuth(app,{
-  persistence:browserLocalPersistence,
-  popupRedirectResolver:browserPopupRedirectResolver,
-});
+let auth;
+try{
+  // Evita o resolvedor customizado do popup, que apresentou hidratação
+  // inconsistente em navegadores Chromium móveis.
+  auth=initializeAuth(app,{persistence:browserLocalPersistence});
+}catch(e){
+  console.warn("Firebase initializeAuth fallback:",e);
+  auth=getAuth(app);
+}
+window.__e365AuthBooted=true;
 
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
