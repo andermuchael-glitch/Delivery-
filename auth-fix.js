@@ -1,4 +1,4 @@
-import "./tools.js?v=144";
+import "./tools.js?v=145";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -13,10 +13,6 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
-// Produção: usamos o próprio domínio do app como authDomain. O vercel.json
-// já faz proxy transparente de /__/auth/* para entrega365.firebaseapp.com,
-// eliminando o iframe/storage de terceiros que os Chromium modernos bloqueiam.
-// Previews Vercel: usamos popup para não depender do redirect entre origens.
 const OFFICIAL_HOSTS=new Set(["entrega365.com.br","www.entrega365.com.br"]);
 const IS_OFFICIAL_HOST=OFFICIAL_HOSTS.has(location.hostname);
 const AUTH_DOMAIN=IS_OFFICIAL_HOST ? "entrega365.com.br" : "entrega365.firebaseapp.com";
@@ -35,23 +31,25 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=144";
+const FULL_LOGO="./logo-entrega365.jpg?v=145";
 
 let currentUser=null;
 let loginInProgress=false;
 let appUserUid=null;
-let initialAuthResolved=false;
+let startupTimer=null;
+let authPoll=null;
+let recoveryFinished=false;
 
 function setLoading(){
   const root=document.getElementById("app");
-  if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão com segurança.</div></div></div></div>';
+  if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v144"))return;
+  if(document.getElementById("entrega365-login-v145"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v142";
-  s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
+  s.id="entrega365-login-v145";
+  s.textContent='.login{align-items:flex-start!important;padding:24px 14px calc(40px + env(safe-area-inset-bottom))!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:min(58vw,300px)!important;min-height:180px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;min-height:54px;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
 
@@ -89,9 +87,9 @@ function openApp(u){
   persistUser(u);
   loginInProgress=false;
   sessionStorage.removeItem(LOGIN_PENDING);
+  recoveryFinished=true;
+  stopStartupWait();
 
-  // Não renderize novamente para o mesmo usuário: isso elimina o ciclo de
-  // renderização que causava "Maximum call stack size exceeded".
   if(appUserUid===u.uid)return;
   appUserUid=u.uid;
 
@@ -124,15 +122,13 @@ async function startGoogleLogin(){
     provider.setCustomParameters({prompt:"select_account"});
 
     if(IS_OFFICIAL_HOST){
-      // Fluxo principal: redirect same-site via /__/auth/* proxied pela Vercel.
       sessionStorage.setItem(LOGIN_PENDING,"1");
       await signInWithRedirect(auth,provider);
       return;
     }
 
-    // Preview/URL temporária: popup evita o fluxo de storage de terceiros.
     const result=await signInWithPopup(auth,provider);
-    if(result?.user)completeAuthenticatedUser(result.user);
+    if(result?.user)openApp(result.user);
   }catch(e){
     loginInProgress=false;
     sessionStorage.removeItem(LOGIN_PENDING);
@@ -155,10 +151,6 @@ window.entrega365SignOut=async()=>{
 
 window.entrega365Auth={auth};
 
-let redirectSettled=false;
-let startupTimer=null;
-let authPoll=null;
-
 function stopStartupWait(){
   if(startupTimer){clearTimeout(startupTimer);startupTimer=null;}
   if(authPoll){clearInterval(authPoll);authPoll=null;}
@@ -167,37 +159,33 @@ function stopStartupWait(){
 function finishWithoutUser(){
   stopStartupWait();
   if(currentUser)return;
+  recoveryFinished=true;
   loginInProgress=false;
   sessionStorage.removeItem(LOGIN_PENDING);
   showLogin();
 }
 
-function completeAuthenticatedUser(u){
-  if(!u)return false;
-  stopStartupWait();
-  redirectSettled=true;
-  currentUser=u;
-  openApp(u);
-  return true;
+function withTimeout(promise,ms){
+  return Promise.race([
+    promise,
+    new Promise(resolve=>setTimeout(()=>resolve({__timeout:true}),ms))
+  ]);
 }
 
 onAuthStateChanged(auth,u=>{
   if(u){
-    completeAuthenticatedUser(u);
+    openApp(u);
     return;
   }
 
   currentUser=null;
 
-  // Sem um redirect pendente, não deixe o usuário olhando uma tela de
-  // carregamento. Mostre imediatamente a tela de login.
-  if(sessionStorage.getItem(LOGIN_PENDING)!=="1"){
-    finishWithoutUser();
-    return;
-  }
-
-  // Só durante o retorno do Google mantemos a recuperação temporária.
-  if(!redirectSettled)setLoading();
+  // O Chromium pode emitir null antes de terminar a restauração do OAuth.
+  // Enquanto a recuperação estiver em andamento, não renderizamos uma tela
+  // intermediária permanente e nunca deixamos a Promise do redirect travar o app.
+  if(recoveryFinished)return;
+  if(sessionStorage.getItem(LOGIN_PENDING)==="1")setLoading();
+  else showLogin();
 });
 
 (async function startAuthRecovery(){
@@ -206,60 +194,50 @@ onAuthStateChanged(auth,u=>{
   try{
     await setPersistence(auth,browserLocalPersistence);
 
-    // Firebase recomenda recuperar explicitamente o resultado do redirect.
-    // Assim erros de retorno não ficam mascarados como "carregando para sempre".
     if(IS_OFFICIAL_HOST){
-      try{
-        const result=await getRedirectResult(auth);
-        if(result?.user){
-          completeAuthenticatedUser(result.user);
-          return;
-        }
-      }catch(e){
-        console.error("Redirect result:",e);
-        redirectSettled=true;
-        sessionStorage.removeItem(LOGIN_PENDING);
-        stopStartupWait();
-        authError(e);
-        finishWithoutUser();
+      // Em alguns Chromium getRedirectResult pode ficar pendente quando o
+      // handler OAuth demora a responder. O timeout impede a tela infinita;
+      // se o Firebase concluir depois, onAuthStateChanged ainda abre o app.
+      const result=await withTimeout(getRedirectResult(auth),5000);
+      if(result?.user){
+        openApp(result.user);
         return;
       }
     }
 
     if(auth.currentUser){
-      completeAuthenticatedUser(auth.currentUser);
-      return;
-    }
-
-    if(!pending){
-      finishWithoutUser();
+      openApp(auth.currentUser);
       return;
     }
   }catch(e){
-    console.warn("Auth startup:",e);
-    if(!pending)finishWithoutUser();
+    console.error("Redirect result:",e);
+    sessionStorage.removeItem(LOGIN_PENDING);
+    recoveryFinished=true;
+    stopStartupWait();
+    authError(e);
+    showLogin();
+    return;
   }
 
-  if(!pending)return;
+  if(!pending){
+    finishWithoutUser();
+    return;
+  }
 
   setLoading();
 
-  // Alguns Chromium restauram a sessão poucos instantes após o primeiro
-  // onAuthStateChanged(null) durante o retorno OAuth.
   authPoll=setInterval(()=>{
-    if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
+    if(auth.currentUser)openApp(auth.currentUser);
   },200);
 
-  // Falha segura: nunca prender o usuário indefinidamente.
+  // Mesmo se o handler OAuth nunca responder, o navegador volta para a tela
+  // de login em poucos segundos em vez de permanecer preso em "Carregando".
   startupTimer=setTimeout(()=>{
-    if(auth.currentUser){
-      completeAuthenticatedUser(auth.currentUser);
-    }else{
-      redirectSettled=true;
-      finishWithoutUser();
-    }
-  },8000);
+    if(auth.currentUser)openApp(auth.currentUser);
+    else finishWithoutUser();
+  },5000);
 })();
-import("./drive-backup.js?v=144")
+
+import("./drive-backup.js?v=145")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
