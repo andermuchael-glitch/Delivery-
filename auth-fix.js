@@ -1,4 +1,4 @@
-import "./tools.js?v=135";
+import "./tools.js?v=136";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -14,7 +14,7 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  authDomain:"entrega365.firebaseapp.com",
+  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":location.hostname,
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -26,7 +26,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=135";
+const FULL_LOGO="./logo-entrega365.jpg?v=136";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -39,7 +39,7 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v135"))return;
+  if(document.getElementById("entrega365-login-v136"))return;
   const s=document.createElement("style");
   s.id="entrega365-login-v135";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
@@ -210,6 +210,6 @@ onAuthStateChanged(auth,u=>{
   },10000);
 })();
 
-import("./drive-backup.js?v=135")
+import("./drive-backup.js?v=136")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
