@@ -4,12 +4,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebas
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   setPersistence,
   browserLocalPersistence,
   signOut,
   onAuthStateChanged,
-  getRedirectResult
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const firebaseConfig={
@@ -110,10 +109,15 @@ async function startGoogleLogin(){
     const p=new GoogleAuthProvider();
     p.setCustomParameters({prompt:"select_account"});
 
-    // Chrome Android apresenta falha no popup. Use redirect, com o domínio
-    // padrão do Firebase como authDomain e estado explícito antes da navegação.
-    sessionStorage.setItem(LOGIN_REDIRECT_KEY,"1");
-    await signInWithRedirect(auth,p);
+    // Popup evita o ciclo do handler /__/auth que estava causando
+    // "Maximum call stack size exceeded" no retorno por redirect.
+    const result=await signInWithPopup(auth,p);
+    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    authStateSeen=true;
+    authUser=result.user||auth.currentUser||null;
+    redirectChecked=true;
+    if(authUser)renderAppForUser(authUser);
+    else renderGoogleOnlyLogin();
   }catch(e){
     sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
     if(b){b.disabled=false; const t=b.querySelector(".google-label"); if(t)t.textContent="ENTRAR COM GOOGLE";}
@@ -179,28 +183,9 @@ onAuthStateChanged(auth,u=>{
     console.warn("Persistence setup:",e);
   }
 
-  // Conclui explicitamente o retorno do OAuth. Em alguns Chromium Android
-  // o onAuthStateChanged sozinho não materializa a sessão do redirect.
-  const redirectPending=sessionStorage.getItem(LOGIN_REDIRECT_KEY)==="1";
-  try{
-    if(redirectPending){
-      const result=await getRedirectResult(auth);
-      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-      if(result?.user){
-        authStateSeen=true;
-        authUser=result.user;
-      }
-    }
-  }catch(e){
-    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
-    redirectChecked=true;
-    authStateSeen=true;
-    authUser=null;
-    authError(e);
-    renderGoogleOnlyLogin();
-    return;
-  }
-
+  // Não usar getRedirectResult: o handler customizado /__/auth entra em
+  // recursão neste Chrome Android. A autenticação agora é concluída pelo popup.
+  sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
   redirectChecked=true;
   settle();
 
