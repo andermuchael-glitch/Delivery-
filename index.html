@@ -432,7 +432,7 @@ function shell(content){
       ${tab("expenses","💸","Gastos")}
       ${tab("mechanic","🔧","Mecânica")}
       ${tab("month","📊","Mês")}
-      <button class="tab" data-pro="1" type="button" onclick="window.e365OpenPro&&window.e365OpenPro()"><b>⭐</b>PRO</button>
+      <button class="tab" data-pro="1" type="button"><b>⭐</b>PRO</button>
     </nav>
   </div>`
 }
@@ -664,7 +664,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v149",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v150",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script type="module" src="./auth-fix.js?v=148"></script>
@@ -672,7 +672,6 @@ document.getElementById("app").innerHTML='<div class="login"><div class="loginbo
 <script src="./entrega365-features.js?v=148"></script>
 <script src="./session-policy.js?v=148"></script>
 <script src="./entrega365-theme-v2.js?v=148"></script>
-<script src="./entrega365-pro.js?v=148"></script>
-<script src="./admin-pro.js?v=148"></script>
-<script src="./pro-sync.js?v=148"></script>
+<script src="./entrega365-pro.js?v=150"></script>
+<script src="./pro-sync.js?v=150"></script>
 <script src="./establishments.js?v=148"></script></body></html>
