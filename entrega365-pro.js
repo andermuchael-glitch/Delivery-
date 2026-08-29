@@ -82,12 +82,40 @@
     showPanel();
     try{await status();showPanel()}catch(e){console.warn('PRO status:',e)}finally{opening=false}
   }
-  function install(){css();const actions=document.querySelector('.actions');if(actions&&!actions.querySelector('.e365probtn')){const b=document.createElement('button');b.className='ico e365probtn';b.title='Entrega365 PRO';b.innerHTML='PRO<span class="e365probadge">+</span>';b.onclick=open;actions.prepend(b)}const tabs=document.querySelector('.tabs');if(tabs&&!tabs.querySelector('[data-pro]')){const b=document.createElement('button');b.className='tab';b.dataset.pro='1';b.innerHTML='<b>⭐</b>PRO';b.onclick=open;tabs.appendChild(b)}}
-  window.e365Pro=open;window.e365OpenPro=open;window.e365ProStatus=status;css();
-  let scheduled=false;
-  const ensure=()=>{if(scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;install()},0)};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure,{once:true});else ensure();
-  // Observa apenas trocas estruturais do app e evita recursão de observação do próprio painel PRO.
-  const rootObserver=()=>document.body&&new MutationObserver(ensure).observe(document.body,{childList:true});
-  rootObserver();
+  function install(){
+    css();
+    const actions=document.querySelector('.actions');
+    if(actions&&!actions.querySelector('.e365probtn')){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='ico e365probtn';
+      b.title='Entrega365 PRO';
+      b.innerHTML='PRO<span class="e365probadge">+</span>';
+      actions.prepend(b);
+    }
+    const tabs=document.querySelector('.tabs');
+    if(tabs&&!tabs.querySelector('[data-pro]')){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='tab';
+      b.dataset.pro='1';
+      b.innerHTML='<b>⭐</b>PRO';
+      tabs.appendChild(b);
+    }
+  }
+  // Delegação no document: o app recria o <body> a cada aba, então listeners presos
+  // diretamente aos botões podem desaparecer. O listener abaixo permanece ativo em todos os navegadores.
+  document.addEventListener('click',function(ev){
+    const target=ev.target&&ev.target.closest?ev.target.closest('[data-pro],.e365probtn'):null;
+    if(!target)return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    open();
+  },true);
+  window.e365Pro=open;
+  window.e365OpenPro=open;
+  window.e365ProStatus=status;
+  window.e365OpenProPanel=open;
+  css();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
