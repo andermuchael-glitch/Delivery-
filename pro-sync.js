@@ -19,8 +19,11 @@
       if(!r.ok)throw new Error('HTTP '+r.status);
       const d=await r.json();
       if(d.subscription_id)localStorage.setItem(SUB_KEY,String(d.subscription_id));
-      localStorage.setItem(PLAN_KEY,d.active?'active':'free');
+      const previous=localStorage.getItem(PLAN_KEY)||'free';
+      const next=d.active?'active':'free';
+      localStorage.setItem(PLAN_KEY,next);
       localStorage.setItem('entrega365:proSyncedAt',String(Date.now()));
+      if(previous!==next)window.dispatchEvent(new CustomEvent('e365-pro-updated',{detail:{active:d.active,status:d.status||''}}));
     }catch(e){
       // Em falha temporária de rede, preserva o último estado confirmado em vez de derrubar um PRO válido.
       console.warn('PRO sync:',e);
