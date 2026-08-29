@@ -46,9 +46,9 @@ function loadMobileCss(){
 }
 
 function improveLoginVisual(){
-  if(document.getElementById("entrega365-login-v117"))return;
+  if(document.getElementById("entrega365-login-v119"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v117";
+  s.id="entrega365-login-v119";
   s.textContent=`
     .login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}
     .loginbox{max-width:430px!important}
@@ -108,7 +108,7 @@ function authError(e){
 function goToApp(){
   if(navigating)return;
   navigating=true;
-  location.replace("/index.html?e365auth=118");
+  location.replace("/index.html?e365auth=119");
 }
 
 function legacyLoginVisible(){
