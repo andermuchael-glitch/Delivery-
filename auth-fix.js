@@ -1,4 +1,4 @@
-import "./tools.js?v=134";
+import "./tools.js?v=135";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -26,7 +26,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=134";
+const FULL_LOGO="./logo-entrega365.jpg?v=135";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -39,9 +39,9 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v133"))return;
+  if(document.getElementById("entrega365-login-v135"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v134";
+  s.id="entrega365-login-v135";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
@@ -137,50 +137,79 @@ window.entrega365SignOut=async()=>{
 
 window.entrega365Auth={auth};
 
+let redirectSettled=false;
+let authObserverResolved=false;
+
+function finishWithoutUser(){
+  if(currentUser)return;
+  loginInProgress=false;
+  sessionStorage.removeItem(LOGIN_PENDING);
+  showLogin();
+}
+
 onAuthStateChanged(auth,u=>{
+  authObserverResolved=true;
   initialAuthResolved=true;
   currentUser=u||null;
+
   if(u){
+    redirectSettled=true;
     openApp(u);
     return;
   }
 
-  // Se não houver usuário autenticado, nunca deixe a tela presa em
-  // "Verificando sua sessão". O retorno do OAuth pode manter um marcador
-  // antigo no sessionStorage em alguns navegadores Android.
-  loginInProgress=false;
-  sessionStorage.removeItem(LOGIN_PENDING);
-  showLogin();
+  // Durante o retorno do signInWithRedirect o Firebase pode emitir um
+  // estado nulo antes de concluir getRedirectResult(). Não volte para a
+  // tela de login nem apague o marcador enquanto o redirect estiver ativo.
+  if(sessionStorage.getItem(LOGIN_PENDING)==="1" && !redirectSettled){
+    setLoading();
+    return;
+  }
+
+  if(redirectSettled)finishWithoutUser();
 });
 
-// Inicialização sem bloquear a interface aguardando getRedirectResult().
-// O observer acima é a fonte principal do estado autenticado e continua
-// funcionando após o retorno do signInWithRedirect.
 (async()=>{
   setLoading();
+
   try{await setPersistence(auth,browserLocalPersistence);}
   catch(e){console.warn("Persistence setup:",e);}
 
-  getRedirectResult(auth)
-    .then(result=>{if(result?.user)openApp(result.user);})
-    .catch(e=>{
-      sessionStorage.removeItem(LOGIN_PENDING);
-      loginInProgress=false;
-      console.warn("Redirect result:",e);
-      if(!currentUser)authError(e);
-    });
+  try{
+    const result=await getRedirectResult(auth);
+    redirectSettled=true;
 
-  // Failsafe: mesmo se o SDK ou o resolver de redirect demorar/travar,
-  // a tela de login volta a ficar utilizável.
-  setTimeout(()=>{
-    if(!currentUser && !initialAuthResolved){
-      loginInProgress=false;
-      sessionStorage.removeItem(LOGIN_PENDING);
+    if(result?.user){
+      openApp(result.user);
+      return;
+    }
+
+    // Se não houve resultado, dê uma pequena margem para o observer concluir
+    // a restauração da sessão persistida antes de mostrar o login.
+    setTimeout(()=>{
+      if(!auth.currentUser)finishWithoutUser();
+    },300);
+  }catch(e){
+    redirectSettled=true;
+    console.warn("Redirect result:",e);
+    sessionStorage.removeItem(LOGIN_PENDING);
+    loginInProgress=false;
+    if(!auth.currentUser){
+      authError(e);
       showLogin();
     }
-  },2500);
+  }
+
+  // Última proteção contra um SDK travado: só libera o login depois de
+  // esperar o fluxo de redirect, sem cancelar um login em andamento cedo.
+  setTimeout(()=>{
+    if(!auth.currentUser && !redirectSettled){
+      redirectSettled=true;
+      finishWithoutUser();
+    }
+  },10000);
 })();
 
-import("./drive-backup.js?v=134")
+import("./drive-backup.js?v=135")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
