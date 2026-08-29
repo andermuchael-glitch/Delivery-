@@ -308,6 +308,7 @@ const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);re
 const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(K+user+":"+k))??f}catch{return f}};
 const save=(k,v)=>localStorage.setItem(K+user+":"+k,JSON.stringify(v));
 let user=localStorage.getItem(K+"session"), view="day", day=today(), expDay=today(), month=new Date(), loginMode="login", showPass=false;
+window.__e365SetUser=v=>{user=v;};
 
 const defDay=k=>({date:k,entries:[],arrancada:0,kmInicial:"",kmFinal:""});
 const defExp=k=>({date:k,items:[]});
