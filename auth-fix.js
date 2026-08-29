@@ -261,6 +261,6 @@ import("./drive-backup.js?v=160")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
 
-import("./cloud-sync.js?v=160")
+import("./cloud-sync.js?v=161")
   .then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud backup indisponível",e)))
   .catch(e=>console.warn("Cloud sync indisponível",e));
