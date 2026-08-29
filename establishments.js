@@ -12,7 +12,10 @@
   const scope=()=>{const u=uid()||mail()||'guest';return LIST+':'+u};
   const currentKey=()=>CURRENT+':'+(uid()||mail()||'guest');
   function getList(){try{const x=JSON.parse(localStorage.getItem(scope())||'[]');return Array.isArray(x)&&x.length?x:[{id:'principal',name:'Principal'}]}catch{return[{id:'principal',name:'Principal'}]}}
-  function setList(x){localStorage.setItem(scope(),JSON.stringify(x))}
+  function setList(x){
+    localStorage.setItem(scope(),JSON.stringify(x));
+    window.dispatchEvent(new Event('e365-data-changed'));
+  }
   function current(){const id=localStorage.getItem(currentKey())||'principal';return getList().some(x=>x.id===id)?id:'principal'}
   function active(){return current()}
   function keyMap(k){
@@ -44,7 +47,7 @@
   function modal(){
     if(!isPro()){if(window.e365Pro)window.e365Pro();else alert('Este recurso faz parte do Entrega365 PRO.');return}
     if(document.querySelector('.e365estmodal'))return;
-    const m=document.createElement('div');m.className='e365estmodal';m.innerHTML=`<div class="e365estbox"><h3>🏪 Novo estabelecimento</h3><p>Os dados de cada estabelecimento ficam separados.</p><input id="e365estname" placeholder="Nome do estabelecimento" maxlength="50"><div class="e365estrow"><button class="e365estcancel" id="e365estcancel">Cancelar</button><button class="e365estok" id="e365estok">CRIAR</button></div></div>`;document.body.appendChild(m);m.querySelector('#e365estname').focus();m.querySelector('#e365estcancel').onclick=()=>m.remove();m.querySelector('#e365estok').onclick=()=>{const name=m.querySelector('#e365estname').value.trim();if(!name)return alert('Informe o nome.');const id='est-'+Date.now().toString(36);const list=getList();list.push({id,name});setList(list);localStorage.setItem(currentKey(),id);m.remove();location.reload()};
+    const m=document.createElement('div');m.className='e365estmodal';m.innerHTML=`<div class="e365estbox"><h3>🏪 Novo estabelecimento</h3><p>Os dados de cada estabelecimento ficam separados.</p><input id="e365estname" placeholder="Nome do estabelecimento" maxlength="50"><div class="e365estrow"><button class="e365estcancel" id="e365estcancel">Cancelar</button><button class="e365estok" id="e365estok">CRIAR</button></div></div>`;document.body.appendChild(m);m.querySelector('#e365estname').focus();m.querySelector('#e365estcancel').onclick=()=>m.remove();m.querySelector('#e365estok').onclick=()=>{const name=m.querySelector('#e365estname').value.trim();if(!name)return alert('Informe o nome.');const id='est-'+Date.now().toString(36);const list=getList();list.push({id,name});setList(list);localStorage.setItem(currentKey(),id);window.dispatchEvent(new Event('e365-data-changed'));m.remove();window.render?.();setTimeout(()=>window.e365Establishments?.refresh(),50)};
   }
   function render(){
     if(!isPro())return;
