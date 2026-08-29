@@ -69,5 +69,5 @@
     if(isPro())render();
   }
   window.e365Establishments={isPro,openNew:modal,current,refresh:render};
-  setTimeout(install,700);setInterval(install,3000);
+  install();setTimeout(install,50);setInterval(install,1000);
 })();
