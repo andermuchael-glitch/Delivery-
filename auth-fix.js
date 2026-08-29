@@ -5,7 +5,6 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
-  signInWithPopup,
   getRedirectResult,
   setPersistence,
   browserLocalPersistence,
@@ -98,7 +97,7 @@ function authError(e){
     "auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.",
     "auth/timeout":"O login demorou demais para concluir."
   };
-  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio."));
+  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio.")+"\n\nCódigo: "+code);
 }
 
 async function startGoogleLogin(){
@@ -109,15 +108,10 @@ async function startGoogleLogin(){
     const p=new GoogleAuthProvider();
     p.setCustomParameters({prompt:"select_account"});
 
-    // No Chrome Android, o fluxo por popup evita perder o estado da sessão
-    // durante a navegação entre o domínio do app e o handler do Firebase.
-    const result=await signInWithPopup(auth,p);
-    if(!result?.user)throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/internal-error"});
-    saveGoogleUser(result.user);
-    authUser=result.user;
-    authStateSeen=true;
-    redirectChecked=true;
-    renderAppForUser(result.user);
+    // Chrome Android apresenta falha no popup. Use redirect, com o domínio
+    // padrão do Firebase como authDomain e estado explícito antes da navegação.
+    sessionStorage.setItem(LOGIN_REDIRECT_KEY,"1");
+    await signInWithRedirect(auth,p);
   }catch(e){
     sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
     if(b){b.disabled=false; const t=b.querySelector(".google-label"); if(t)t.textContent="ENTRAR COM GOOGLE";}
