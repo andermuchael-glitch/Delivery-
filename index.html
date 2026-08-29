@@ -593,10 +593,12 @@ function bindMechanic(){
 
 function monthKeys(){
   let p=`${month.getFullYear()}-${pad(month.getMonth()+1)}-`;
+  let base=K+user+":", cur=window.e365Establishments?.current?.()||"principal";
+  let pre=cur==="principal"?base:base+"est:"+cur+":";
   let ks=[];
   for(let i=0;i<localStorage.length;i++){
     let k=localStorage.key(i);
-    if(k?.startsWith(K+user+":day:")&&k.slice((K+user+":day:").length).startsWith(p))ks.push(k.slice((K+user+":day:").length))
+    if(k?.startsWith(pre+"day:")&&k.slice((pre+"day:").length).startsWith(p))ks.push(k.slice((pre+"day:").length));
   }
   return [...new Set(ks)].sort().reverse()
 }
