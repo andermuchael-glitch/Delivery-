@@ -168,8 +168,8 @@ async function startGoogleLogin(){
     const provider=new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
     provider.addScope(DRIVE_APPDATA_SCOPE);
-    provider.setCustomParameters({prompt:"select_account"});
-    const result=await signInWithPopup(auth,provider,browserPopupRedirectResolver);
+    provider.setCustomParameters({prompt:"select_account",include_granted_scopes:"true"});
+    const result=await signInWithPopup(auth,provider);
     if(result?.user){
       persistDriveCredential(result);
       /*
@@ -256,6 +256,6 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=156")
+import("./drive-backup.js?v=158")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
