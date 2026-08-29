@@ -164,7 +164,7 @@ function renderAppForUser(u){
   rendering=true;
   saveGoogleUser(u);
   try{
-    window.user="google:"+u.uid;
+    window.__e365SetUser?.("google:"+u.uid);
     if(typeof window.render==="function")window.render();
     fixLogo();
   }finally{
@@ -179,7 +179,7 @@ window.logout=async()=>{
     console.warn("Firebase signOut:",e);
   }finally{
     clearGoogleSession();
-    window.user=null;
+    window.__e365SetUser?.(null);
     renderGoogleOnlyLogin();
   }
 };
