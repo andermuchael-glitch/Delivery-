@@ -25,7 +25,7 @@ function ensureCss(){
  @media(max-width:390px){.e365day{min-height:42px}.e365key{min-height:50px}.e365form{grid-template-columns:1fr}.e365form textarea,.e365form .full{grid-column:auto}}`;
  document.head.appendChild(s);applyTheme();
 }
-function applyTheme(){document.documentElement.dataset.theme=S.theme==='day'?'day':'night';document.querySelectorAll('.e365theme').forEach(b=>b.textContent=S.theme==='day'?'☀️':'🌙')}
+function applyTheme(){document.documentElement.dataset.theme=S.theme==='day'?'day':'night';const icon=S.theme==='day'?'☀️':'🌙';document.querySelectorAll('.e365theme').forEach(b=>{if(b.textContent!==icon)b.textContent=icon})}
 function toggleTheme(){S.theme=S.theme==='day'?'night':'day';saveS();applyTheme()}
 function inject(){
  const actions=$('.actions');
