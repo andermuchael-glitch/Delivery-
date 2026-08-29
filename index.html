@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v121">
+<meta name="entrega365-release" content="v122">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -296,7 +296,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v121";</script>
+<script>window.__ENTREGA365_RELEASE__="v122";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -415,6 +415,7 @@ function shell(content){
       ${tab("expenses","💸","Gastos")}
       ${tab("mechanic","🔧","Mecânica")}
       ${tab("month","📊","Mês")}
+      <button class="tab" data-pro="1" type="button" onclick="window.e365Pro&&window.e365Pro()"><b>⭐</b>PRO</button>
     </nav>
   </div>`
 }
@@ -643,7 +644,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v121",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v122",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 render();
 </script><script type="module" src="./auth-fix.js?v=121"></script>
