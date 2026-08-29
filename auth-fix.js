@@ -88,6 +88,7 @@ function clearGoogleSession(){
 function authError(e){
   console.error("Entrega365 Google auth:",e);
   const code=e?.code||"unknown";
+  const detail=[e?.name,e?.message].filter(Boolean).join(": ")||"sem detalhes";
   const map={
     "auth/unauthorized-domain":"O domínio de autenticação ainda não está autorizado no Firebase.",
     "auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.",
@@ -98,7 +99,7 @@ function authError(e){
     "auth/internal-error":"O Google/Firebase não conseguiu concluir a sessão.",
     "auth/timeout":"O login demorou demais para concluir."
   };
-  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio.")+"\n\nCódigo: "+code);
+  alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente. Se continuar, verifique a conexão e a configuração do domínio.")+"\n\nCódigo: "+code+"\nDetalhe: "+detail);
 }
 
 async function startGoogleLogin(){
