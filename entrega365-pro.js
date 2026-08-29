@@ -112,6 +112,10 @@
     ev.stopPropagation();
     open();
   },true);
+  window.addEventListener('e365-pro-updated',()=>{
+    // Se o painel estiver aberto, reflita imediatamente a confirmação do Mercado Pago.
+    if(document.querySelector('.e365prohero'))showPanel();
+  });
   window.e365Pro=open;
   window.e365OpenPro=open;
   window.e365ProStatus=status;
