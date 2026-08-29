@@ -1,24 +1,29 @@
-import "./tools.js?v=142";
+import "./tools.js?v=144";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
-  browserPopupRedirectResolver,
+  signInWithPopup,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
+// Produção: usamos o próprio domínio do app como authDomain. O vercel.json
+// já faz proxy transparente de /__/auth/* para entrega365.firebaseapp.com,
+// eliminando o iframe/storage de terceiros que os Chromium modernos bloqueiam.
+// Previews Vercel: usamos popup para não depender do redirect entre origens.
+const OFFICIAL_HOSTS=new Set(["entrega365.com.br","www.entrega365.com.br"]);
+const IS_OFFICIAL_HOST=OFFICIAL_HOSTS.has(location.hostname);
+const AUTH_DOMAIN=IS_OFFICIAL_HOST ? "entrega365.com.br" : "entrega365.firebaseapp.com";
+
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  // O domínio de autenticação NÃO pode acompanhar location.hostname.
-  // Os previews da Vercel geram hosts temporários e o Google bloqueia o retorno
-  // com "redirect_uri_mismatch". Usamos sempre o domínio oficial do Firebase,
-  // que é estável e já possui o handler OAuth configurado.
-  authDomain:"entrega365.firebaseapp.com",
+  authDomain:AUTH_DOMAIN,
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -30,7 +35,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=142";
+const FULL_LOGO="./logo-entrega365.jpg?v=144";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -43,7 +48,7 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v142"))return;
+  if(document.getElementById("entrega365-login-v144"))return;
   const s=document.createElement("style");
   s.id="entrega365-login-v142";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
@@ -117,8 +122,17 @@ async function startGoogleLogin(){
     await setPersistence(auth,browserLocalPersistence);
     const provider=new GoogleAuthProvider();
     provider.setCustomParameters({prompt:"select_account"});
-    sessionStorage.setItem(LOGIN_PENDING,"1");
-    await signInWithRedirect(auth,provider,browserPopupRedirectResolver);
+
+    if(IS_OFFICIAL_HOST){
+      // Fluxo principal: redirect same-site via /__/auth/* proxied pela Vercel.
+      sessionStorage.setItem(LOGIN_PENDING,"1");
+      await signInWithRedirect(auth,provider);
+      return;
+    }
+
+    // Preview/URL temporária: popup evita o fluxo de storage de terceiros.
+    const result=await signInWithPopup(auth,provider);
+    if(result?.user)completeAuthenticatedUser(result.user);
   }catch(e){
     loginInProgress=false;
     sessionStorage.removeItem(LOGIN_PENDING);
@@ -186,30 +200,57 @@ onAuthStateChanged(auth,u=>{
   if(!redirectSettled)setLoading();
 });
 
-(function startAuthRecovery(){
+(async function startAuthRecovery(){
   const pending=sessionStorage.getItem(LOGIN_PENDING)==="1";
 
-  Promise.resolve(setPersistence(auth,browserLocalPersistence))
-    .catch(e=>console.warn("Persistence setup:",e))
-    .finally(()=>{
-      if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
-      else if(!pending)finishWithoutUser();
-    });
+  try{
+    await setPersistence(auth,browserLocalPersistence);
 
-  if(!pending){
-    // O observer acima ou o finally mostram o login imediatamente.
-    return;
+    // Firebase recomenda recuperar explicitamente o resultado do redirect.
+    // Assim erros de retorno não ficam mascarados como "carregando para sempre".
+    if(IS_OFFICIAL_HOST){
+      try{
+        const result=await getRedirectResult(auth);
+        if(result?.user){
+          completeAuthenticatedUser(result.user);
+          return;
+        }
+      }catch(e){
+        console.error("Redirect result:",e);
+        redirectSettled=true;
+        sessionStorage.removeItem(LOGIN_PENDING);
+        stopStartupWait();
+        authError(e);
+        finishWithoutUser();
+        return;
+      }
+    }
+
+    if(auth.currentUser){
+      completeAuthenticatedUser(auth.currentUser);
+      return;
+    }
+
+    if(!pending){
+      finishWithoutUser();
+      return;
+    }
+  }catch(e){
+    console.warn("Auth startup:",e);
+    if(!pending)finishWithoutUser();
   }
+
+  if(!pending)return;
 
   setLoading();
 
-  // Durante o retorno OAuth alguns Chromium restauram currentUser alguns
-  // instantes depois do primeiro estado nulo.
+  // Alguns Chromium restauram a sessão poucos instantes após o primeiro
+  // onAuthStateChanged(null) durante o retorno OAuth.
   authPoll=setInterval(()=>{
     if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
   },200);
 
-  // Nunca permita que um LOGIN_PENDING antigo deixe a aplicação travada.
+  // Falha segura: nunca prender o usuário indefinidamente.
   startupTimer=setTimeout(()=>{
     if(auth.currentUser){
       completeAuthenticatedUser(auth.currentUser);
@@ -217,8 +258,8 @@ onAuthStateChanged(auth,u=>{
       redirectSettled=true;
       finishWithoutUser();
     }
-  },5000);
+  },8000);
 })();
-import("./drive-backup.js?v=142")
+import("./drive-backup.js?v=144")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
