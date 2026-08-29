@@ -8,7 +8,8 @@ import {
   setPersistence,
   browserLocalPersistence,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  getRedirectResult
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const firebaseConfig={
@@ -178,14 +179,29 @@ onAuthStateChanged(auth,u=>{
     console.warn("Persistence setup:",e);
   }
 
-  // Não chame getRedirectResult() aqui. Neste fluxo com authDomain personalizado
-  // e proxy /__/auth, o estado persistido é suficiente e o callback abaixo
-  // recebe o usuário após o retorno do Google. Evitamos assim a recursão
-  // interna que estava gerando "Maximum call stack size exceeded".
-  redirectChecked=true;
+  // Conclui explicitamente o retorno do OAuth. Em alguns Chromium Android
+  // o onAuthStateChanged sozinho não materializa a sessão do redirect.
+  const redirectPending=sessionStorage.getItem(LOGIN_REDIRECT_KEY)==="1";
+  try{
+    if(redirectPending){
+      const result=await getRedirectResult(auth);
+      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+      if(result?.user){
+        authStateSeen=true;
+        authUser=result.user;
+      }
+    }
+  }catch(e){
+    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    redirectChecked=true;
+    authStateSeen=true;
+    authUser=null;
+    authError(e);
+    renderGoogleOnlyLogin();
+    return;
+  }
 
-  // O onAuthStateChanged pode disparar antes de redirectChecked=true.
-  // Nesse caso, conclua imediatamente com o estado que já foi recebido.
+  redirectChecked=true;
   settle();
 
   setTimeout(()=>{
