@@ -663,14 +663,14 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v150",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v153",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
-</script><script type="module" src="./auth-fix.js?v=152"></script>
-<script src="./brand-update.js?v=152"></script>
-<script src="./entrega365-features.js?v=152"></script>
-<script src="./session-policy.js?v=152"></script>
-<script src="./entrega365-theme-v2.js?v=152"></script>
-<script src="./entrega365-pro.js?v=152"></script>
-<script src="./pro-sync.js?v=152"></script>
-<script src="./establishments.js?v=152"></script></body></html>
+</script><script type="module" src="./auth-fix.js?v=153"></script>
+<script src="./brand-update.js?v=153"></script>
+<script src="./entrega365-features.js?v=153"></script>
+<script src="./session-policy.js?v=153"></script>
+<script src="./entrega365-theme-v2.js?v=153"></script>
+<script src="./entrega365-pro.js?v=153"></script>
+<script src="./pro-sync.js?v=153"></script>
+<script src="./establishments.js?v=153"></script></body></html>
