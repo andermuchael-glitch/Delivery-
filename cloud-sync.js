@@ -5,6 +5,7 @@ import { getApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.j
 const DB=getFirestore(getApp());
 const ROOT="entrega365Sync";
 let uid="", ref=null, ready=false, restoring=false, timer=0, unsubscribe=null;
+let lastError=null, retryTimer=0, starting=false;
 const now=()=>Date.now();
 const session=()=>localStorage.getItem("dcv2:session")||"";
 const scoped=()=>session().startsWith("google:")?session().slice(7):"";
@@ -68,21 +69,33 @@ function queue(){
 async function start(){
   const next=scoped();
   if(!next)return false;
-  if(uid===next&&ready)return true;
+  if(uid===next&&ready&&!lastError)return true;
+  if(starting)return false;
   if(unsubscribe){unsubscribe();unsubscribe=null}
-  uid=next; ready=false; ref=doc(DB,ROOT,uid);
+  uid=next; ready=false; lastError=null; starting=true; ref=doc(DB,ROOT,uid);
   const local=snapshot();
   try{
     const first=await getDoc(ref);
     if(first.exists()){
       const remote=first.data()||{};
-      restoring=true;
-      apply(remote.data||{});
-      restoring=false;
-      setState({initialized:true,remoteAt:Number(remote.updatedAt||0),restoredAt:now(),dirty:false});
-      window.dispatchEvent(new Event("e365-cloud-restored"));
-      window.dispatchEvent(new Event("e365-drive-restored"));
-      setTimeout(()=>window.render?.(),0);
+      const remoteAt=Number(remote.updatedAt||0);
+      const st=state();
+      const localChanged=Number(st.changedAt||0);
+      // Na primeira recuperação de um navegador, o remoto é a fonte principal.
+      // Porém uma alteração local comprovadamente mais nova não pode ser apagada.
+      if(st.dirty&&localChanged>remoteAt){
+        ready=true;
+        await push();
+      }else{
+        restoring=true;
+        apply(remote.data||{});
+        restoring=false;
+        setState({initialized:true,remoteAt,restoredAt:now(),dirty:false});
+        window.dispatchEvent(new Event("e365-cloud-restored"));
+        window.dispatchEvent(new Event("e365-drive-restored"));
+        window.dispatchEvent(new Event("e365-data-changed"));
+        setTimeout(()=>window.render?.(),0);
+      }
     }else if(hasMeaningfulData(local)){
       ready=true;
       await push();
@@ -90,6 +103,8 @@ async function start(){
       setState({initialized:true,remoteAt:0,dirty:false});
     }
     ready=true;
+    lastError=null;
+    starting=false;
     unsubscribe=onSnapshot(ref,snap=>{
       if(!ready||restoring||!snap.exists())return;
       const remote=snap.data()||{};
@@ -101,22 +116,57 @@ async function start(){
         restoring=false;
         setState({remoteAt,restoredAt:now(),dirty:false});
         window.dispatchEvent(new Event("e365-cloud-restored"));
+        window.dispatchEvent(new Event("e365-data-changed"));
         window.dispatchEvent(new Event("e365-drive-restored"));
         setTimeout(()=>window.render?.(),0);
       }
-    },e=>console.warn("Cloud sync listener:",e));
+    },e=>{
+      console.warn("Cloud sync listener:",e);
+      lastError=e;
+      ready=false;
+      scheduleRetry();
+    });
     return true;
   }catch(e){
     restoring=false;
-    ready=true;
+    ready=false;
+    starting=false;
+    lastError=e;
     console.warn("Cloud sync unavailable:",e);
+    scheduleRetry();
     return false;
   }
 }
 window.entrega365CloudSync=start;
 window.entrega365CloudSave=push;
-window.entrega365CloudStatus=()=>({uid,ready,restoring,state:state()});
+function scheduleRetry(){
+  clearTimeout(retryTimer);
+  retryTimer=setTimeout(()=>{ start().catch(()=>{}); },2500);
+}
+window.entrega365CloudStatus=()=>({uid,ready,restoring,lastError:lastError?String(lastError?.message||lastError):"",state:state()});
 window.addEventListener("e365-data-changed",queue);
 window.addEventListener("e365-pro-updated",queue);
 window.addEventListener("e365-cloud-restored",()=>setTimeout(()=>window.e365Establishments?.refresh?.(),0));
-setInterval(()=>{if(uid&&ready&&state().dirty)push()},10000);
+window.addEventListener("online",()=>start().catch(()=>{}));
+window.addEventListener("focus",()=>start().catch(()=>{}));
+// Chromium móvel pode falhar na primeira leitura do Firestore durante a hidratação.
+// Reconciliamos periodicamente enquanto houver sessão e também reavaliamos o documento.
+setInterval(()=>{
+  if(!uid)return;
+  if(!ready||lastError){ start().catch(()=>{}); return; }
+  if(state().dirty)push();
+  else getDoc(ref).then(snap=>{
+    if(!snap.exists()||restoring)return;
+    const remote=snap.data()||{}, remoteAt=Number(remote.updatedAt||0), st=state();
+    if(remoteAt>Number(st.remoteAt||0)&&remoteAt>Number(st.savedAt||0)){
+      restoring=true;
+      apply(remote.data||{});
+      restoring=false;
+      setState({remoteAt,restoredAt:now(),dirty:false});
+      window.dispatchEvent(new Event("e365-cloud-restored"));
+      window.dispatchEvent(new Event("e365-drive-restored"));
+      window.dispatchEvent(new Event("e365-data-changed"));
+      setTimeout(()=>window.render?.(),0);
+    }
+  }).catch(e=>{lastError=e;ready=false;});
+},5000);
