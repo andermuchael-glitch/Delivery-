@@ -1,4 +1,4 @@
-import "./tools.js?v=136";
+import "./tools.js?v=137";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -15,7 +15,12 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  // O app é hospedado na Vercel, não no Firebase Hosting. Por isso o domínio\n  // de autenticação precisa ser único e estável, e o Vercel faz o proxy\n  // transparente de /__/auth e /__/firebase para entrega365.firebaseapp.com.\n  // Não usar location.hostname aqui: alternar entre www/apex cria fluxos OAuth\n  // diferentes e fazia o retorno do login ficar preso/recursivo em alguns browsers.\n  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":"entrega365.com.br",
+  // O app é hospedado na Vercel, não no Firebase Hosting. Por isso o domínio
+  // de autenticação precisa ser único e estável, enquanto o Vercel faz o proxy
+  // transparente de /__/auth e /__/firebase para entrega365.firebaseapp.com.
+  // Não usar location.hostname aqui: alternar entre www/apex cria fluxos OAuth
+  // diferentes e fazia o retorno do login ficar preso em alguns browsers.
+  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":"entrega365.com.br",
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -27,7 +32,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=136";
+const FULL_LOGO="./logo-entrega365.jpg?v=137";
 
 let currentUser=null;
 let loginInProgress=false;
