@@ -1,11 +1,10 @@
-import "./tools.js?v=140";
+import "./tools.js?v=141";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
   browserPopupRedirectResolver,
   setPersistence,
   browserLocalPersistence,
@@ -32,7 +31,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=140";
+const FULL_LOGO="./logo-entrega365.jpg?v=141";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -45,9 +44,9 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v140"))return;
+  if(document.getElementById("entrega365-login-v141"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v139";
+  s.id="entrega365-login-v141";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
@@ -145,6 +144,13 @@ window.entrega365Auth={auth};
 
 let redirectSettled=false;
 let authObserverResolved=false;
+let startupTimer=null;
+let authPoll=null;
+
+function stopStartupWait(){
+  if(startupTimer){clearTimeout(startupTimer);startupTimer=null;}
+  if(authPoll){clearInterval(authPoll);authPoll=null;}
+}
 
 function finishWithoutUser(){
   if(currentUser)return;
@@ -153,20 +159,30 @@ function finishWithoutUser(){
   showLogin();
 }
 
+function completeAuthenticatedUser(u){
+  if(!u)return false;
+  stopStartupWait();
+  redirectSettled=true;
+  currentUser=u;
+  openApp(u);
+  return true;
+}
+
 onAuthStateChanged(auth,u=>{
   authObserverResolved=true;
   initialAuthResolved=true;
-  currentUser=u||null;
 
   if(u){
-    redirectSettled=true;
-    openApp(u);
+    completeAuthenticatedUser(u);
     return;
   }
 
-  // Durante o retorno do signInWithRedirect o Firebase pode emitir um
-  // estado nulo antes de concluir getRedirectResult(). Não volte para a
-  // tela de login nem apague o marcador enquanto o redirect estiver ativo.
+  currentUser=null;
+
+  // Em alguns Chromium o retorno do redirect pode entregar primeiro um
+  // estado nulo e só depois restaurar auth.currentUser. Enquanto houver
+  // login pendente, mantenha a tela de carregamento e deixe o polling abaixo
+  // concluir a sessão sem depender de getRedirectResult().
   if(sessionStorage.getItem(LOGIN_PENDING)==="1" && !redirectSettled){
     setLoading();
     return;
@@ -175,50 +191,38 @@ onAuthStateChanged(auth,u=>{
   if(redirectSettled)finishWithoutUser();
 });
 
-(async()=>{
+(function startAuthRecovery(){
   setLoading();
 
-  try{await setPersistence(auth,browserLocalPersistence);}
-  catch(e){console.warn("Persistence setup:",e);}
+  // Não aguarde setPersistence para começar a recuperar a sessão. Em alguns
+  // navegadores Chromium esse await pode atrasar a conclusão do redirect.
+  Promise.resolve(setPersistence(auth,browserLocalPersistence))
+    .catch(e=>console.warn("Persistence setup:",e))
+    .finally(()=>{
+      if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
+    });
 
-  // Proteção iniciada antes do await: alguns navegadores Chromium podem manter getRedirectResult pendente.
-  const redirectWatchdog=setTimeout(()=>{
-    if(!auth.currentUser && !redirectSettled){
-      console.warn("Firebase redirect demorou demais; liberando a interface.");
-      redirectSettled=true;
-      sessionStorage.removeItem(LOGIN_PENDING);
-      finishWithoutUser();
-    }
-  },12000);
+  // getRedirectResult() pode ficar pendente em determinados navegadores móveis
+  // após OAuth. O app não precisa do objeto de resultado: basta recuperar o
+  // usuário persistido pelo próprio Firebase.
+  authPoll=setInterval(()=>{
+    if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
+  },250);
 
-  try{
-    const result=await getRedirectResult(auth);
-    clearTimeout(redirectWatchdog);
-    redirectSettled=true;
+  startupTimer=setTimeout(()=>{
+    stopStartupWait();
 
-    if(result?.user){
-      openApp(result.user);
+    if(auth.currentUser){
+      completeAuthenticatedUser(auth.currentUser);
       return;
     }
 
-    // Se não houve resultado, dê uma pequena margem para o observer concluir
-    // a restauração da sessão persistida antes de mostrar o login.
-    setTimeout(()=>{
-      if(!auth.currentUser)finishWithoutUser();
-    },300);
-  }catch(e){
-    clearTimeout(redirectWatchdog);
+    // Se não existe usuário autenticado, nunca deixe o navegador preso na
+    // tela de carregamento.
     redirectSettled=true;
-    console.warn("Redirect result:",e);
-    sessionStorage.removeItem(LOGIN_PENDING);
-    loginInProgress=false;
-    if(!auth.currentUser){
-      authError(e);
-      showLogin();
-    }
-  }
+    finishWithoutUser();
+  },15000);
 })();
-
-import("./drive-backup.js?v=140")
+import("./drive-backup.js?v=141")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
