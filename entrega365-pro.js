@@ -4,7 +4,7 @@
   const PRICE='R$ 9,90',PAYMENT_LINK='https://mpago.la/2Zg7Yyc',ADMIN_EMAIL='andermuchael@gmail.com';
   const valid=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());
   function email(){const a=(localStorage.getItem('entrega365:email')||'').trim().toLowerCase();return valid(a)?a:''}
-  function isAdmin(){return email()===ADMIN_EMAIL}
+  function isAdmin(){const session=localStorage.getItem('dcv2:session')||'';const uid=session.startsWith('google:')?session.slice('google:'.length):'';return email()===ADMIN_EMAIL||uid===ADMIN_UID}
   function getPlan(){return isAdmin()?'active':(localStorage.getItem(PLAN_KEY)||'free')}
   function setPlan(v){if(!isAdmin())localStorage.setItem(PLAN_KEY,v)}
   function sub(){return localStorage.getItem(SUB_KEY)||''}
@@ -74,7 +74,7 @@
   function bind(root=document){root.querySelector('#e365probuy')?.addEventListener('click',buy);root.querySelector('#e365prolegacy')?.addEventListener('click',()=>window.open(PAYMENT_LINK,'_blank','noopener,noreferrer'));root.querySelector('#e365procheck')?.addEventListener('click',async()=>{try{const d=await status();alert(d.active?'Assinatura PRO ativa.':'Assinatura ainda não autorizada.');open()}catch(e){alert(e.message)}});root.querySelector('#e365estopen')?.addEventListener('click',()=>window.e365Establishments?.openNew?window.e365Establishments.openNew():alert('Recurso de estabelecimentos carregando.'));root.querySelector('#e365report')?.addEventListener('click',report);root.querySelector('#e365export')?.addEventListener('click',exportData);root.querySelector('#e365backup')?.addEventListener('click',()=>window.entrega365SaveBackupToDrive?window.entrega365SaveBackupToDrive().catch(()=>{}):alert('Backup do Google Drive carregando.'));root.querySelector('#e365ads')?.addEventListener('click',()=>alert('PRO: anúncios desativados para esta conta.'));root.querySelector('#e365security')?.addEventListener('click',()=>alert('Conta PRO reconhecida e recursos profissionais habilitados.'));root.querySelector('#e365proclose')?.addEventListener('click',()=>window.go?.('day'))}
   function open(){css();if(typeof window.shell==='function'){window.shell(panel());bind()}else fallback()}
   function install(){css();const actions=document.querySelector('.actions');if(actions&&!actions.querySelector('.e365probtn')){const b=document.createElement('button');b.className='ico e365probtn';b.title='Entrega365 PRO';b.innerHTML='PRO<span class="e365probadge">+</span>';b.onclick=open;actions.prepend(b)}const tabs=document.querySelector('.tabs');if(tabs&&!tabs.querySelector('[data-pro]')){const b=document.createElement('button');b.className='tab';b.dataset.pro='1';b.innerHTML='<b>⭐</b>PRO';b.onclick=open;tabs.appendChild(b)}}
-  window.e365Pro=open;window.e365ProStatus=status;css();
+  window.e365Pro=open;window.e365OpenPro=open;window.e365ProStatus=status;css();
   let scheduled=false;
   const ensure=()=>{if(scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;install()},0)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure,{once:true});else ensure();
