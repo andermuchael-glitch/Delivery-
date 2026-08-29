@@ -128,6 +128,7 @@ function openApp(u,{persist=true}={}){
   [250,1200,3000].forEach(ms=>setTimeout(()=>{
     window.e365SyncPro?.();
     window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e));
+    window.entrega365CloudSync?.().catch(e=>console.warn("Cloud auto sync:",e));
   },ms));
 }
 
@@ -256,6 +257,10 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=158")
+import("./drive-backup.js?v=160")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
+
+import("./cloud-sync.js?v=160")
+  .then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud backup indisponível",e)))
+  .catch(e=>console.warn("Cloud sync indisponível",e));
