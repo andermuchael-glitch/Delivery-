@@ -162,7 +162,7 @@ async function startGoogleLogin(){
     const provider=new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
     provider.addScope(DRIVE_APPDATA_SCOPE);
-    provider.setCustomParameters({prompt:"select_account",include_granted_scopes:"true"});
+    provider.setCustomParameters({prompt:"select_account"});
     const result=await signInWithPopup(auth,provider);
     if(result?.user){
       persistDriveCredential(result);
@@ -230,6 +230,8 @@ onAuthStateChanged(auth,u=>{
     if(openSavedSession())return;
 
     setLoading();
+    // Nunca deixar a tela de carregamento presa indefinidamente. Alguns navegadores
+    // móveis atrasam a hidratação do Firebase; após o limite, mostramos o login.
     startupTimer=setTimeout(()=>{
       if(auth.currentUser)openApp(auth.currentUser,{persist:true});
       else if(!openSavedSession()){
@@ -238,7 +240,7 @@ onAuthStateChanged(auth,u=>{
         sessionStorage.removeItem(LOGIN_PENDING);
         showLogin();
       }
-    },1800);
+    },2500);
   }catch(e){
     console.error("Firebase startup:",e);
     if(!openSavedSession()){
