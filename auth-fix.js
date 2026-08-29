@@ -1,4 +1,4 @@
-import "./tools.js?v=139";
+import "./tools.js?v=140";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -32,7 +32,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=139";
+const FULL_LOGO="./logo-entrega365.jpg?v=140";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -45,7 +45,7 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v139"))return;
+  if(document.getElementById("entrega365-login-v140"))return;
   const s=document.createElement("style");
   s.id="entrega365-login-v139";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
@@ -181,7 +181,18 @@ onAuthStateChanged(auth,u=>{
   try{await setPersistence(auth,browserLocalPersistence);}
   catch(e){console.warn("Persistence setup:",e);}
 
-  // Proteção iniciada antes do await: alguns navegadores Chromium podem manter getRedirectResult pendente.\n  const redirectWatchdog=setTimeout(()=>{\n    if(!auth.currentUser && !redirectSettled){\n      console.warn("Firebase redirect demorou demais; liberando a interface.");\n      redirectSettled=true;\n      sessionStorage.removeItem(LOGIN_PENDING);\n      finishWithoutUser();\n    }\n  },12000);\n\n  try{\n    const result=await getRedirectResult(auth);
+  // Proteção iniciada antes do await: alguns navegadores Chromium podem manter getRedirectResult pendente.
+  const redirectWatchdog=setTimeout(()=>{
+    if(!auth.currentUser && !redirectSettled){
+      console.warn("Firebase redirect demorou demais; liberando a interface.");
+      redirectSettled=true;
+      sessionStorage.removeItem(LOGIN_PENDING);
+      finishWithoutUser();
+    }
+  },12000);
+
+  try{
+    const result=await getRedirectResult(auth);
     clearTimeout(redirectWatchdog);
     redirectSettled=true;
 
@@ -208,6 +219,6 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=139")
+import("./drive-backup.js?v=140")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
