@@ -2,8 +2,8 @@ import { GoogleAuthProvider, reauthenticateWithPopup } from "https://www.gstatic
 
 const API="https://www.googleapis.com/drive/v3/files";
 const UP="https://www.googleapis.com/upload/drive/v3/files";
-const NAME="entrega365-backup-v155.json";
-const OLD_NAMES=["entrega365-backup-v154.json","entrega365-backup.json"];
+const NAME="entrega365-sync-v158.json";
+const OLD_NAMES=["entrega365-backup-v155.json","entrega365-backup-v154.json","entrega365-backup.json"];
 const TK="entrega365:driveAccessToken";
 const TE="entrega365:driveAccessTokenExp";
 
@@ -11,23 +11,21 @@ export function initDriveBackup(auth){
   if(!auth||window.__e365Drive)return;
   window.__e365Drive=true;
 
-  let token="",exp=0,fileId="",busy=false,restoring=false,timer=0;
+  let token="",exp=0,fileId="",busy=false,restoring=false,timer=0,syncing=false;
 
   const session=()=>localStorage.getItem("dcv2:session")||"";
   const mail=()=>String(localStorage.getItem("entrega365:email")||"").trim().toLowerCase();
   const uid=()=>session().replace(/^google:/,"");
   const stateKey=()=> "entrega365:driveState:"+session();
-
   const state=()=>{try{return JSON.parse(localStorage.getItem(stateKey())||"{}")}catch{return{}}};
   const setState=x=>localStorage.setItem(stateKey(),JSON.stringify({...state(),...x}));
 
-  const load=()=>{
-    const t=localStorage.getItem(TK)||"",e=+localStorage.getItem(TE)||0;
+  const loadToken=()=>{
+    const t=localStorage.getItem(TK)||"",e=Number(localStorage.getItem(TE)||0);
     if(t&&e>Date.now()+60000){token=t;exp=e;return true}
     return false;
   };
-
-  const put=(t,e)=>{
+  const putToken=(t,e)=>{
     token=t;exp=e;
     localStorage.setItem(TK,t);
     localStorage.setItem(TE,String(e));
@@ -35,18 +33,22 @@ export function initDriveBackup(auth){
 
   async function tok(interactive=false){
     if(token&&Date.now()<exp-60000)return token;
-    if(load())return token;
+    if(loadToken())return token;
     if(!interactive)throw Error("drive_authorization_required");
     const u=auth.currentUser;
     if(!u)throw Error("login_required");
     const p=new GoogleAuthProvider();
     p.addScope("https://www.googleapis.com/auth/drive.appdata");
     p.addScope("https://www.googleapis.com/auth/drive.file");
-    p.setCustomParameters({login_hint:mail()||undefined,prompt:"select_account",include_granted_scopes:"true"});
+    p.setCustomParameters({
+      login_hint:mail(),
+      prompt:"select_account",
+      include_granted_scopes:"true"
+    });
     const z=await reauthenticateWithPopup(u,p);
     const q=GoogleAuthProvider.credentialFromResult(z);
     if(!q?.accessToken)throw Error("drive_token");
-    put(q.accessToken,Date.now()+3500000);
+    putToken(q.accessToken,Date.now()+3500000);
     return token;
   }
 
@@ -61,7 +63,7 @@ export function initDriveBackup(auth){
     return res.status===204?null:res.json();
   }
 
-  async function findFile(names){
+  async function findFile(names=[NAME,...OLD_NAMES]){
     for(const name of names){
       const q="name='"+name+"' and 'appDataFolder' in parents and trashed=false";
       const x=await api(API+"?spaces=appDataFolder&q="+encodeURIComponent(q)+"&fields=files(id,modifiedTime,name)&orderBy=modifiedTime%20desc&pageSize=10");
@@ -72,44 +74,47 @@ export function initDriveBackup(auth){
 
   async function read(id){
     const t=await tok(false);
-    const res=await fetch(API+"/"+id+"?alt=media",{cache:"no-store",headers:{Authorization:"Bearer "+t}});
+    const res=await fetch(API+"/"+id+"?alt=media",{
+      cache:"no-store",
+      headers:{Authorization:"Bearer "+t}
+    });
     if(!res.ok)throw Error("drive_"+res.status);
     return res.json();
   }
 
-  function keys(){
+  function includedKey(k){
     const s=session(),pre="dcv2:"+s+":";
     const list="entrega365:establishments:"+s;
     const cur="entrega365:currentEstablishment:"+s;
+    return !!k&&(
+      k.startsWith(pre)||
+      k===list||
+      k===cur||
+      ["entrega365:agenda","entrega365:settings","e365month"].includes(k)
+    );
+  }
+
+  function keys(){
     const o={};
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
       if(!k||k===TK||k===TE||k===stateKey())continue;
-      if(k.startsWith(pre)||k===list||k===cur||["entrega365:agenda","entrega365:settings","e365month","entrega365:plan"].includes(k)){
-        o[k]=localStorage.getItem(k);
-      }
+      if(includedKey(k))o[k]=localStorage.getItem(k);
     }
     return o;
   }
 
   function hasLocalData(){
-    const s=session(),pre="dcv2:"+s+":";
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i)||"";
-      if(k.startsWith(pre))return true;
-    }
-    const listKey="entrega365:establishments:"+s;
-    try{
-      const list=JSON.parse(localStorage.getItem(listKey)||"[]");
-      if(Array.isArray(list)&&list.some(x=>x?.id&&x.id!=="principal"))return true;
-    }catch{}
-    return false;
+    return Object.keys(keys()).some(k=>{
+      if(k==="entrega365:agenda"||k==="entrega365:settings"||k==="e365month")return true;
+      return true;
+    });
   }
 
   function snap(){
     return {
       format:"Entrega365Backup",
-      version:155,
+      version:158,
       uid:uid(),
       email:mail(),
       localStorage:keys(),
@@ -118,10 +123,10 @@ export function initDriveBackup(auth){
   }
 
   async function save(){
-    if(busy||restoring||!session()||(!load()&&!token))return false;
+    if(busy||restoring||!session()||(!loadToken()&&!token))return false;
     busy=true;
     try{
-      const old=fileId?{id:fileId}:await findFile([NAME,...OLD_NAMES]);
+      const old=fileId?{id:fileId}:await findFile();
       const boundary="----E365"+Date.now();
       const meta=old
         ? {name:NAME,mimeType:"application/json"}
@@ -137,10 +142,20 @@ export function initDriveBackup(auth){
 
       const z=await api(
         (old?UP+"/"+old.id:UP)+"?uploadType=multipart&fields=id,modifiedTime",
-        {method:old?"PATCH":"POST",headers:{"Content-Type":"multipart/related; boundary="+boundary},body}
+        {
+          method:old?"PATCH":"POST",
+          headers:{"Content-Type":"multipart/related; boundary="+boundary},
+          body
+        }
       );
       fileId=z.id;
-      setState({dirty:false,remoteAt:Date.parse(z.modifiedTime||"")||Date.now(),savedAt:Date.now()});
+      setState({
+        initialized:true,
+        dirty:false,
+        remoteAt:Date.parse(z.modifiedTime||"")||Date.now(),
+        savedAt:Date.now(),
+        changedAt:0
+      });
       return true;
     }catch(e){
       console.warn("Drive save:",e);
@@ -150,49 +165,44 @@ export function initDriveBackup(auth){
     }
   }
 
-  function clear(){
-    const s=session(),pre="dcv2:"+s+":";
-    const list="entrega365:establishments:"+s;
-    const cur="entrega365:currentEstablishment:"+s;
+  function clearData(){
     const rm=[];
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
-      if(k&&(k.startsWith(pre)||k===list||k===cur||["entrega365:agenda","entrega365:settings","e365month"].includes(k)))rm.push(k);
+      if(includedKey(k))rm.push(k);
     }
     rm.forEach(k=>localStorage.removeItem(k));
   }
 
-  async function restore(){
-    if(!session()||restoring||(!load()&&!token))return false;
+  function applySnapshot(d){
+    clearData();
+    for(const [k,v] of Object.entries(d.localStorage||{})){
+      if(k!==TK&&k!==TE&&k!==stateKey())localStorage.setItem(k,v);
+    }
+    localStorage.setItem("dcv2:session",session());
+  }
+
+  async function restoreFrom(file){
     restoring=true;
     try{
-      const f=await findFile([NAME,...OLD_NAMES]);
-      if(!f)return false;
-
-      const remoteAt=Date.parse(f.modifiedTime||"")||0;
-      const st=state();
-      const local=hasLocalData();
-
-      // Nunca deixe uma restauração tardia apagar dados recém-criados.
-      if(local&&st.dirty)return false;
-      // Depois de sincronizado, só restaura quando o Drive estiver realmente mais novo.
-      if(local&&st.remoteAt&&remoteAt&&remoteAt<=st.remoteAt)return false;
-      // Dados locais antigos, ainda sem estado de sincronização, têm prioridade.
-      if(local&&!st.remoteAt)return false;
-
-      const d=await read(f.id);
+      const d=await read(file.id);
       if(d.format!=="Entrega365Backup"||!d.localStorage)throw Error("invalid_backup");
-      if((d.email&&mail()&&String(d.email).toLowerCase()!==mail())||(d.uid&&String(d.uid)!==uid())){
-        throw Error("backup_account_mismatch");
-      }
+      if(
+        (d.email&&mail()&&String(d.email).toLowerCase()!==mail())||
+        (d.uid&&String(d.uid)!==uid())
+      )throw Error("backup_account_mismatch");
 
-      clear();
-      for(const [k,v] of Object.entries(d.localStorage)){
-        if(k!=="dcv2:session"&&k!==TK&&k!==TE)localStorage.setItem(k,v);
-      }
-      localStorage.setItem("dcv2:session",session());
-      fileId=f.id;
-      setState({dirty:false,remoteAt:remoteAt||Date.now(),restoredAt:Date.now()});
+      applySnapshot(d);
+      fileId=file.id;
+      const remoteAt=Date.parse(file.modifiedTime||d.exportedAt||"")||Date.now();
+      setState({
+        initialized:true,
+        dirty:false,
+        remoteAt,
+        restoredAt:Date.now(),
+        changedAt:0
+      });
+      window.dispatchEvent(new Event("e365-drive-restored"));
       return true;
     }catch(e){
       console.warn("Drive restore:",e);
@@ -203,26 +213,82 @@ export function initDriveBackup(auth){
   }
 
   const queue=()=>{
-    if(!session())return;
+    if(!session()||restoring)return;
     setState({dirty:true,changedAt:Date.now()});
     clearTimeout(timer);
-    timer=setTimeout(save,700);
+    timer=setTimeout(()=>save().catch(()=>{}),900);
   };
 
   async function sync(){
-    if(!session()||(!load()&&!token))return false;
-    const restored=await restore();
-    if(restored)window.render?.();
-    await save();
-    return restored;
+    if(syncing||!session()||(!loadToken()&&!token))return false;
+    syncing=true;
+    try{
+      const remote=await findFile();
+      const st=state();
+      const remoteAt=remote?Date.parse(remote.modifiedTime||"")||0:0;
+      const local=hasLocalData();
+
+      if(!remote){
+        if(local||st.dirty)await save();
+        else setState({initialized:true,dirty:false,remoteAt:0});
+        return false;
+      }
+
+      fileId=remote.id;
+
+      // Primeiro acesso deste navegador: o Drive é a fonte de restauração.
+      // Se o usuário acabou de editar dados localmente antes da sincronização,
+      // preservamos a alteração mais nova e a enviamos em vez de sobrescrevê-la.
+      if(!st.initialized){
+        const localChanged=Number(st.changedAt||0);
+        if(st.dirty&&localChanged>remoteAt){
+          await save();
+          return false;
+        }
+        const restored=await restoreFrom(remote);
+        if(restored)window.render?.();
+        return restored;
+      }
+
+      // Alteração local pendente nunca é sobrescrita por um backup antigo.
+      if(st.dirty){
+        await save();
+        return false;
+      }
+
+      // Outro navegador gravou uma versão mais nova: restaura automaticamente.
+      if(remoteAt&&remoteAt>Number(st.remoteAt||0)){
+        const restored=await restoreFrom(remote);
+        if(restored)window.render?.();
+        return restored;
+      }
+
+      return false;
+    }catch(e){
+      console.warn("Drive sync:",e);
+      return false;
+    }finally{
+      syncing=false;
+    }
   }
 
   window.entrega365DriveAutoSync=sync;
   window.entrega365DriveSave=save;
-  window.entrega365DriveStatus=()=>({authorized:!!(token||load()),busy,restoring,fileId,state:state()});
+  window.entrega365DriveStatus=()=>({
+    authorized:!!(token||loadToken()),
+    busy,restoring,syncing,fileId,state:state()
+  });
 
   window.addEventListener("e365-data-changed",queue);
-  window.addEventListener("e365-drive-token",()=>sync().catch(e=>console.warn("Drive sync:",e)));
-  setInterval(()=>{if(session())save()},15000);
-  setTimeout(()=>sync().catch(e=>console.warn("Drive initial sync:",e)),500);
+  window.addEventListener("e365-drive-token",()=>sync().catch(()=>{}));
+  window.addEventListener("online",()=>sync().catch(()=>{}));
+  window.addEventListener("e365-drive-restored",()=>setTimeout(()=>window.render?.(),0));
+
+  // Não sobrescreve o backup remoto a cada intervalo. Apenas envia mudanças pendentes.
+  setInterval(()=>{
+    if(session()&&state().dirty)save().catch(()=>{});
+  },10000);
+
+  // Dá tempo para a autenticação persistir a sessão e o token antes da primeira restauração.
+  setTimeout(()=>sync().catch(()=>{}),700);
 }
