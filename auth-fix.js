@@ -109,7 +109,12 @@ function openApp(u,{persist=true}={}){
   appUserUid=u.uid;
   window.__e365SetUser?.("google:"+u.uid);
   if(typeof window.render==="function")window.render();
-  setTimeout(()=>window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e)),250);
+  // Após cada login, consulta novamente a assinatura e restaura o Drive.
+  // Os módulos podem terminar de carregar alguns instantes depois da autenticação.
+  [250,1200,3000].forEach(ms=>setTimeout(()=>{
+    window.e365SyncPro?.();
+    window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e));
+  },ms));
 }
 
 function openSavedSession(){
@@ -234,6 +239,6 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=151")
+import("./drive-backup.js?v=153")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
