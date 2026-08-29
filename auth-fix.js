@@ -14,7 +14,7 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  authDomain:"www.entrega365.com.br",
+  authDomain:"entrega365.firebaseapp.com",
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
