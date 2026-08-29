@@ -306,8 +306,14 @@ const K="dcv2:", $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[
 const brl=n=>(Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const pad=n=>String(n).padStart(2,"0"), today=()=>{let d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
 const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);return dt.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",weekday:"short"})};
-const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(K+user+":"+k))??f}catch{return f}};
-const save=(k,v)=>{localStorage.setItem(K+user+":"+k,JSON.stringify(v));window.dispatchEvent(new Event("e365-data-changed"));};
+// A chave dos dados é calculada dinamicamente para manter cada estabelecimento
+// completamente separado sem sobrescrever o localStorage global.
+const dataKey=(k)=>{
+  const raw=K+user+":"+k;
+  return typeof window.e365MapDataKey==="function" ? window.e365MapDataKey(raw) : raw;
+};
+const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(dataKey(k)))??f}catch{return f}};
+const save=(k,v)=>{localStorage.setItem(dataKey(k),JSON.stringify(v));window.dispatchEvent(new Event("e365-data-changed"));};
 let user=localStorage.getItem(K+"session"), view="day", day=today(), expDay=today(), month=new Date(), loginMode="login", showPass=false;
 window.__e365SetUser=v=>{user=v;};
 window.e365OpenPro=()=>{
