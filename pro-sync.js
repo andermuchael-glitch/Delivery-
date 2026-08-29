@@ -3,6 +3,7 @@
   const PLAN_KEY='entrega365:plan';
   const SUB_KEY='entrega365:subscriptionId';
   const ADMIN='andermuchael@gmail.com';
+  const ADMIN_UID='EwrjXEWG3kbIVYufwYaDY6BMO7m1';
   let busy=false;
   const valid=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());
   function email(){
@@ -10,12 +11,14 @@
     if(valid(e)) return e.trim().toLowerCase();
     return '';
   }
-  function isPro(){return email()===ADMIN || localStorage.getItem(PLAN_KEY)==='active';}
+  function uid(){const s=localStorage.getItem('dcv2:session')||'';return s.startsWith('google:')?s.slice('google:'.length):'';}
+  function isAdmin(){return email()===ADMIN || uid()===ADMIN_UID;}
+  function isPro(){return isAdmin() || localStorage.getItem(PLAN_KEY)==='active';}
   window.e365IsPro=()=>isPro();
   async function sync(){
     const mail=email();
     if(!mail || busy)return;
-    if(mail===ADMIN){localStorage.setItem(PLAN_KEY,'active');localStorage.setItem('entrega365:adminPro','true');return}
+    if(isAdmin()){localStorage.setItem(PLAN_KEY,'active');localStorage.setItem('entrega365:adminPro','true');return}
     busy=true;
     try{
       const sub=localStorage.getItem(SUB_KEY)||'';
