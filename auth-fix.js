@@ -34,9 +34,15 @@ const app=initializeApp(firebaseConfig);
  */
 let auth;
 try{
-  // Evita o resolvedor customizado do popup, que apresentou hidratação
-  // inconsistente em navegadores Chromium móveis.
-  auth=initializeAuth(app,{persistence:browserLocalPersistence});
+  /*
+   * Este app usa signInWithPopup. Ao inicializar o Auth manualmente é
+   * necessário disponibilizar explicitamente o resolvedor de popup/redirect;
+   * sem ele alguns navegadores móveis acabam retornando auth/argument-error.
+   */
+  auth=initializeAuth(app,{
+    persistence:browserLocalPersistence,
+    popupRedirectResolver:browserPopupRedirectResolver
+  });
 }catch(e){
   console.warn("Firebase initializeAuth fallback:",e);
   auth=getAuth(app);
@@ -163,7 +169,7 @@ async function startGoogleLogin(){
     provider.addScope(DRIVE_SCOPE);
     provider.addScope(DRIVE_APPDATA_SCOPE);
     provider.setCustomParameters({prompt:"select_account"});
-    const result=await signInWithPopup(auth,provider);
+    const result=await signInWithPopup(auth,provider,browserPopupRedirectResolver);
     if(result?.user){
       persistDriveCredential(result);
       /*
