@@ -14,12 +14,11 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  // O app é hospedado na Vercel, não no Firebase Hosting. Por isso o domínio
-  // de autenticação precisa ser único e estável, enquanto o Vercel faz o proxy
-  // transparente de /__/auth e /__/firebase para entrega365.firebaseapp.com.
-  // Não usar location.hostname aqui: alternar entre www/apex cria fluxos OAuth
-  // diferentes e fazia o retorno do login ficar preso em alguns browsers.
-  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":location.hostname,
+  // O domínio de autenticação NÃO pode acompanhar location.hostname.
+  // Os previews da Vercel geram hosts temporários e o Google bloqueia o retorno
+  // com "redirect_uri_mismatch". Usamos sempre o domínio oficial do Firebase,
+  // que é estável e já possui o handler OAuth configurado.
+  authDomain:"entrega365.firebaseapp.com",
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
