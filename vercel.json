@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    {
-      "source": "/__/auth/:path*",
-      "destination": "https://entrega365.firebaseapp.com/__/auth/:path*"
-    },
-    {
-      "source": "/__/firebase/:path*",
-      "destination": "https://entrega365.firebaseapp.com/__/firebase/:path*"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
