@@ -73,10 +73,48 @@
   function exportData(){const u=localStorage.getItem('dcv2:session')||'';const data={exportadoEm:new Date().toISOString(),usuario:email(),dados:{}};Object.keys(localStorage).filter(k=>k.startsWith('dcv2:'+u+':')).forEach(k=>data.dados[k]=localStorage.getItem(k));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='entrega365-pro-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   function bind(root=document){root.querySelector('#e365probuy')?.addEventListener('click',buy);root.querySelector('#e365prolegacy')?.addEventListener('click',()=>window.open(PAYMENT_LINK,'_blank','noopener,noreferrer'));root.querySelector('#e365procheck')?.addEventListener('click',async()=>{try{const d=await status();alert(d.active?'Assinatura PRO ativa.':'Assinatura ainda não autorizada.');open()}catch(e){alert(e.message)}});root.querySelector('#e365estopen')?.addEventListener('click',()=>window.e365Establishments?.openNew?window.e365Establishments.openNew():alert('Recurso de estabelecimentos carregando.'));root.querySelector('#e365report')?.addEventListener('click',report);root.querySelector('#e365export')?.addEventListener('click',exportData);root.querySelector('#e365backup')?.addEventListener('click',()=>window.entrega365SaveBackupToDrive?window.entrega365SaveBackupToDrive().catch(()=>{}):alert('Backup do Google Drive carregando.'));root.querySelector('#e365ads')?.addEventListener('click',()=>alert('PRO: anúncios desativados para esta conta.'));root.querySelector('#e365security')?.addEventListener('click',()=>alert('Conta PRO reconhecida e recursos profissionais habilitados.'));root.querySelector('#e365proclose')?.addEventListener('click',()=>window.go?.('day'))}
   function open(){css();if(typeof window.shell==='function'){window.shell(panel());bind()}else fallback()}
-  function install(){css();const actions=document.querySelector('.actions');if(actions&&!actions.querySelector('.e365probtn')){const b=document.createElement('button');b.className='ico e365probtn';b.title='Entrega365 PRO';b.innerHTML='PRO<span class="e365probadge">+</span>';b.onclick=open;actions.prepend(b)}const tabs=document.querySelector('.tabs');if(tabs&&!tabs.querySelector('[data-pro]')){const b=document.createElement('button');b.className='tab';b.dataset.pro='1';b.innerHTML='<b>⭐</b>PRO';b.onclick=open;tabs.appendChild(b)}}
-  window.e365Pro=open;window.e365ProStatus=status;css();
+  function applyProLayout(){
+    const active=getPlan()==='active';
+    document.documentElement.classList.toggle('e365-pro-active',active);
+    document.body?.classList.toggle('e365-pro-active',active);
+    const badge=document.querySelector('.e365probtn .e365probadge');
+    if(badge)badge.textContent=active?'✓':'+';
+    document.dispatchEvent(new CustomEvent('e365:pro-changed',{detail:{active}}));
+  }
+  function install(){
+    css();applyProLayout();
+    const actions=document.querySelector('.actions');
+    if(actions&&!actions.querySelector('.e365probtn')){
+      const b=document.createElement('button');
+      b.className='ico e365probtn';b.type='button';b.title='Entrega365 PRO';
+      b.setAttribute('data-e365-pro-action','1');
+      b.innerHTML='PRO<span class="e365probadge">'+(getPlan()==='active'?'✓':'+')+'</span>';
+      b.onclick=e=>{e.preventDefault();e.stopPropagation();open()};actions.prepend(b);
+    }
+    const tabs=document.querySelector('.tabs');
+    if(tabs&&!tabs.querySelector('[data-pro]')){
+      const b=document.createElement('button');
+      b.className='tab';b.type='button';b.dataset.pro='1';
+      b.setAttribute('data-e365-pro-action','1');
+      b.innerHTML='<b>⭐</b><span>PRO</span>';
+      b.onclick=e=>{e.preventDefault();e.stopPropagation();open()};tabs.appendChild(b);
+    }
+  }
+  // Captura global: mesmo que outro módulo recrie a barra durante a renderização,
+  // qualquer botão PRO continua funcionando em Chrome, Brave, Edge e Firefox.
+  document.addEventListener('click',e=>{
+    const b=e.target.closest?.('[data-e365-pro-action],[data-pro]');
+    if(!b)return;
+    e.preventDefault();e.stopPropagation();open();
+  },true);
+  window.e365Pro=open;
+  window.e365ProStatus=status;
+  window.e365IsPro=()=>getPlan()==='active';
+  window.e365ApplyProLayout=applyProLayout;
+  css();
   let scheduled=false;
-  const ensure=()=>{if(scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;install()},0)};
+  const ensure=()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;install()})};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure,{once:true});else ensure();
   new MutationObserver(ensure).observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(()=>{install();applyProLayout()},1500);
 })();
