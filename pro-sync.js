@@ -15,7 +15,7 @@
   async function sync(){
     const mail=email();
     if(!mail || busy)return;
-    if(mail===ADMIN){localStorage.setItem(PLAN_KEY,'active');localStorage.setItem('entrega365:adminPro','true');return}
+    if(mail===ADMIN){localStorage.setItem(PLAN_KEY,'active');localStorage.setItem('entrega365:adminPro','true');window.e365ApplyProLayout?.();return}
     busy=true;
     try{
       const sub=localStorage.getItem(SUB_KEY)||'';
@@ -24,9 +24,10 @@
       if(!r.ok)return;
       const d=await r.json();
       if(d.subscription_id)localStorage.setItem(SUB_KEY,String(d.subscription_id));
-      localStorage.setItem(PLAN_KEY,d.active?'active':'free');
+      localStorage.setItem(PLAN_KEY,d.active?'active':'free');window.e365ApplyProLayout?.();
     }catch(e){console.warn('PRO sync:',e)}finally{busy=false}
   }
-  setTimeout(sync,1200);
+  window.e365SyncPro=sync;
+  setTimeout(sync,150);
   setInterval(sync,30000);
 })();
