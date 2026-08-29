@@ -1,4 +1,4 @@
-import "./tools.js?v=141";
+import "./tools.js?v=142";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
@@ -19,7 +19,7 @@ const firebaseConfig={
   // transparente de /__/auth e /__/firebase para entrega365.firebaseapp.com.
   // Não usar location.hostname aqui: alternar entre www/apex cria fluxos OAuth
   // diferentes e fazia o retorno do login ficar preso em alguns browsers.
-  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":"www.entrega365.com.br",
+  authDomain:(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"entrega365.firebaseapp.com":location.hostname,
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -31,7 +31,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=141";
+const FULL_LOGO="./logo-entrega365.jpg?v=142";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -44,9 +44,9 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v141"))return;
+  if(document.getElementById("entrega365-login-v142"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v141";
+  s.id="entrega365-login-v142";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px 40px!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:300px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
@@ -143,7 +143,6 @@ window.entrega365SignOut=async()=>{
 window.entrega365Auth={auth};
 
 let redirectSettled=false;
-let authObserverResolved=false;
 let startupTimer=null;
 let authPoll=null;
 
@@ -153,6 +152,7 @@ function stopStartupWait(){
 }
 
 function finishWithoutUser(){
+  stopStartupWait();
   if(currentUser)return;
   loginInProgress=false;
   sessionStorage.removeItem(LOGIN_PENDING);
@@ -169,9 +169,6 @@ function completeAuthenticatedUser(u){
 }
 
 onAuthStateChanged(auth,u=>{
-  authObserverResolved=true;
-  initialAuthResolved=true;
-
   if(u){
     completeAuthenticatedUser(u);
     return;
@@ -179,50 +176,50 @@ onAuthStateChanged(auth,u=>{
 
   currentUser=null;
 
-  // Em alguns Chromium o retorno do redirect pode entregar primeiro um
-  // estado nulo e só depois restaurar auth.currentUser. Enquanto houver
-  // login pendente, mantenha a tela de carregamento e deixe o polling abaixo
-  // concluir a sessão sem depender de getRedirectResult().
-  if(sessionStorage.getItem(LOGIN_PENDING)==="1" && !redirectSettled){
-    setLoading();
+  // Sem um redirect pendente, não deixe o usuário olhando uma tela de
+  // carregamento. Mostre imediatamente a tela de login.
+  if(sessionStorage.getItem(LOGIN_PENDING)!=="1"){
+    finishWithoutUser();
     return;
   }
 
-  if(redirectSettled)finishWithoutUser();
+  // Só durante o retorno do Google mantemos a recuperação temporária.
+  if(!redirectSettled)setLoading();
 });
 
 (function startAuthRecovery(){
-  setLoading();
+  const pending=sessionStorage.getItem(LOGIN_PENDING)==="1";
 
-  // Não aguarde setPersistence para começar a recuperar a sessão. Em alguns
-  // navegadores Chromium esse await pode atrasar a conclusão do redirect.
   Promise.resolve(setPersistence(auth,browserLocalPersistence))
     .catch(e=>console.warn("Persistence setup:",e))
     .finally(()=>{
       if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
+      else if(!pending)finishWithoutUser();
     });
 
-  // getRedirectResult() pode ficar pendente em determinados navegadores móveis
-  // após OAuth. O app não precisa do objeto de resultado: basta recuperar o
-  // usuário persistido pelo próprio Firebase.
+  if(!pending){
+    // O observer acima ou o finally mostram o login imediatamente.
+    return;
+  }
+
+  setLoading();
+
+  // Durante o retorno OAuth alguns Chromium restauram currentUser alguns
+  // instantes depois do primeiro estado nulo.
   authPoll=setInterval(()=>{
     if(auth.currentUser)completeAuthenticatedUser(auth.currentUser);
-  },250);
+  },200);
 
+  // Nunca permita que um LOGIN_PENDING antigo deixe a aplicação travada.
   startupTimer=setTimeout(()=>{
-    stopStartupWait();
-
     if(auth.currentUser){
       completeAuthenticatedUser(auth.currentUser);
-      return;
+    }else{
+      redirectSettled=true;
+      finishWithoutUser();
     }
-
-    // Se não existe usuário autenticado, nunca deixe o navegador preso na
-    // tela de carregamento.
-    redirectSettled=true;
-    finishWithoutUser();
-  },15000);
+  },5000);
 })();
-import("./drive-backup.js?v=141")
+import("./drive-backup.js?v=142")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
