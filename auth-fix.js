@@ -184,6 +184,10 @@ onAuthStateChanged(auth,u=>{
   // interna que estava gerando "Maximum call stack size exceeded".
   redirectChecked=true;
 
+  // O onAuthStateChanged pode disparar antes de redirectChecked=true.
+  // Nesse caso, conclua imediatamente com o estado que já foi recebido.
+  settle();
+
   setTimeout(()=>{
     if(!authStateSeen){
       authStateSeen=true;
