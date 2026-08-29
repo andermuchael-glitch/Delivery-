@@ -13,7 +13,7 @@ import {
 
 const firebaseConfig={
   apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",
-  authDomain:"www.entrega365.com.br",
+  authDomain:"entrega365.firebaseapp.com",
   projectId:"entrega365",
   storageBucket:"entrega365.firebasestorage.app",
   messagingSenderId:"686578751112",
@@ -25,7 +25,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const SESSION="dcv2:session";
 const LOGIN_REDIRECT_KEY="entrega365:googleRedirectPending";
-// O authDomain deve permanecer na mesma origem do aplicativo. O Vercel encaminha /__/auth para o handler do Firebase, evitando perda de estado do OAuth em Chrome Android.
+// Usa o domínio padrão do Firebase para o helper OAuth. Isso evita que o navegador móvel navegue a aba principal para /__/auth no domínio do Vercel.
 const FULL_LOGO="./logo-entrega365.jpg?v=123";
 const ICON_LOGO="./app-icon.svg?v=123";
 
@@ -109,8 +109,8 @@ async function startGoogleLogin(){
     const p=new GoogleAuthProvider();
     p.setCustomParameters({prompt:"select_account"});
 
-    // Popup evita o ciclo do handler /__/auth que estava causando
-    // "Maximum call stack size exceeded" no retorno por redirect.
+    // O helper OAuth usa o domínio padrão entrega365.firebaseapp.com, isolado do
+    // domínio do Vercel e do handler /__/auth que estava assumindo a aba principal.
     const result=await signInWithPopup(auth,p);
     sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
     authStateSeen=true;
@@ -137,6 +137,9 @@ function renderGoogleOnlyLogin(){
 function renderAppForUser(u){
   if(!u)return renderGoogleOnlyLogin();
   saveGoogleUser(u);
+  // Garanta também a sessão legada antes de renderizar. Assim qualquer reload
+  // durante a troca de contexto do OAuth abre o app em vez da tela inicial.
+  localStorage.setItem(SESSION,"google:"+u.uid);
   // A página isolada de login não carrega o aplicativo principal.
   // Após autenticar, volte explicitamente para o index para concluir a sessão.
   if(location.pathname.endsWith("/login-google.html")){
