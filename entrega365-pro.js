@@ -102,6 +102,10 @@
       b.innerHTML='<b>⭐</b>PRO';
       b.onclick=function(ev){ev.preventDefault();ev.stopPropagation();open()};tabs.appendChild(b);
     }
+    // The base app may recreate the PRO tab without its handler.
+    tabs?.querySelector('[data-pro]')?.addEventListener('click',function(ev){
+      ev.preventDefault();ev.stopPropagation();open();
+    },{once:true});
   }
   // Delegação no document: o app recria o <body> a cada aba, então listeners presos
   // diretamente aos botões podem desaparecer. O listener abaixo permanece ativo em todos os navegadores.
