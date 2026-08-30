@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v168">
+<meta name="entrega365-release" content="v169">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -313,7 +313,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v168";</script>
+<script>window.__ENTREGA365_RELEASE__="v169";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -359,6 +359,7 @@ const getDay=k=>{
     const clean={...e};
     if(Object.prototype.hasOwnProperty.call(clean,"photo")){delete clean.photo;changed=true;}
     if(Object.prototype.hasOwnProperty.call(clean,"endereco")){delete clean.endereco;changed=true;}
+    if(Object.prototype.hasOwnProperty.call(clean,"telefone")){delete clean.telefone;changed=true;}
     return clean;
   });
   if(changed) save("day:"+k,d);
@@ -496,7 +497,6 @@ function renderDay(){
         </div>
         <div class="delivery-summary-actions">
           <button class="quick-action map" data-route ${e.endereco?"":"disabled"} title="Abrir rota">🗺️</button>
-          <button class="quick-action whatsapp" data-whatsapp ${e.telefone?"":"disabled"} title="WhatsApp">💬</button>
           <button class="quick-action toggle-delivery" data-toggle title="${open?"Minimizar":"Ver detalhes"}">${open?"⌃":"⌄"}</button>
         </div>
       </div>
@@ -506,15 +506,7 @@ function renderDay(){
           <div>
             <div class="delivery-label">Cliente</div>
             <input data-f="cliente" autocomplete="name" placeholder="Nome do cliente" value="${esc(e.cliente||"")}">
-          </div>
-          <div>
-            <div class="delivery-label">WhatsApp</div>
-            <input data-f="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" value="${esc(e.telefone||"")}">
-          </div>
-        <div class="delivery-actions">
-          <button class="delivery-action whatsapp" data-whatsapp ${e.telefone?"":"disabled"}>💬 WhatsApp</button>
-        </div>
-      </div>`:''}
+          </div>`:''}
     </div>`;
   }).join("");
 
@@ -554,21 +546,12 @@ function bindDay(){
   let d=getDay(day);
   $("#date").onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
   ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
-  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:"",telefone:""});saveDayAnd(day,d);render()};
+  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:""});saveDayAnd(day,d);render()};
   document.querySelectorAll(".delivery-entry").forEach(r=>{
     let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
     r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
     r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);if(openDeliveryId===id)openDeliveryId=null;saveDayAnd(day,d);render()};
     r.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{openDeliveryId=openDeliveryId===id?null:id;render()});
-    r.querySelectorAll("[data-whatsapp]").forEach(b=>b.onclick=()=>{
-      let phone=String(e.telefone||"").replace(/\D/g,"");
-      if(phone.startsWith("0"))phone=phone.replace(/^0+/,"");
-      if(phone.length===10||phone.length===11)phone="55"+phone;
-      if(phone.length<12)return alert("Informe um telefone válido com DDD.");
-      const name=String(e.cliente||"").trim();
-      const msg=name?"Olá, "+name+"! Estou a caminho para realizar sua entrega.":"Olá! Estou a caminho para realizar sua entrega.";
-      window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener");
-    });
 
   })
 }
@@ -723,7 +706,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v168",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v169",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
