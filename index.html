@@ -554,7 +554,7 @@ function bindDay(){
     r.querySelector("[data-route]").onclick=()=>{
       const address=String(e.endereco||"").trim();
       if(!address)return alert("Informe o endereço do cliente para abrir a rota.");
-      window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(address),"_blank","noopener");
+      window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(address),"_blank","noopener");
     };
     r.querySelector("[data-whatsapp]").onclick=()=>{
       let phone=String(e.telefone||"").replace(/\D/g,"");
