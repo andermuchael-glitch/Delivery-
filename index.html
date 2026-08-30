@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v174">
+<meta name="entrega365-release" content="v175">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -314,7 +314,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v174";</script>
+<script>window.__ENTREGA365_RELEASE__="v175";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -478,10 +478,14 @@ function tab(v,i,t){return `<button class="tab ${view===v?"active":""}" onclick=
 function go(v){view=v;render()}
 window.go=go;
 
+let commandListExpanded=false;
+
 function renderDay(){
   let d=getDay(day),t=totals(d);
   // Última comanda lançada aparece no topo; as anteriores ficam abaixo.
-  let rows=d.entries.slice().reverse().map(e=>{
+  const orderedEntries=d.entries.slice().reverse();
+  const visibleEntries=commandListExpanded?orderedEntries:orderedEntries.slice(0,1);
+  let rows=visibleEntries.map(e=>{
     const status=e.ok?"Entregue":"Pendente";
     return `
     <div class="delivery-entry" data-id="${e.id}">
@@ -516,15 +520,17 @@ function renderDay(){
   <div class="card">
     <div class="row between"><div class="title" style="margin:0">📦 Comandas</div><span class="small">${t.conf}/${t.ent} conferidas</span></div>
     <div class="line"></div>
+    <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
+    ${rows?`<div class="command-list">${rows}</div>`:`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
+    ${d.entries.length>1?`<button class="add" id="toggleComandas">${commandListExpanded?"▲ Ocultar comandas anteriores":"▼ Ver todas as "+d.entries.length+" comandas"}</button>`:""}
+    <button class="add" id="add">+ Nova comanda</button>
+    <div class="line"></div>
+    <div class="title" style="font-size:14px;margin:0 0 10px">📊 Somatória do dia</div>
     <div class="row between"><span>Arrancada / Diária</span><div style="width:120px"><input id="arr" type="number" inputmode="decimal" value="${d.arrancada||0}"></div></div>
     <div class="sum"><span>Entregas realizadas</span><b>${t.ent}</b></div>
     <div class="sum"><span>Soma das taxas</span><b>${brl(t.taxas)}</b></div>
     <div class="sum"><span>Arrancada</span><b>${brl(t.arr)}</b></div>
     <div class="sum total"><span>Total líquido do dia</span><b>${brl(t.total)}</b></div>
-    <div class="line"></div>
-    <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
-    ${rows?`<div class="command-list">${rows}</div>`:`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
-    <button class="add" id="add">+ Nova comanda</button>
     <div class="line"></div>
     <div class="title" style="font-size:14px;margin:0 0 10px">🏍️ Quilometragem do dia</div>
     <div class="kmgrid">
@@ -547,11 +553,15 @@ function bindDay(){
       saveDayAnd(day,d);render();
     };
   });
+  const toggleComandas=$("#toggleComandas");
+  if(toggleComandas) toggleComandas.onclick=()=>{commandListExpanded=!commandListExpanded;render();};
+
   const add=$("#add");
   if(add) add.onclick=()=>{
     const d=current();
     if(!Array.isArray(d.entries)) d.entries=[];
     d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});
+    commandListExpanded=false;
     saveDayAnd(day,d);
     render();
   };
@@ -726,7 +736,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v174",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v175",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
