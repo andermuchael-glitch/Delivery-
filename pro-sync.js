@@ -32,6 +32,10 @@
   window.e365IsPro=()=>localStorage.getItem(PLAN_KEY)==='active';
   window.e365SyncPro=sync;
   setTimeout(sync,700);
-  setInterval(sync,30000);
+  setTimeout(sync,2500);
+  setInterval(sync,15000);
   window.addEventListener('online',sync);
+  window.addEventListener('focus',sync);
+  window.addEventListener('pageshow',sync);
+  window.addEventListener('e365-cloud-restored',sync);
 })();
