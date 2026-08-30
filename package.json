@@ -1,0 +1,17 @@
+{
+  "name": "entrega365-android-test",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Projeto de teste Android do Entrega365 com Capacitor",
+  "scripts": {
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  }
+}
