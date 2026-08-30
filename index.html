@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v167">
+<meta name="entrega365-release" content="v168">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -229,8 +229,6 @@ input:focus,select:focus{
 .delivery-summary-main{min-width:0}.delivery-summary-name{font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.delivery-summary-meta{font-size:11px;color:var(--muted)}
 .delivery-summary-actions{display:flex;align-items:center;gap:6px}.quick-action{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:16px}.quick-action.map{color:var(--accent)}.quick-action.whatsapp{color:var(--green)}.toggle-delivery{color:#ddd}
 .delivery-details{padding:12px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)}
-.ocr-row{display:flex;gap:8px;margin-top:10px;align-items:center}.ocr-btn{flex:1;min-height:44px;border:1px solid var(--accent);border-radius:10px;background:rgba(255,208,0,.08);color:var(--accent);font-weight:900}.ocr-status{font-size:11px;color:var(--muted);margin-top:7px;min-height:16px}.ocr-status.busy{color:var(--accent)}.ocr-status.error{color:var(--red)}
-.photo-note{font-size:10px;color:var(--muted);margin-top:6px}
 .check{width:22px;height:22px;accent-color:var(--accent);cursor:pointer;margin:auto}
 .trash{border:0;background:transparent;color:var(--red);font-size:18px;display:inline-flex;align-items:center;justify-content:center;height:36px;width:36px;border-radius:8px}
 .trash:hover{background:rgba(255,69,58,.1)}
@@ -315,7 +313,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v167";</script>
+<script>window.__ENTREGA365_RELEASE__="v168";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -357,10 +355,11 @@ const getDay=k=>{
   const d=load("day:"+k,defDay(k));
   let changed=false;
   if(Array.isArray(d.entries)) d.entries=d.entries.map(e=>{
-    if(e&&Object.prototype.hasOwnProperty.call(e,"photo")){
-      const {photo,...clean}=e; changed=true; return clean;
-    }
-    return e;
+    if(!e)return e;
+    const clean={...e};
+    if(Object.prototype.hasOwnProperty.call(clean,"photo")){delete clean.photo;changed=true;}
+    if(Object.prototype.hasOwnProperty.call(clean,"endereco")){delete clean.endereco;changed=true;}
+    return clean;
   });
   if(changed) save("day:"+k,d);
   return d;
@@ -444,149 +443,6 @@ function totals(d){
   return{taxas,ent:d.entries.length,conf:d.entries.filter(e=>e.ok).length,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
 }
 function saveDayAnd(k,d){save("day:"+k,d)}
-function loadOcrEngine(){
-  if(window.Tesseract)return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-    const existing=document.getElementById("entrega365-ocr-runtime");
-    if(existing){
-      existing.addEventListener("load",resolve,{once:true});
-      existing.addEventListener("error",()=>reject(new Error("OCR indisponível")),{once:true});
-      return;
-    }
-    const s=document.createElement("script");
-    s.id="entrega365-ocr-runtime";
-    s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error("Não foi possível carregar o leitor OCR"));
-    document.head.appendChild(s);
-  });
-}
-function percentile(hist,total,p){
-  const target=Math.max(1,Math.floor(total*p)); let acc=0;
-  for(let i=0;i<hist.length;i++){acc+=hist[i];if(acc>=target)return i;}
-  return 255;
-}
-function canvasBlob(canvas,type="image/jpeg",quality=.92){
-  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Falha ao preparar a imagem")),type,quality));
-}
-async function loadReceiptImage(file){
-  if("createImageBitmap" in window) return await createImageBitmap(file,{imageOrientation:"from-image"});
-  return await new Promise((resolve,reject)=>{
-    const img=new Image(), url=URL.createObjectURL(file);
-    img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
-    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível abrir a foto"))};
-    img.src=url;
-  });
-}
-async function prepareReceiptImages(file,onProgress){
-  onProgress("Ajustando a foto para leitura…");
-  const img=await loadReceiptImage(file);
-  const longest=Math.max(img.width,img.height);
-  const scale=Math.min(2.2,Math.max(.65,2200/longest));
-  const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
-  const base=document.createElement("canvas"); base.width=w;base.height=h;
-  const bctx=base.getContext("2d",{willReadFrequently:true});
-  bctx.drawImage(img,0,0,w,h);
-  const src=bctx.getImageData(0,0,w,h), px=src.data;
-  const hist=new Uint32Array(256);
-  for(let i=0;i<px.length;i+=4){
-    const y=Math.max(0,Math.min(255,Math.round(.299*px[i]+.587*px[i+1]+.114*px[i+2])));
-    hist[y]++;
-  }
-  const total=w*h, low=percentile(hist,total,.015), high=Math.max(low+25,percentile(hist,total,.985));
-  for(let i=0;i<px.length;i+=4){
-    const y=Math.max(0,Math.min(255,Math.round(.299*px[i]+.587*px[i+1]+.114*px[i+2])));
-    const v=Math.max(0,Math.min(255,Math.round((y-low)*255/(high-low))));
-    px[i]=px[i+1]=px[i+2]=v; px[i+3]=255;
-  }
-  bctx.putImageData(src,0,0);
-  const gray=await canvasBlob(base);
-  onProgress("Criando versão de alto contraste…");
-  const bw=document.createElement("canvas"); bw.width=w;bw.height=h;
-  const wctx=bw.getContext("2d",{willReadFrequently:true});
-  const out=wctx.createImageData(w,h), od=out.data, gd=src.data;
-  const threshold=170;
-  for(let i=0;i<gd.length;i+=4){
-    const v=gd[i]<threshold?0:255;
-    od[i]=od[i+1]=od[i+2]=v; od[i+3]=255;
-  }
-  wctx.putImageData(out,0,0);
-  return {gray,bw:await canvasBlob(bw)};
-}
-function extractComandaData(text){
-  const raw=String(text||"");
-  const lines=raw.replace(/\r/g,"").split("\n").map(x=>x.replace(/\s+/g," ").trim()).filter(Boolean);
-  const joined=lines.join("\n");
-  const clean=joined.replace(/[ \t]+/g," ");
-  const pick=re=>{const m=joined.match(re);return m&&m[1]?m[1].trim():""};
-  let comanda=pick(/(?:PEDI[D0][O0]|COMAND[AA])\s*(?:N[º°O2Z]|NO|N\.?)?\s*[:#-]?\s*(\d{1,8})/im);
-  if(!comanda){
-    const m=joined.match(/(?:PEDI[D0][O0]|COMAND[AA])[^\n\d]{0,12}(\d{1,8})/im);
-    comanda=m?m[1]:"";
-  }
-  let cliente=pick(/CLIENT[EE]\s*[:.-]?\s*([^\n]+)/im);
-  if(cliente) cliente=cliente.replace(/(?:TELEFONE|TEL|WHATSAPP|CELULAR)\s*[:.-]?.*/i,"").trim();
-  let telefone=pick(/(?:TELEFONE|TEL(?:EFONE)?|WHATSAPP|CELULAR)\s*[:.-]?\s*([^\n]+)/im);
-  if(!telefone){
-    const p=clean.match(/(?:\+?55\s*)?\(?\d{2}\)?\s*(?:9\s*)?\d{4}[-\s]?\d{4}/);
-    telefone=p?p[0].trim():"";
-  }else{
-    const p=telefone.match(/(?:\+?55\s*)?\(?\d{2}\)?\s*(?:9\s*)?\d{4}[-\s]?\d{4}/);
-    telefone=p?p[0].trim():telefone.trim();
-  }
-  let endereco="";
-  let start=lines.findIndex(x=>/ENDERE[ÇC]O(?:\s+PARA)?(?:\s+ENTREGA)?|ENDER[EC]O/i.test(x));
-  if(start>=0){
-    const parts=[];
-    for(let i=start;i<Math.min(lines.length,start+8);i++){
-      let x=lines[i]
-        .replace(/^.*?ENDERE[ÇC]O(?:\s+PARA)?(?:\s+ENTREGA)?\s*[:.-]?\s*/i,"")
-        .trim();
-      if(!x)continue;
-      if(i>start&&/(?:ITENS|PEDIDO|TOTAL|PREVISTO|FORMA\s+DE\s+PAGAMENTO|PAGAMENTO)/i.test(x))break;
-      parts.push(x);
-    }
-    endereco=parts.join(", ").replace(/,\s*,/g,",").trim();
-  }
-  if(endereco.length<5){
-    const rua=lines.findIndex(x=>/^(?:RUA|AV(?:ENIDA)?|ALAMEDA|TRAVESSA|ESTRADA)\b/i.test(x));
-    if(rua>=0) endereco=lines.slice(rua,Math.min(lines.length,rua+4)).join(", ");
-  }
-  return {raw:joined,comanda,cliente,telefone,endereco};
-}
-function comandaScore(d){
-  return ["comanda","cliente","telefone","endereco"].reduce((n,k)=>n+(d[k]&&String(d[k]).trim()?1:0),0);
-}
-async function readComandaFromPhoto(file,onProgress){
-  if(!file.type.startsWith("image/")) throw new Error("Arquivo não é uma imagem");
-  await loadOcrEngine();
-  const prepared=await prepareReceiptImages(file,onProgress);
-  onProgress("Carregando leitor da comanda…");
-  const worker=await window.Tesseract.createWorker("por",1,{logger:m=>{
-    if(m.status==="recognizing text") onProgress("Lendo comanda… "+Math.round((m.progress||0)*100)+"%");
-    else if(m.status) onProgress("Preparando leitura…");
-  }});
-  try{
-    await worker.setParameters({
-      tessedit_pageseg_mode: window.Tesseract.PSM?window.Tesseract.PSM.AUTO:"3",
-      preserve_interword_spaces:"1",
-      user_defined_dpi:"300"
-    });
-    const first=await worker.recognize(prepared.gray);
-    let data=extractComandaData(first?.data?.text||"");
-    if(comandaScore(data)<2){
-      onProgress("Refinando a leitura da comanda…");
-      const second=await worker.recognize(prepared.bw);
-      const alternative=extractComandaData(second?.data?.text||"");
-      if(comandaScore(alternative)>=comandaScore(data)) data=alternative;
-    }
-    return data;
-  }finally{
-    await worker.terminate();
-  }
-}
-
-
 function shell(content){
   document.body.innerHTML=`
   <div id="app">
@@ -636,7 +492,7 @@ function renderDay(){
       <div class="delivery-summary">
         <div class="delivery-summary-main">
           <div class="delivery-summary-name">${client||"Cliente não informado"}</div>
-          <div class="delivery-summary-meta">${status}${e.endereco?" • endereço informado":""}</div>
+          <div class="delivery-summary-meta">${status}</div>
         </div>
         <div class="delivery-summary-actions">
           <button class="quick-action map" data-route ${e.endereco?"":"disabled"} title="Abrir rota">🗺️</button>
@@ -664,11 +520,6 @@ function renderDay(){
           <button class="delivery-action map" data-route ${e.endereco?"":"disabled"}>🗺️ Abrir rota</button>
           <button class="delivery-action whatsapp" data-whatsapp ${e.telefone?"":"disabled"}>💬 WhatsApp</button>
         </div>
-        <div class="ocr-row">
-          <input data-ocr-photo type="file" accept="image/*" capture="environment" hidden>
-          <button class="ocr-btn" data-ocr-btn>📷 Ler comanda por foto</button>
-        </div>
-        <div class="ocr-status" data-ocr-status>Fotografe a comanda inteira, com boa luz e sem reflexos. A foto é processada temporariamente, melhorada para leitura e descartada.</div>
       </div>`:''}
     </div>`;
   }).join("");
@@ -709,17 +560,12 @@ function bindDay(){
   let d=getDay(day);
   $("#date").onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
   ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
-  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:"",endereco:"",telefone:""});saveDayAnd(day,d);render()};
+  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:"",telefone:""});saveDayAnd(day,d);render()};
   document.querySelectorAll(".delivery-entry").forEach(r=>{
     let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
     r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
     r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);if(openDeliveryId===id)openDeliveryId=null;saveDayAnd(day,d);render()};
     r.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{openDeliveryId=openDeliveryId===id?null:id;render()});
-    r.querySelectorAll("[data-route]").forEach(b=>b.onclick=()=>{
-      const address=String(e.endereco||"").trim();
-      if(!address)return alert("Informe o endereço do cliente para abrir a rota.");
-      window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(address),"_blank","noopener");
-    });
     r.querySelectorAll("[data-whatsapp]").forEach(b=>b.onclick=()=>{
       let phone=String(e.telefone||"").replace(/\D/g,"");
       if(phone.startsWith("0"))phone=phone.replace(/^0+/,"");
@@ -729,48 +575,7 @@ function bindDay(){
       const msg=name?"Olá, "+name+"! Estou a caminho para realizar sua entrega.":"Olá! Estou a caminho para realizar sua entrega.";
       window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener");
     });
-    const ocrInput=r.querySelector("[data-ocr-photo]");
-    const ocrBtn=r.querySelector("[data-ocr-btn]");
-    const ocrStatus=r.querySelector("[data-ocr-status]");
-    if(ocrInput&&ocrBtn){
-      ocrBtn.onclick=()=>ocrInput.click();
-      ocrInput.onchange=async ev=>{
-        const file=ev.target.files&&ev.target.files[0]; if(!file)return;
-        ocrBtn.disabled=true;
-        ocrStatus.className="ocr-status busy";
-        ocrStatus.textContent="Preparando leitura da comanda…";
-        try{
-          const data=await readComandaFromPhoto(file,progress=>{ocrStatus.textContent=progress;});
-          if(!data.raw.trim()) throw new Error("Não foi possível identificar texto na foto.");
-          const lines=[
-            "Dados encontrados na comanda:",
-            "Comanda: "+(data.comanda||"não identificada"),
-            "Cliente: "+(data.cliente||"não identificado"),
-            "WhatsApp: "+(data.telefone||"não identificado"),
-            "Endereço: "+(data.endereco||"não identificado"),
-            "",
-            "Usar estes dados?"
-          ];
-          if(confirm(lines.join("\n"))){
-            if(data.comanda)e.comanda=data.comanda;
-            if(data.cliente)e.cliente=data.cliente;
-            if(data.telefone)e.telefone=data.telefone;
-            if(data.endereco)e.endereco=data.endereco;
-            saveDayAnd(day,d);
-            render();
-          }else{
-            ocrStatus.textContent="Leitura descartada. A foto não foi salva.";
-          }
-        }catch(err){
-          console.error("OCR:",err);
-          ocrStatus.className="ocr-status error";
-          ocrStatus.textContent="Não foi possível ler a comanda. Tente outra foto com mais nitidez.";
-        }finally{
-          ev.target.value="";
-          ocrBtn.disabled=false;
-        }
-      };
-    }
+
   })
 }
 
@@ -924,7 +729,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v167",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v168",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
