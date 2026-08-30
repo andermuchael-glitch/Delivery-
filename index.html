@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v169">
+<meta name="entrega365-release" content="v170">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -313,7 +313,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v169";</script>
+<script>window.__ENTREGA365_RELEASE__="v170";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -360,6 +360,7 @@ const getDay=k=>{
     if(Object.prototype.hasOwnProperty.call(clean,"photo")){delete clean.photo;changed=true;}
     if(Object.prototype.hasOwnProperty.call(clean,"endereco")){delete clean.endereco;changed=true;}
     if(Object.prototype.hasOwnProperty.call(clean,"telefone")){delete clean.telefone;changed=true;}
+    if(Object.prototype.hasOwnProperty.call(clean,"cliente")){delete clean.cliente;changed=true;}
     return clean;
   });
   if(changed) save("day:"+k,d);
@@ -503,28 +504,6 @@ function renderDay(){
       ${open?`
       <div class="delivery-details">
         <div class="delivery-client">
-          <div>
-            <div class="delivery-label">Cliente</div>
-            <input data-f="cliente" autocomplete="name" placeholder="Nome do cliente" value="${esc(e.cliente||"")}">
-          </div>`:''}
-    </div>`;
-  }).join("");
-
-  return `
-  <div class="daynav">
-    <button class="navbtn" onclick="shiftDay(-1)">‹</button>
-    <div class="daycenter">
-      <strong>${dateLabel(day)}</strong>
-      <input id="date" type="date" value="${day}">
-    </div>
-    <button class="navbtn" onclick="shiftDay(1)">›</button>
-  </div>
-  <div class="card">
-    <div class="title">📍 Quilometragem do dia</div>
-    <div class="kmgrid">
-      <div><div class="small">KM inicial</div><input id="kmi" type="number" inputmode="numeric" value="${esc(d.kmInicial)}" placeholder="Ex.: 45280"></div>
-      <div><div class="small">KM final</div><input id="kmf" type="number" inputmode="numeric" value="${esc(d.kmFinal)}" placeholder="Ex.: 45397"></div>
-    </div>
     <div class="kmresult"><span>Total rodado</span><b>${t.km} km</b></div>
   </div>
   <div class="card">
@@ -546,7 +525,7 @@ function bindDay(){
   let d=getDay(day);
   $("#date").onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
   ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
-  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:""});saveDayAnd(day,d);render()};
+  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});saveDayAnd(day,d);render()};
   document.querySelectorAll(".delivery-entry").forEach(r=>{
     let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
     r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
@@ -706,7 +685,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v169",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v170",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
