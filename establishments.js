@@ -118,7 +118,8 @@
   function install(){css();if(uid()&&isPro())render()}
   window.e365Establishments={isPro,openNew:modal,current,refresh:render,mapDataKey};
   window.addEventListener('e365-pro-updated',install);
-  window.addEventListener('e365-data-changed',()=>setTimeout(install,0));\n  window.addEventListener('e365-drive-restored',()=>setTimeout(install,0));
+  window.addEventListener('e365-data-changed',()=>setTimeout(install,0));
+  window.addEventListener('e365-drive-restored',()=>setTimeout(install,0));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
   setInterval(install,1500);
 })();
