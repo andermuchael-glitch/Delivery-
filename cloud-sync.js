@@ -110,7 +110,7 @@ async function start(){
       const remote=snap.data()||{};
       const remoteAt=Number(remote.updatedAt||0);
       const st=state();
-      if(remoteAt>Number(st.remoteAt||0)&&remoteAt>Number(st.savedAt||0)){
+      if(remoteAt>Number(st.remoteAt||0)&&!st.dirty){
         restoring=true;
         apply(remote.data||{});
         restoring=false;
@@ -146,9 +146,15 @@ function scheduleRetry(){
 window.entrega365CloudStatus=()=>({uid,ready,restoring,lastError:lastError?String(lastError?.message||lastError):"",state:state()});
 window.addEventListener("e365-data-changed",queue);
 window.addEventListener("e365-pro-updated",queue);
-window.addEventListener("e365-cloud-restored",()=>setTimeout(()=>window.e365Establishments?.refresh?.(),0));
+window.addEventListener("e365-cloud-restored",()=>{
+  setTimeout(()=>{
+    window.e365Establishments?.refresh?.();
+    window.render?.();
+    window.e365SyncPro?.();
+  },0);
+});
 window.addEventListener("online",()=>start().catch(()=>{}));
-window.addEventListener("focus",()=>start().catch(()=>{}));
+window.addEventListener("focus",()=>{start().catch(()=>{});window.e365SyncPro?.();});
 // Chromium móvel pode falhar na primeira leitura do Firestore durante a hidratação.
 // Reconciliamos periodicamente enquanto houver sessão e também reavaliamos o documento.
 setInterval(()=>{
@@ -158,7 +164,7 @@ setInterval(()=>{
   else getDoc(ref).then(snap=>{
     if(!snap.exists()||restoring)return;
     const remote=snap.data()||{}, remoteAt=Number(remote.updatedAt||0), st=state();
-    if(remoteAt>Number(st.remoteAt||0)&&remoteAt>Number(st.savedAt||0)){
+    if(remoteAt>Number(st.remoteAt||0)&&!st.dirty){
       restoring=true;
       apply(remote.data||{});
       restoring=false;
@@ -169,4 +175,4 @@ setInterval(()=>{
       setTimeout(()=>window.render?.(),0);
     }
   }).catch(e=>{lastError=e;ready=false;});
-},5000);
+},3000);
