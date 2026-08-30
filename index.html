@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v172">
+<meta name="entrega365-release" content="v173">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -215,6 +215,7 @@ input:focus,select:focus{
 .entry:last-of-type{border-bottom:0}
 .delivery-entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .delivery-entry:last-of-type{border-bottom:0}
+.command-list{display:flex;flex-direction:column-reverse}
 .delivery-client{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 8px}
 .delivery-client .wide{grid-column:1/-1}
 .delivery-actions{display:flex;gap:8px;margin-top:8px}
@@ -313,7 +314,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v172";</script>
+<script>window.__ENTREGA365_RELEASE__="v173";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -479,7 +480,8 @@ window.go=go;
 
 function renderDay(){
   let d=getDay(day),t=totals(d);
-  let rows=d.entries.map(e=>{
+  // A lista cresce visualmente de baixo para cima: a nova comanda fica junto ao botão inferior.
+  let rows=d.entries.slice().reverse().map(e=>{
     const status=e.ok?"Entregue":"Pendente";
     return `
     <div class="delivery-entry" data-id="${e.id}">
@@ -513,16 +515,23 @@ function renderDay(){
   </div>
   <div class="card">
     <div class="row between"><div class="title" style="margin:0">📦 Comandas</div><span class="small">${t.conf}/${t.ent} conferidas</span></div>
-    <div class="line" style="margin:10px 0"></div>
-    <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
-    ${rows||`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
-    <button class="add" id="add">+ Nova comanda</button>
     <div class="line"></div>
     <div class="row between"><span>Arrancada / Diária</span><div style="width:120px"><input id="arr" type="number" inputmode="decimal" value="${d.arrancada||0}"></div></div>
     <div class="sum"><span>Entregas realizadas</span><b>${t.ent}</b></div>
     <div class="sum"><span>Soma das taxas</span><b>${brl(t.taxas)}</b></div>
     <div class="sum"><span>Arrancada</span><b>${brl(t.arr)}</b></div>
     <div class="sum total"><span>Total líquido do dia</span><b>${brl(t.total)}</b></div>
+    <div class="line"></div>
+    <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
+    ${rows?`<div class="command-list">${rows}</div>`:`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
+    <button class="add" id="add">+ Nova comanda</button>
+    <div class="line"></div>
+    <div class="title" style="font-size:14px;margin:0 0 10px">🏍️ Quilometragem do dia</div>
+    <div class="kmgrid">
+      <div><div class="small" style="margin:0 0 6px">KM inicial</div><input id="kmi" type="number" inputmode="decimal" min="0" placeholder="Ex.: 12500" value="${esc(d.kmInicial)}"></div>
+      <div><div class="small" style="margin:0 0 6px">KM final</div><input id="kmf" type="number" inputmode="decimal" min="0" placeholder="Ex.: 12640" value="${esc(d.kmFinal)}"></div>
+    </div>
+    <div class="kmresult"><span>KM rodados no dia</span><b>${t.km.toLocaleString("pt-BR")} km</b></div>
   </div>`;
 }
 
@@ -717,7 +726,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v172",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v173",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
