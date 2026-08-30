@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v171">
+<meta name="entrega365-release" content="v172">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -313,7 +313,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v171";</script>
+<script>window.__ENTREGA365_RELEASE__="v172";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -527,17 +527,44 @@ function renderDay(){
 }
 
 function bindDay(){
-  let d=getDay(day);
-  $("#date").onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
-  ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
-  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});saveDayAnd(day,d);render()};
+  const current=()=>getDay(day);
+  const date=$("#date");
+  if(date) date.onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
+  ["kmi","kmf","arr"].forEach(id=>{
+    const el=$("#"+id);
+    if(el) el.onchange=e=>{
+      let d=current();
+      d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});
+      saveDayAnd(day,d);render();
+    };
+  });
+  const add=$("#add");
+  if(add) add.onclick=()=>{
+    const d=current();
+    if(!Array.isArray(d.entries)) d.entries=[];
+    d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});
+    saveDayAnd(day,d);
+    render();
+  };
   document.querySelectorAll(".delivery-entry").forEach(r=>{
-    let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
-    r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
-    r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);if(openDeliveryId===id)openDeliveryId=null;saveDayAnd(day,d);render()};
-    r.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{openDeliveryId=openDeliveryId===id?null:id;render()});
-
-  })
+    const id=r.dataset.id;
+    r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{
+      const d=current(), entry=d.entries.find(x=>String(x.id)===String(id));
+      if(!entry)return;
+      const field=i.dataset.f;
+      entry[field]=field==="ok"?i.checked:i.value;
+      saveDayAnd(day,d);render();
+    });
+    const remove=r.querySelector("[data-remove]");
+    if(remove) remove.onclick=()=>{
+      if(!confirm("Apagar esta comanda?"))return;
+      const d=current();
+      d.entries=d.entries.filter(x=>String(x.id)!==String(id));
+      if(openDeliveryId===id)openDeliveryId=null;
+      saveDayAnd(day,d);
+      render();
+    };
+  });
 }
 
 function shiftDay(n){let [y,m,d]=day.split("-").map(Number),x=new Date(y,m-1,d+n);day=`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;render()}
@@ -690,7 +717,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v171",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v172",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
