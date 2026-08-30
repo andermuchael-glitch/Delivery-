@@ -6,7 +6,8 @@ let customView=null,installed=false;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 let S={theme:'night',stayConnected:true};try{S={...S,...JSON.parse(localStorage.getItem(K)||'{}')}}catch{}
-const changed=()=>window.dispatchEvent(new Event('e365-data-changed'));\nconst saveS=()=>{localStorage.setItem(K,JSON.stringify(S));changed()};
+const changed=()=>window.dispatchEvent(new Event('e365-data-changed'));
+const saveS=()=>{localStorage.setItem(K,JSON.stringify(S));changed()};
 const agenda=()=>{try{return JSON.parse(localStorage.getItem(A)||'[]')}catch{return[]}};
 const saveA=x=>{localStorage.setItem(A,JSON.stringify(x));changed()};
 function ensureCss(){
