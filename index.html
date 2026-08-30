@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v163">
+<meta name="entrega365-release" content="v164">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -213,6 +213,16 @@ input:focus,select:focus{
 .tablehead{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;padding:0 4px 8px;border-bottom:1px solid var(--line)}
 .entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .entry:last-of-type{border-bottom:0}
+.delivery-entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.delivery-entry:last-of-type{border-bottom:0}
+.delivery-client{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 8px}
+.delivery-client .wide{grid-column:1/-1}
+.delivery-actions{display:flex;gap:8px;margin-top:8px}
+.delivery-action{flex:1;min-height:42px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-weight:800}
+.delivery-action.map{color:var(--accent)}
+.delivery-action.whatsapp{color:var(--green)}
+.delivery-action:disabled{opacity:.45;cursor:not-allowed}
+.delivery-label{font-size:11px;color:var(--muted);font-weight:700;margin:0 0 4px}
 .check{width:22px;height:22px;accent-color:var(--accent);cursor:pointer;margin:auto}
 .trash{border:0;background:transparent;color:var(--red);font-size:18px;display:inline-flex;align-items:center;justify-content:center;height:36px;width:36px;border-radius:8px}
 .trash:hover{background:rgba(255,69,58,.1)}
@@ -297,7 +307,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v163";</script>
+<script>window.__ENTREGA365_RELEASE__="v164";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -451,11 +461,31 @@ window.go=go;
 function renderDay(){
   let d=getDay(day),t=totals(d);
   let rows=d.entries.map(e=>`
-    <div class="entry" data-id="${e.id}">
-      <input data-f="comanda" type="number" inputmode="numeric" placeholder="Nº" value="${esc(e.comanda||"")}">
-      <input data-f="taxa" type="number" inputmode="decimal" placeholder="Taxa R$" value="${esc(e.taxa||"")}">
-      <input class="check" data-f="ok" type="checkbox" ${e.ok?"checked":""}>
-      <button class="trash" data-remove title="Excluir">✕</button>
+    <div class="delivery-entry" data-id="${e.id}">
+      <div class="entry">
+        <input data-f="comanda" type="number" inputmode="numeric" placeholder="Nº" value="${esc(e.comanda||"")}">
+        <input data-f="taxa" type="number" inputmode="decimal" placeholder="Taxa R$" value="${esc(e.taxa||"")}">
+        <input class="check" data-f="ok" type="checkbox" ${e.ok?"checked":""}>
+        <button class="trash" data-remove title="Excluir">✕</button>
+      </div>
+      <div class="delivery-client">
+        <div>
+          <div class="delivery-label">Cliente</div>
+          <input data-f="cliente" autocomplete="name" placeholder="Nome do cliente" value="${esc(e.cliente||"")}">
+        </div>
+        <div>
+          <div class="delivery-label">WhatsApp</div>
+          <input data-f="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" value="${esc(e.telefone||"")}">
+        </div>
+        <div class="wide">
+          <div class="delivery-label">Endereço para entrega</div>
+          <input data-f="endereco" autocomplete="street-address" placeholder="Rua, número, bairro, cidade" value="${esc(e.endereco||"")}">
+        </div>
+      </div>
+      <div class="delivery-actions">
+        <button class="delivery-action map" data-route ${e.endereco?"":"disabled"}>🗺️ Abrir rota</button>
+        <button class="delivery-action whatsapp" data-whatsapp ${e.telefone?"":"disabled"}>💬 WhatsApp</button>
+      </div>
     </div>`).join("");
 
   return `
@@ -516,11 +546,25 @@ function bindDay(){
   let d=getDay(day);
   $("#date").onchange=e=>{day=e.target.value;render()};
   ["kmi","kmf","arr"].forEach(id=>{$("#"+id).onchange=e=>{d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});saveDayAnd(day,d);render()}});
-  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});saveDayAnd(day,d);render()};
-  document.querySelectorAll(".entry").forEach(r=>{
+  $("#add").onclick=()=>{d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false,cliente:"",endereco:"",telefone:""});saveDayAnd(day,d);render()};
+  document.querySelectorAll(".delivery-entry").forEach(r=>{
     let id=r.dataset.id,e=d.entries.find(x=>x.id===id);
-    r.querySelectorAll("input").forEach(i=>i.onchange=ev=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
-    r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);saveDayAnd(day,d);render()}
+    r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{let f=i.dataset.f;e[f]=f==="ok"?i.checked:i.value;saveDayAnd(day,d);render()});
+    r.querySelector("[data-remove]").onclick=()=>{d.entries=d.entries.filter(x=>x.id!==id);saveDayAnd(day,d);render()};
+    r.querySelector("[data-route]").onclick=()=>{
+      const address=String(e.endereco||"").trim();
+      if(!address)return alert("Informe o endereço do cliente para abrir a rota.");
+      window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(address),"_blank","noopener");
+    };
+    r.querySelector("[data-whatsapp]").onclick=()=>{
+      let phone=String(e.telefone||"").replace(/\D/g,"");
+      if(phone.startsWith("0"))phone=phone.replace(/^0+/,"");
+      if(phone.length===10||phone.length===11)phone="55"+phone;
+      if(phone.length<12)return alert("Informe um telefone válido com DDD.");
+      const name=String(e.cliente||"").trim();
+      const msg=name?"Olá, "+name+"! Estou a caminho para realizar sua entrega.":"Olá! Estou a caminho para realizar sua entrega.";
+      window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener");
+    };
   })
 }
 
@@ -674,7 +718,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v163",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v164",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
