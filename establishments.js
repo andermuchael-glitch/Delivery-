@@ -88,11 +88,21 @@
     let bar=document.getElementById('e365estbar');
     if(!bar){bar=document.createElement('div');bar.id='e365estbar';bar.className='e365estbar';main.prepend(bar)}
     const list=getList(),cur=active();
+    // O seletor nativo pode permanecer aberto enquanto o usuário escolhe.
+    // Antes, o render periódico recriava o select a cada ~1,5 s e fechava
+    // a lista rapidamente, parecendo um bug.
+    const signature=cur+'|'+list.map(x=>x.id+':'+x.name).join('|');
+    if(bar.dataset.signature===signature)return;
+    const focusedSelect=bar.querySelector('#e365estselect');
+    if(focusedSelect&&document.activeElement===focusedSelect)return;
     bar.innerHTML=`<span>🏪</span><select id="e365estselect">${list.map(x=>`<option value="${esc(x.id)}" ${x.id===cur?'selected':''}>${esc(x.name)}</option>`).join('')}</select><button class="e365estadd" id="e365estnew">+ Novo</button>${list.length>1?'<button class="e365estmanage" id="e365estmanage">⚙</button>':''}`;
+    bar.dataset.signature=signature;
     bar.querySelector('#e365estselect').onchange=e=>{
+      // Fecha a escolha somente depois de uma seleção real e preserva a
+      // opção escolhida durante a troca de dados/tela.
       localStorage.setItem(currentKey(),e.target.value);
       window.render?.();
-      setTimeout(render,0);
+      setTimeout(render,50);
     };
     bar.querySelector('#e365estnew').onclick=modal;
     bar.querySelector('#e365estmanage')?.addEventListener('click',manage);
