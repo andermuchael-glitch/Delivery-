@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v170">
+<meta name="entrega365-release" content="v171">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -313,7 +313,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v170";</script>
+<script>window.__ENTREGA365_RELEASE__="v171";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -480,8 +480,6 @@ window.go=go;
 function renderDay(){
   let d=getDay(day),t=totals(d);
   let rows=d.entries.map(e=>{
-    const open=openDeliveryId===e.id;
-    const client=String(e.cliente||"").trim();
     const status=e.ok?"Entregue":"Pendente";
     return `
     <div class="delivery-entry" data-id="${e.id}">
@@ -493,18 +491,25 @@ function renderDay(){
       </div>
       <div class="delivery-summary">
         <div class="delivery-summary-main">
-          <div class="delivery-summary-name">${client||"Cliente não informado"}</div>
           <div class="delivery-summary-meta">${status}</div>
         </div>
-        <div class="delivery-summary-actions">
-          <button class="quick-action map" data-route ${e.endereco?"":"disabled"} title="Abrir rota">🗺️</button>
-          <button class="quick-action toggle-delivery" data-toggle title="${open?"Minimizar":"Ver detalhes"}">${open?"⌃":"⌄"}</button>
-        </div>
       </div>
-      ${open?`
-      <div class="delivery-details">
-        <div class="delivery-client">
-    <div class="kmresult"><span>Total rodado</span><b>${t.km} km</b></div>
+    </div>`;
+  }).join("");
+  return `
+  <div class="daynav">
+    <button class="navbtn" onclick="shiftDay(-1)">‹</button>
+    <div class="daycenter">
+      <strong>${dateLabel(day)}</strong>
+      <input id="date" type="date" value="${day}">
+    </div>
+    <button class="navbtn" onclick="shiftDay(1)">›</button>
+  </div>
+  <div class="grid">
+    <div class="stat"><div class="l">Entregas</div><div class="v blue">${t.ent}</div></div>
+    <div class="stat"><div class="l">Ganhos</div><div class="v green">${brl(t.total)}</div></div>
+    <div class="stat"><div class="l">Conferidas</div><div class="v blue">${t.conf}</div></div>
+    <div class="stat"><div class="l">KM</div><div class="v blue">${t.km}</div></div>
   </div>
   <div class="card">
     <div class="row between"><div class="title" style="margin:0">📦 Comandas</div><span class="small">${t.conf}/${t.ent} conferidas</span></div>
@@ -518,7 +523,7 @@ function renderDay(){
     <div class="sum"><span>Soma das taxas</span><b>${brl(t.taxas)}</b></div>
     <div class="sum"><span>Arrancada</span><b>${brl(t.arr)}</b></div>
     <div class="sum total"><span>Total líquido do dia</span><b>${brl(t.total)}</b></div>
-  </div>`
+  </div>`;
 }
 
 function bindDay(){
@@ -685,7 +690,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v170",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v171",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
