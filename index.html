@@ -511,13 +511,7 @@ function renderDay(){
             <div class="delivery-label">WhatsApp</div>
             <input data-f="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" value="${esc(e.telefone||"")}">
           </div>
-          <div class="wide">
-            <div class="delivery-label">Endereço para entrega</div>
-            <input data-f="endereco" autocomplete="street-address" placeholder="Rua, número, bairro, cidade" value="${esc(e.endereco||"")}">
-          </div>
-        </div>
         <div class="delivery-actions">
-          <button class="delivery-action map" data-route ${e.endereco?"":"disabled"}>🗺️ Abrir rota</button>
           <button class="delivery-action whatsapp" data-whatsapp ${e.telefone?"":"disabled"}>💬 WhatsApp</button>
         </div>
       </div>`:''}
