@@ -323,7 +323,7 @@ window.e365OpenPro=()=>{
   if(!s){
     s=document.createElement("script");
     s.id=id;
-    s.src="./entrega365-pro.js?v=160";
+    s.src="./entrega365-pro.js?v=162";
     s.onload=()=>window.e365Pro?.();
     s.onerror=()=>alert("Não foi possível carregar os recursos PRO. Atualize a página e tente novamente.");
     document.head.appendChild(s);
@@ -671,14 +671,14 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v160",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v162",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
-</script><script src="./establishments.js?v=160"></script>
+</script><script src="./establishments.js?v=162"></script>
 <script type="module" src="./auth-fix.js?v=161"></script>
 <script src="./brand-update.js?v=155"></script>
-<script src="./entrega365-features.js?v=160"></script>
+<script src="./entrega365-features.js?v=162"></script>
 <script src="./session-policy.js?v=155"></script>
 <script src="./entrega365-theme-v2.js?v=155"></script>
 <script src="./entrega365-pro.js?v=160"></script>
-<script src="./pro-sync.js?v=160"></script></body></html>
+<script src="./pro-sync.js?v=162"></script></body></html>
