@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v166">
+<meta name="entrega365-release" content="v167">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -315,7 +315,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v166";</script>
+<script>window.__ENTREGA365_RELEASE__="v167";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -461,47 +461,131 @@ function loadOcrEngine(){
     document.head.appendChild(s);
   });
 }
+function percentile(hist,total,p){
+  const target=Math.max(1,Math.floor(total*p)); let acc=0;
+  for(let i=0;i<hist.length;i++){acc+=hist[i];if(acc>=target)return i;}
+  return 255;
+}
+function canvasBlob(canvas,type="image/jpeg",quality=.92){
+  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Falha ao preparar a imagem")),type,quality));
+}
+async function loadReceiptImage(file){
+  if("createImageBitmap" in window) return await createImageBitmap(file,{imageOrientation:"from-image"});
+  return await new Promise((resolve,reject)=>{
+    const img=new Image(), url=URL.createObjectURL(file);
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível abrir a foto"))};
+    img.src=url;
+  });
+}
+async function prepareReceiptImages(file,onProgress){
+  onProgress("Ajustando a foto para leitura…");
+  const img=await loadReceiptImage(file);
+  const longest=Math.max(img.width,img.height);
+  const scale=Math.min(2.2,Math.max(.65,2200/longest));
+  const w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+  const base=document.createElement("canvas"); base.width=w;base.height=h;
+  const bctx=base.getContext("2d",{willReadFrequently:true});
+  bctx.drawImage(img,0,0,w,h);
+  const src=bctx.getImageData(0,0,w,h), px=src.data;
+  const hist=new Uint32Array(256);
+  for(let i=0;i<px.length;i+=4){
+    const y=Math.max(0,Math.min(255,Math.round(.299*px[i]+.587*px[i+1]+.114*px[i+2])));
+    hist[y]++;
+  }
+  const total=w*h, low=percentile(hist,total,.015), high=Math.max(low+25,percentile(hist,total,.985));
+  for(let i=0;i<px.length;i+=4){
+    const y=Math.max(0,Math.min(255,Math.round(.299*px[i]+.587*px[i+1]+.114*px[i+2])));
+    const v=Math.max(0,Math.min(255,Math.round((y-low)*255/(high-low))));
+    px[i]=px[i+1]=px[i+2]=v; px[i+3]=255;
+  }
+  bctx.putImageData(src,0,0);
+  const gray=await canvasBlob(base);
+  onProgress("Criando versão de alto contraste…");
+  const bw=document.createElement("canvas"); bw.width=w;bw.height=h;
+  const wctx=bw.getContext("2d",{willReadFrequently:true});
+  const out=wctx.createImageData(w,h), od=out.data, gd=src.data;
+  const threshold=170;
+  for(let i=0;i<gd.length;i+=4){
+    const v=gd[i]<threshold?0:255;
+    od[i]=od[i+1]=od[i+2]=v; od[i+3]=255;
+  }
+  wctx.putImageData(out,0,0);
+  return {gray,bw:await canvasBlob(bw)};
+}
 function extractComandaData(text){
   const raw=String(text||"");
-  const clean=raw.replace(/\r/g,"").replace(/[ \t]+/g," ");
-  const pick=re=>{const m=clean.match(re);return m&&m[1]?m[1].trim():""};
-  let comanda=pick(/(?:PEDIDO|COMANDA)\s*(?:N[º°O]|NO|N\.?|#)?\s*[:#-]?\s*(\d{1,8})/i);
-  if(!comanda)comanda=pick(/(?:N[º°O]\s*|NO\s*|#\s*)(\d{1,8})/i);
-  let cliente=pick(/CLIENTE\s*:\s*([^\n]+)/i).replace(/\s{2,}.*/,"").trim();
-  let telefone=pick(/(?:TELEFONE|TEL|WHATSAPP|CELULAR)\s*:\s*([^\n]+)/i);
+  const lines=raw.replace(/\r/g,"").split("\n").map(x=>x.replace(/\s+/g," ").trim()).filter(Boolean);
+  const joined=lines.join("\n");
+  const clean=joined.replace(/[ \t]+/g," ");
+  const pick=re=>{const m=joined.match(re);return m&&m[1]?m[1].trim():""};
+  let comanda=pick(/(?:PEDI[D0][O0]|COMAND[AA])\s*(?:N[º°O2Z]|NO|N\.?)?\s*[:#-]?\s*(\d{1,8})/im);
+  if(!comanda){
+    const m=joined.match(/(?:PEDI[D0][O0]|COMAND[AA])[^\n\d]{0,12}(\d{1,8})/im);
+    comanda=m?m[1]:"";
+  }
+  let cliente=pick(/CLIENT[EE]\s*[:.-]?\s*([^\n]+)/im);
+  if(cliente) cliente=cliente.replace(/(?:TELEFONE|TEL|WHATSAPP|CELULAR)\s*[:.-]?.*/i,"").trim();
+  let telefone=pick(/(?:TELEFONE|TEL(?:EFONE)?|WHATSAPP|CELULAR)\s*[:.-]?\s*([^\n]+)/im);
   if(!telefone){
     const p=clean.match(/(?:\+?55\s*)?\(?\d{2}\)?\s*(?:9\s*)?\d{4}[-\s]?\d{4}/);
     telefone=p?p[0].trim():"";
+  }else{
+    const p=telefone.match(/(?:\+?55\s*)?\(?\d{2}\)?\s*(?:9\s*)?\d{4}[-\s]?\d{4}/);
+    telefone=p?p[0].trim():telefone.trim();
   }
-  const lines=raw.replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean);
-  let endereco="",start=lines.findIndex(x=>/ENDERE[ÇC]O\s+PARA\s+ENTREGA|ENDERE[ÇC]O/i.test(x));
+  let endereco="";
+  let start=lines.findIndex(x=>/ENDERE[ÇC]O(?:\s+PARA)?(?:\s+ENTREGA)?|ENDER[EC]O/i.test(x));
   if(start>=0){
     const parts=[];
-    for(let i=start;i<Math.min(lines.length,start+7);i++){
-      let x=lines[i].replace(/.*ENDERE[ÇC]O\s+PARA\s+ENTREGA\s*:?/i,"").trim();
+    for(let i=start;i<Math.min(lines.length,start+8);i++){
+      let x=lines[i]
+        .replace(/^.*?ENDERE[ÇC]O(?:\s+PARA)?(?:\s+ENTREGA)?\s*[:.-]?\s*/i,"")
+        .trim();
       if(!x)continue;
-      if(i>start&&/(ITENS|PEDIDO|TOTAL|PREVISTO|FORMA|PAGAMENTO)/i.test(x))break;
+      if(i>start&&/(?:ITENS|PEDIDO|TOTAL|PREVISTO|FORMA\s+DE\s+PAGAMENTO|PAGAMENTO)/i.test(x))break;
       parts.push(x);
     }
     endereco=parts.join(", ").replace(/,\s*,/g,",").trim();
   }
-  return {raw,comanda,cliente,telefone,endereco};
+  if(endereco.length<5){
+    const rua=lines.findIndex(x=>/^(?:RUA|AV(?:ENIDA)?|ALAMEDA|TRAVESSA|ESTRADA)\b/i.test(x));
+    if(rua>=0) endereco=lines.slice(rua,Math.min(lines.length,rua+4)).join(", ");
+  }
+  return {raw:joined,comanda,cliente,telefone,endereco};
+}
+function comandaScore(d){
+  return ["comanda","cliente","telefone","endereco"].reduce((n,k)=>n+(d[k]&&String(d[k]).trim()?1:0),0);
 }
 async function readComandaFromPhoto(file,onProgress){
   if(!file.type.startsWith("image/")) throw new Error("Arquivo não é uma imagem");
   await loadOcrEngine();
-  onProgress("Carregando leitor…");
-  const worker=await window.Tesseract.createWorker("por+eng",1,{logger:m=>{
+  const prepared=await prepareReceiptImages(file,onProgress);
+  onProgress("Carregando leitor da comanda…");
+  const worker=await window.Tesseract.createWorker("por",1,{logger:m=>{
     if(m.status==="recognizing text") onProgress("Lendo comanda… "+Math.round((m.progress||0)*100)+"%");
     else if(m.status) onProgress("Preparando leitura…");
   }});
   try{
-    const ret=await worker.recognize(file,{rotateAuto:true});
-    return extractComandaData(ret?.data?.text||"");
+    await worker.setParameters({
+      tessedit_pageseg_mode: window.Tesseract.PSM?window.Tesseract.PSM.AUTO:"3",
+      preserve_interword_spaces:"1",
+      user_defined_dpi:"300"
+    });
+    const first=await worker.recognize(prepared.gray);
+    let data=extractComandaData(first?.data?.text||"");
+    if(comandaScore(data)<2){
+      onProgress("Refinando a leitura da comanda…");
+      const second=await worker.recognize(prepared.bw);
+      const alternative=extractComandaData(second?.data?.text||"");
+      if(comandaScore(alternative)>=comandaScore(data)) data=alternative;
+    }
+    return data;
   }finally{
     await worker.terminate();
   }
 }
+
 
 function shell(content){
   document.body.innerHTML=`
@@ -584,7 +668,7 @@ function renderDay(){
           <input data-ocr-photo type="file" accept="image/*" capture="environment" hidden>
           <button class="ocr-btn" data-ocr-btn>📷 Ler comanda por foto</button>
         </div>
-        <div class="ocr-status" data-ocr-status>Use a câmera para ler os dados. A foto é processada temporariamente e não é salva.</div>
+        <div class="ocr-status" data-ocr-status>Fotografe a comanda inteira, com boa luz e sem reflexos. A foto é processada temporariamente, melhorada para leitura e descartada.</div>
       </div>`:''}
     </div>`;
   }).join("");
@@ -840,7 +924,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v166",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v167",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=163"></script>
