@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v176">
+<meta name="entrega365-release" content="v177">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -314,7 +314,7 @@ input:focus,select:focus{
   .tablehead{grid-template-columns:1fr 1fr 36px 30px}
 }
 </style>
-<script>window.__ENTREGA365_RELEASE__="v176";</script>
+<script>window.__ENTREGA365_RELEASE__="v177";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -441,9 +441,11 @@ function showLogin(){
 }
 
 function totals(d){
-  let taxas=d.entries.reduce((s,e)=>s+(+e.taxa||0),0);
+  const extraEnt=Math.max(0,Math.floor(+d.lancamentoRapidoEntregas||0));
+  const extraTaxas=Math.max(0,+d.lancamentoRapidoTaxas||0);
+  let taxas=d.entries.reduce((s,e)=>s+(+e.taxa||0),0)+extraTaxas;
   let km=(+d.kmFinal||0)-(+d.kmInicial||0);
-  return{taxas,ent:d.entries.length,conf:d.entries.filter(e=>e.ok).length,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
+  return{taxas,ent:d.entries.length+extraEnt,conf:d.entries.filter(e=>e.ok).length+extraEnt,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
 }
 function saveDayAnd(k,d){save("day:"+k,d)}
 function shell(content){
@@ -525,6 +527,14 @@ function renderDay(){
     ${d.entries.length>1?`<button class="add" id="toggleComandas">${commandListExpanded?"▲ Ocultar comandas anteriores":"▼ Ver todas as "+d.entries.length+" comandas"}</button>`:""}
     <button class="add" id="add">+ Nova comanda</button>
     <div class="line"></div>
+    <div class="title" style="font-size:14px;margin:0 0 6px">⚡ Lançamento rápido</div>
+    <div class="small" style="margin:0 0 10px">Esqueceu de lançar comanda por comanda? Informe a quantidade de entregas e o valor total das taxas.</div>
+    <div class="kmgrid">
+      <div><div class="small" style="margin:0 0 6px">Quantidade de entregas</div><input id="rapidEnt" type="number" inputmode="numeric" min="0" placeholder="Ex.: 5" value="${esc(d.lancamentoRapidoEntregas)}"></div>
+      <div><div class="small" style="margin:0 0 6px">Total das taxas (R$)</div><input id="rapidTax" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 45,50" value="${esc(d.lancamentoRapidoTaxas)}"></div>
+    </div>
+    <div class="small" style="margin-top:8px">Essas entregas entram automaticamente na contagem e na somatória do dia, sem criar comandas individuais.</div>
+    <div class="line"></div>
     <div class="title" style="font-size:14px;margin:0 0 10px">📊 Somatória do dia</div>
     <div class="row between"><span>Arrancada / Diária</span><div style="width:120px"><input id="arr" type="number" inputmode="decimal" value="${d.arrancada||0}"></div></div>
     <div class="sum"><span>Entregas realizadas</span><b>${t.ent}</b></div>
@@ -545,11 +555,15 @@ function bindDay(){
   const current=()=>getDay(day);
   const date=$("#date");
   if(date) date.onchange=e=>{day=e.target.value;openDeliveryId=null;render()};
-  ["kmi","kmf","arr"].forEach(id=>{
+  ["kmi","kmf","arr","rapidEnt","rapidTax"].forEach(id=>{
     const el=$("#"+id);
     if(el) el.onchange=e=>{
       let d=current();
-      d=id==="kmi"?({...d,kmInicial:e.target.value}):id==="kmf"?({...d,kmFinal:e.target.value}):({...d,arrancada:e.target.value});
+      if(id==="kmi")d={...d,kmInicial:e.target.value};
+      else if(id==="kmf")d={...d,kmFinal:e.target.value};
+      else if(id==="arr")d={...d,arrancada:e.target.value};
+      else if(id==="rapidEnt")d={...d,lancamentoRapidoEntregas:e.target.value};
+      else d={...d,lancamentoRapidoTaxas:e.target.value};
       saveDayAnd(day,d);render();
     };
   });
@@ -736,7 +750,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v176",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v177",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
