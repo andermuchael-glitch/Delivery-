@@ -257,10 +257,10 @@ onAuthStateChanged(auth,u=>{
   }
 })();
 
-import("./drive-backup.js?v=160")
+import("./drive-backup.js?v=163")
   .then(m=>m.initDriveBackup(auth))
   .catch(e=>console.warn("Drive backup indisponível",e));
 
-import("./cloud-sync.js?v=162")
+import("./cloud-sync.js?v=163")
   .then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud backup indisponível",e)))
   .catch(e=>console.warn("Cloud sync indisponível",e));
