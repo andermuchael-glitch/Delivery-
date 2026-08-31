@@ -33,12 +33,8 @@ function inject(){
  if(actions&&!actions.querySelector('.e365theme')){
    const b=document.createElement('button');b.type='button';b.className='ico e365theme';b.title='Tema dia/noite';b.dataset.e365Theme='1';actions.prepend(b);
  }
- const tabs=$('.tabs');
- if(tabs&&!tabs.querySelector('[data-e365]')){
-   [['calendar','📅','Agenda'],['calculator','🧮','Calculadora']].forEach(([id,icon,label])=>{
-    const b=document.createElement('button');b.type='button';b.className='tab';b.dataset.e365=id;b.innerHTML='<b>'+icon+'</b>'+label;tabs.appendChild(b);
-   });
- }
+ // Agenda e calculadora agora ficam dentro do menu "Mais" para manter
+ // apenas cinco abas visíveis na navegação principal.
  applyTheme();
 }
 function monthValue(){return localStorage.getItem('e365month')||new Date().toISOString().slice(0,7)}
@@ -82,7 +78,7 @@ function install(){
  document.addEventListener('click',handleClick,true);
  new MutationObserver(inject).observe(document.documentElement,{childList:true,subtree:true});
  inject();
- window.e365Theme=toggleTheme;window.e365OpenAgenda=()=>showCustom('calendar');
+ window.e365Theme=toggleTheme;window.e365OpenAgenda=()=>showCustom('calendar');window.e365OpenCalculator=()=>showCustom('calculator');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
