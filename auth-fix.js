@@ -60,6 +60,8 @@ let loginInProgress=false;
 let appUserUid=null;
 let startupTimer=null;
 let recoveryFinished=false;
+let introSlide=0;
+let loginStage="intro";
 
 function setLoading(){
   const root=document.getElementById("app");
@@ -80,7 +82,22 @@ function showLogin(){
   loadLoginStyle();
   const root=document.getElementById("app");
   if(!root)return;
-  root.innerHTML='<div class="login"><div class="loginbox"><div class="biglogo"><img src="'+FULL_LOGO+'" alt="Entrega365"></div><h1>Entrega365</h1><p>Entre com sua conta Google para continuar</p><div class="card google-only"><button id="google-login" type="button" class="google-new"><span class="google-label">ENTRAR COM GOOGLE</span></button></div></div></div>';
+  const slides=[
+    {i:"🏍️",h:"Controle seu <em>dia a dia</em>",p:"Registre entregas, taxas, arrancada e acompanhe quanto realmente entrou no dia.",m:[["ENTREGAS","4"],["GANHOS","R$ 100"],["CONFERIDAS","4"],["KM","120"]]},
+    {i:"💸",h:"Saiba para onde <em>vai seu dinheiro</em>",p:"Acompanhe gastos, manutenção e organize melhor seus resultados.",m:[["GASTOS","R$ 32"],["LUCRO","R$ 68"],["MÊS","Resumo"],["MOTO","Em dia"]]},
+    {i:"📊",h:"Veja seus <em>resultados</em>",p:"Tenha uma visão clara do mês e tome decisões melhores.",m:[["ENTREGAS","128"],["GANHOS","R$ 1.540"],["GASTOS","R$ 430"],["LUCRO","R$ 1.110"]]},
+    {i:"⭐",h:"No PRO, ainda <em>mais controle</em>",p:"Organize diferentes estabelecimentos e tenha recursos avançados.",m:[["PRO","Ativo"],["CLIENTES","Vários"],["CONTROLE","Completo"],["ROTINA","Organizada"]]}
+  ];
+  if(loginStage==="intro"){
+    const s=slides[introSlide];
+    root.innerHTML='<div class="login-intro"><div class="introbox"><div class="introbrand"><div class="biglogo"><img src="'+FULL_LOGO+'" alt="Entrega365"></div><strong>Entrega365</strong></div><div class="introhero"><div class="intro-slide"><div class="intro-icon">'+s.i+'</div><h1>'+s.h+'</h1><p>'+s.p+'</p><div class="intro-mock">'+s.m.map(x=>'<div class="intro-mini"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')+'</div></div></div><div class="intro-dots">'+slides.map((_,i)=>'<span class="intro-dot '+(i===introSlide?'active':'')+'"></span>').join('')+'</div><div class="intro-actions"><button class="intro-nav" id="introPrev">‹</button><button class="intro-enter" id="introEnter">'+(introSlide===slides.length-1?'COMEÇAR AGORA':'ENTRAR NO ENTREGA365')+'</button><button class="intro-nav" id="introNext">›</button></div><div class="intro-skip">Aplicativo web para organizar sua rotina de entregas.</div></div></div>';
+    root.querySelector("#introPrev").onclick=()=>{introSlide=(introSlide+slides.length-1)%slides.length;showLogin()};
+    root.querySelector("#introNext").onclick=()=>{introSlide=(introSlide+1)%slides.length;showLogin()};
+    root.querySelector("#introEnter").onclick=()=>{loginStage="google";showLogin()};
+    return;
+  }
+  root.innerHTML='<div class="login"><div class="loginbox"><button class="add" id="backIntro" style="margin:0 0 14px">← Conheça o Entrega365</button><div class="biglogo"><img src="'+FULL_LOGO+'" alt="Entrega365"></div><h1>Entrega365</h1><p>Entre com sua conta Google para continuar</p><div class="card google-only"><button id="google-login" type="button" class="google-new"><span class="google-label">ENTRAR COM GOOGLE</span></button></div></div></div>';
+  root.querySelector("#backIntro").onclick=()=>{loginStage="intro";showLogin()};
   root.querySelector("#google-login").onclick=startGoogleLogin;
 }
 
