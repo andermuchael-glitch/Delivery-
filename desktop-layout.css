@@ -1,0 +1,246 @@
+/* Entrega365 - layout adaptativo para tablets, notebooks e computadores */
+
+/* Tablets em paisagem e telas médias */
+@media (min-width:701px){
+  body{
+    background:
+      radial-gradient(circle at 50% -10%,#303030 0,transparent 42%),
+      radial-gradient(circle at 0 45%,rgba(255,208,0,.035),transparent 32%),
+      var(--bg);
+  }
+
+  #app{
+    padding-bottom:112px;
+  }
+
+  header{
+    height:72px;
+    padding:10px clamp(24px,4vw,56px);
+  }
+
+  header .brand{font-size:19px}
+  header .sub{font-size:12px}
+  .logo{width:48px;height:48px}
+  .actions{gap:10px}
+  .ico{width:44px;height:44px}
+
+  main{
+    width:min(calc(100% - 40px),1120px);
+    max-width:1120px;
+    padding:26px 0 34px;
+  }
+
+  .card{
+    padding:20px;
+    margin-bottom:18px;
+    border-radius:20px;
+  }
+
+  .title{font-size:18px}
+  .grid{gap:14px}
+  .stat{padding:18px;border-radius:16px}
+  .stat .v{font-size:28px}
+  .stat .l{font-size:12px}
+
+  input,select{min-height:48px}
+  .primary{min-height:50px}
+
+  /* Navegação inferior mais confortável em telas grandes */
+  .tabs{
+    left:50%;
+    right:auto;
+    bottom:16px;
+    transform:translateX(-50%);
+    width:min(calc(100% - 48px),900px);
+    height:72px;
+    padding-bottom:0;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:22px;
+    box-shadow:0 18px 42px rgba(0,0,0,.45);
+    overflow:hidden;
+  }
+
+  .tab{
+    min-width:110px;
+    font-size:12px;
+  }
+  .tab b{font-size:22px}
+}
+
+/* Layout amplo: notebook e desktop */
+@media (min-width:980px){
+  main{
+    width:min(calc(100% - 64px),1240px);
+    max-width:1240px;
+  }
+
+  /* Os painéis de estatísticas aproveitam a largura disponível */
+  .grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+  }
+
+  .kmgrid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .daynav{
+    padding:4px 8px;
+  }
+
+  .navbtn{
+    width:48px;
+    height:48px;
+  }
+
+  .tablehead,.entry{
+    grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) 52px 42px;
+  }
+
+  .delivery-client{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .delivery-client .wide{
+    grid-column:auto;
+  }
+
+  .delivery-details{
+    padding:16px;
+  }
+
+  .morebox{
+    max-width:760px;
+    margin:0 auto 18px;
+    border-radius:26px;
+  }
+
+  .moregrid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+
+  .moreitem{
+    min-height:118px;
+  }
+
+  .finance-form{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+  }
+
+  .finance-form .full{
+    grid-column:1/-1;
+  }
+
+  .finance-top{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .locale-sheet{
+    max-width:720px;
+    margin:0 auto 18px;
+    border-radius:28px;
+  }
+
+  /* Tela inicial / login ganha mais presença em desktop */
+  .login-intro{
+    align-items:center;
+    padding:32px;
+  }
+
+  .introbox{
+    max-width:1120px;
+    display:grid;
+    grid-template-columns:minmax(420px,.95fr) minmax(480px,1.05fr);
+    gap:42px;
+    align-items:center;
+    text-align:left;
+  }
+
+  .introbrand{
+    min-height:560px;
+    margin:0;
+  }
+
+  .introbrand .biglogo{
+    width:100%;
+    max-width:600px;
+    height:520px;
+  }
+
+  .introhero{
+    padding:34px 32px;
+    border-radius:34px;
+  }
+
+  .intro-slide{
+    min-height:480px;
+    align-items:flex-start;
+  }
+
+  .intro-slide p{
+    max-width:520px;
+  }
+
+  .intro-mock{
+    max-width:100%;
+  }
+
+  .intro-dots,
+  .intro-actions,
+  .intro-skip{
+    grid-column:2;
+  }
+}
+
+/* Desktop grande */
+@media (min-width:1400px){
+  main{
+    max-width:1320px;
+  }
+
+  .card{padding:22px}
+
+  .stat .v{font-size:31px}
+
+  .tabs{
+    width:min(860px,calc(100% - 64px));
+  }
+
+  .introbox{
+    max-width:1240px;
+    gap:58px;
+  }
+}
+
+/* Tablet retrato: mantém leitura confortável sem forçar o layout de desktop */
+@media (min-width:701px) and (max-width:979px){
+  main{
+    width:min(calc(100% - 36px),820px);
+  }
+
+  .introbox{
+    max-width:680px;
+  }
+
+  .morebox{
+    max-width:720px;
+  }
+}
+
+/* Dispositivos grandes com pouco espaço vertical */
+@media (min-width:701px) and (max-height:760px){
+  main{padding-top:18px}
+  .tabs{bottom:10px;height:66px}
+  #app{padding-bottom:94px}
+}
+
+/* Garante que nenhuma regra mobile limite a largura após mudança de orientação */
+@media (min-width:701px){
+  html,body,#app{
+    width:100%;
+    min-width:0;
+    max-width:none;
+    overflow-x:hidden;
+  }
+}
