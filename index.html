@@ -387,7 +387,7 @@ function showLogin(){
  $("#backIntro").onclick=()=>{loginScreen="intro";showLogin()};$("#togglePass").onclick=()=>{showPass=!showPass;showLogin()};
  $("#go").onclick=()=>{let u=$("#u").value.trim().toLowerCase(),p=$("#p").value;if(!u||!p)return alert("Preencha usuário e senha.");let us=users();if(loginMode==="register"){if(us[u])return alert("Usuário já existe.");us[u]={p:btoa(unescape(encodeURIComponent(p)))};setUsers(us)}else if(!login(u,p))return alert("Usuário ou senha inválidos.");user=u;localStorage.setItem(K+"session",u);location.reload()};
  $("#switch").onclick=()=>{loginMode=loginMode==="login"?"register":"login";showLogin()};
- $("#restoreBackupBtn").onclick=()=>{let inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=e=>{let file=e.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=evt=>{try{let data=JSON.parse(evt.target.result);if(!data.user)return alert("Arquivo de backup inválido.");let u=data.user;if(data.days)Object.keys(data.days).forEach(k=>localStorage.setItem(K+u+":day:"+k,JSON.stringify(data.days[k])));if(data.expenses)Object.keys(data.expenses).forEach(k=>localStorage.setItem(K+u+":exp:"+k,JSON.stringify(data.expenses[k])));if(data.mechanica)localStorage.setItem(K+u+":mechanica",JSON.stringify(data.mechanica));user=u;localStorage.setItem(K+"session",u);alert("Backup restaurado com sucesso para o usuário: "+u);location.reload()}catch(err){alert("Erro ao ler arquivo de backup.")}};reader.readAsText(file)};inp.click()};
+ $("#restoreBackupBtn").onclick=()=>{let inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=e=>{let file=e.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=evt=>{try{let data=JSON.parse(evt.target.result);if(!data.user)return alert("Arquivo de backup inválido.");let u=data.user;if(data.days)Object.keys(data.days).forEach(k=>localStorage.setItem(K+u+":day:"+k,JSON.stringify(data.days[k])));if(data.expenses)Object.keys(data.expenses).forEach(k=>localStorage.setItem(K+u+":exp:"+k,JSON.stringify(data.expenses[k])));if(data.mechanica)localStorage.setItem(K+u+":mechanica",JSON.stringify(data.mechanica));if(data.finance)localStorage.setItem(K+u+":finance",JSON.stringify(data.finance));user=u;localStorage.setItem(K+"session",u);alert("Backup restaurado com sucesso para o usuário: "+u);location.reload()}catch(err){alert("Erro ao ler arquivo de backup.")}};reader.readAsText(file)};inp.click()};
 }
 
 function totals(d){
@@ -747,7 +747,7 @@ function renderMonth(){
 function shiftMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);render()}
 
 function backup(){
-  let data={user,days:{},expenses:{},mechanica:getMech(),exportedAt:new Date().toISOString()};
+  let data={user,days:{},expenses:{},finance:getFinance(),mechanica:getMech(),exportedAt:new Date().toISOString()};
   for(let i=0;i<localStorage.length;i++){
     let k=localStorage.key(i);
     let pre=K+user+":";
