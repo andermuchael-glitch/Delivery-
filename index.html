@@ -613,6 +613,71 @@ function bindExpenses(){
 
 function shiftExp(n){let [y,m,d]=expDay.split("-").map(Number),x=new Date(y,m-1,d+n);expDay=`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;render()}
 
+
+function financeMonthKey(){
+  return financeMonth.getFullYear()+"-"+pad(financeMonth.getMonth()+1);
+}
+function financeItemsForMonth(){
+  const f=getFinance(),ym=financeMonthKey();
+  return f.items.filter(x=>{
+    const d=String(x.date||"");
+    return x.freq==="monthly"?d.slice(0,7)<=ym:d.slice(0,7)===ym;
+  });
+}
+function financePaid(x){
+  return Array.isArray(x.paidMonths)&&x.paidMonths.includes(financeMonthKey());
+}
+function renderFinance(){
+  if(!isProActive()){
+    return '<div class="card pro-lock"><div class="lockicon">🔒</div><div class="title" style="justify-content:center">Controle Financeiro PRO</div><p class="muted">Organize aluguel, mercado, parcelas, boletos e outras contas pessoais, separado dos gastos da moto.</p><button class="primary" id="openProFinance">CONHECER O MODO PRO</button></div>';
+  }
+  const items=financeItemsForMonth();
+  const total=items.reduce((s,x)=>s+(+x.val||0),0);
+  const paid=items.filter(financePaid).reduce((s,x)=>s+(+x.val||0),0);
+  const open=total-paid;
+  const rows=items.length?items.sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>{
+    const status=financePaid(x);
+    return '<div class="finance-row" data-fin="'+x.id+'"><div><b>'+esc(x.desc||"Sem descrição")+'</b><div class="finance-meta">'+esc(x.cat||"Outros")+' • '+(x.freq==="monthly"?"Todo mês":"Lançamento único")+'</div><div class="finance-tags"><span class="finance-tag">'+(x.date?new Date(x.date+"T12:00:00").toLocaleDateString("pt-BR"):"Sem vencimento")+'</span><span class="finance-tag '+(status?"finance-paid":"finance-due")+'">'+(status?"Pago":"Pendente")+'</span></div></div><div class="right"><b class="red">'+brl(x.val)+'</b><div class="finance-actions"><button data-fin-action="paid">'+(status?"↩":"✓ Pago")+'</button><button data-fin-action="del" class="trash">✕</button></div></div></div>';
+  }).join(""):'<div class="empty">Nenhuma conta para este mês.</div>';
+  return '<div class="card"><div class="finance-monthbar"><button class="navbtn" onclick="shiftFinanceMonth(-1)">‹</button><div><div class="title" style="margin:0">💰 Controle Financeiro</div><div class="small">Contas pessoais — separado da moto</div></div><button class="navbtn" onclick="shiftFinanceMonth(1)">›</button></div><div class="small" style="text-align:center;margin-bottom:12px">'+financeMonth.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})+'</div><div class="finance-top"><div class="finance-stat"><small>Contas do mês</small><b class="red">'+brl(total)+'</b></div><div class="finance-stat"><small>Restante</small><b class="'+(open>0?"yellow":"green")+'">'+brl(open)+'</b></div></div><button class="primary" id="addFinance">+ NOVO LANÇAMENTO</button></div><div class="card"><div class="title">📋 Seus lançamentos</div>'+rows+'</div>';
+}
+function bindFinance(){
+  const lock=$("#openProFinance");
+  if(lock){lock.onclick=()=>window.e365OpenPro?.();return}
+  $("#addFinance").onclick=()=>openFinanceForm();
+  document.querySelectorAll("[data-fin]").forEach(row=>{
+    row.querySelectorAll("[data-fin-action]").forEach(b=>b.onclick=()=>financeAction(row.dataset.fin,b.dataset.finAction));
+  });
+}
+function openFinanceForm(){
+  const f=getFinance(),m=document.createElement("div");
+  m.className="moremodal";
+  m.innerHTML='<div class="morebox"><div class="morehandle"></div><div class="moretitle">Novo lançamento financeiro</div><div class="small" style="margin-bottom:12px">Ex.: aluguel, mercado, parcela, boleto, internet.</div><div class="finance-form"><select id="finCat"><option>🏠 Aluguel</option><option>🛒 Mercado</option><option>📄 Boleto</option><option>💳 Parcela</option><option>📱 Internet / Telefone</option><option>👨‍👩‍👧 Família</option><option>📦 Outros</option></select><input id="finDesc" placeholder="Descrição"><input id="finVal" type="number" inputmode="decimal" step="0.01" placeholder="Valor R$"><input id="finDate" type="date" value="'+financeMonthKey()+'-01"><select id="finFreq" class="full"><option value="once">Lançamento único</option><option value="monthly">Repetir todos os meses</option></select><button class="add" id="finCancel">Cancelar</button><button class="primary" id="finSave" style="margin:0">SALVAR</button></div></div>';
+  document.body.appendChild(m);
+  m.querySelector("#finCancel").onclick=()=>m.remove();
+  m.querySelector("#finSave").onclick=()=>{
+    const desc=m.querySelector("#finDesc").value.trim(),val=m.querySelector("#finVal").value,date=m.querySelector("#finDate").value;
+    if(!desc||!(+val>0)||!date)return alert("Informe descrição, valor e vencimento.");
+    f.items.push({id:crypto.randomUUID(),cat:m.querySelector("#finCat").value,desc,val,date,freq:m.querySelector("#finFreq").value,paidMonths:[]});
+    save("finance",f);m.remove();render();
+  };
+}
+function financeAction(id,action){
+  const f=getFinance(),x=f.items.find(z=>z.id===id);if(!x)return;
+  if(action==="del"){
+    if(!confirm("Excluir este lançamento?"))return;
+    f.items=f.items.filter(z=>z.id!==id);
+  }else{
+    const ym=financeMonthKey(),a=Array.isArray(x.paidMonths)?x.paidMonths:[];
+    x.paidMonths=a.includes(ym)?a.filter(v=>v!==ym):[...a,ym];
+  }
+  save("finance",f);render();
+}
+function shiftFinanceMonth(n){
+  financeMonth=new Date(financeMonth.getFullYear(),financeMonth.getMonth()+n,1);
+  render();
+}
+
 function renderMechanic(){
   let m=getMech(),d=getDay(day),km=+d.kmFinal||+m.motoKm||0,last=+m.ultimaTroca||0,int=+m.intervalo||0,next=last+int,rest=next?next-km:0,status=!next?"":rest<=0?"over":rest<=300?"att":"ok",label=status==="over"?"TROCA VENCIDA":status==="att"?"ATENÇÃO - PRÓXIMO":"EM DIA";
   return `
@@ -699,11 +764,12 @@ function logout(){if(typeof window.entrega365SignOut==="function"){window.entreg
 
 function render(){
   if(!user)return showLogin();
-  let c=view==="day"?renderDay():view==="expenses"?renderExpenses():view==="mechanic"?renderMechanic():renderMonth();
+  let c=view==="day"?renderDay():view==="expenses"?renderExpenses():view==="mechanic"?renderMechanic():view==="finance"?renderFinance():renderMonth();
   shell(c);
   if(view==="day")bindDay();
   if(view==="expenses")bindExpenses();
-  if(view==="mechanic")bindMechanic()
+  if(view==="mechanic")bindMechanic();
+  if(view==="finance")bindFinance()
 }
 
 // Exposto explicitamente para o módulo de autenticação Firebase concluir o login.
@@ -716,7 +782,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v178",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v179",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
