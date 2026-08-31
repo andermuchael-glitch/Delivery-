@@ -54,6 +54,8 @@ const LOGIN_PENDING="entrega365:googleLoginPending";
 const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 const DRIVE_APPDATA_SCOPE="https://www.googleapis.com/auth/drive.appdata";
 const FULL_LOGO="./logo-entrega365.jpg?v=150";
+const DRIVE_TOKEN="entrega365:driveAccessToken";
+const DRIVE_TOKEN_EXP="entrega365:driveAccessTokenExp";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -77,7 +79,11 @@ function loadLoginStyle(){
 }
 
 function showLogin(){
-  if(currentUser||getSessionUid())return;
+  // O aplicativo só considera uma sessão válida quando o usuário também possui
+  // um token do Google Drive ainda válido. Isso impede entrar e trabalhar sem
+  // a sincronização obrigatória.
+  if(currentUser&&getSessionUid()&&hasValidDriveToken())return;
+  currentUser=null;
   appUserUid=null;
   loadLoginStyle();
   const root=document.getElementById("app");
@@ -106,7 +112,50 @@ function getSessionUid(){
   return value.startsWith("google:")?value.slice("google:".length):"";
 }
 
-function persistDriveCredential(result){try{const c=GoogleAuthProvider.credentialFromResult(result);if(c?.accessToken){localStorage.setItem("entrega365:driveAccessToken",c.accessToken);localStorage.setItem("entrega365:driveAccessTokenExp",String(Date.now()+3500000));window.dispatchEvent(new Event("e365-drive-token"));}}catch(e){console.warn("Drive credential:",e)}}
+function hasValidDriveToken(){
+  const token=localStorage.getItem(DRIVE_TOKEN)||"";
+  const exp=Number(localStorage.getItem(DRIVE_TOKEN_EXP)||0);
+  return !!token&&exp>Date.now()+60000;
+}
+
+async function verifyDriveAccess(accessToken){
+  const url="https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=1&fields=files(id)";
+  let response;
+  try{
+    response=await fetch(url,{
+      cache:"no-store",
+      headers:{Authorization:"Bearer "+accessToken}
+    });
+  }catch(error){
+    throw Object.assign(new Error("Não foi possível confirmar o acesso ao Google Drive."),{
+      code:"drive/verification-failed",
+      cause:error
+    });
+  }
+  if(!response.ok){
+    throw Object.assign(new Error("A permissão do Google Drive é obrigatória para continuar."),{
+      code:response.status===401||response.status===403
+        ?"drive/permission-denied"
+        :"drive/verification-failed"
+    });
+  }
+  return true;
+}
+
+async function persistDriveCredential(result){
+  const credential=GoogleAuthProvider.credentialFromResult(result);
+  if(!credential?.accessToken){
+    throw Object.assign(new Error("O Google não retornou a permissão de acesso ao Drive."),{
+      code:"drive/token-missing"
+    });
+  }
+  // Só persistimos a credencial depois de confirmar que ela realmente consegue
+  // acessar o espaço privado do aplicativo no Google Drive.
+  await verifyDriveAccess(credential.accessToken);
+  localStorage.setItem(DRIVE_TOKEN,credential.accessToken);
+  localStorage.setItem(DRIVE_TOKEN_EXP,String(Date.now()+3500000));
+  window.dispatchEvent(new Event("e365-drive-token"));
+}
 
 function persistUser(u){
   localStorage.setItem("entrega365:firebaseUid",u.uid);
@@ -129,6 +178,13 @@ function clearSession(){
 
 function openApp(u,{persist=true}={}){
   if(!u||!u.uid)return;
+  if(!hasValidDriveToken()){
+    console.warn("Entrega365: acesso obrigatório ao Google Drive não confirmado.");
+    currentUser=null;
+    appUserUid=null;
+    if(!loginInProgress)showLogin();
+    return;
+  }
   currentUser=u;
   if(persist)persistUser(u);
   loginInProgress=false;
@@ -151,7 +207,7 @@ function openApp(u,{persist=true}={}){
 
 function openSavedSession(){
   const uid=getSessionUid();
-  if(!uid)return false;
+  if(!uid||!hasValidDriveToken())return false;
   openApp({
     uid,
     email:localStorage.getItem("entrega365:email")||"",
@@ -171,7 +227,10 @@ function authError(e){
     "auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.",
     "auth/invalid-api-key":"A configuração do Firebase está inválida.",
     "auth/popup-blocked":"O navegador bloqueou a janela de login.",
-    "auth/popup-closed-by-user":"A janela de login foi fechada antes da conclusão."
+    "auth/popup-closed-by-user":"A janela de login foi fechada antes da conclusão.",
+    "drive/token-missing":"A autorização do Google Drive não foi concluída. O acesso ao Drive é obrigatório para salvar e sincronizar seus dados.",
+    "drive/permission-denied":"O acesso ao Google Drive não foi autorizado. Para usar o Entrega365, permita as permissões solicitadas pelo Google.",
+    "drive/verification-failed":"Não foi possível confirmar o acesso ao Google Drive. Verifique sua conexão e conclua a autorização novamente."
   };
   alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente.")+"\n\nCódigo: "+code+"\nDetalhe: "+detail);
 }
@@ -189,9 +248,10 @@ async function startGoogleLogin(){
     provider.setCustomParameters({prompt:"select_account",include_granted_scopes:"true"});
     const result=await signInWithPopup(auth,provider);
     if(result?.user){
-      persistDriveCredential(result);
+      await persistDriveCredential(result);
       /*
-       * O resultado do popup é uma autenticação concluída. Renderizamos o app
+       * A entrada só é liberada após confirmar que a conta autorizou o
+       * Google Drive necessário para salvar e sincronizar os dados. Renderizamos o app
        * imediatamente e mantemos a sessão local mesmo que o SDK emita um
        * evento transitório null durante a hidratação no Chromium.
        */
@@ -224,7 +284,17 @@ window.entrega365Auth={auth};
 
 onAuthStateChanged(auth,u=>{
   if(u){
-    openApp(u,{persist:true});
+    // O Firebase autenticado sozinho não libera o aplicativo. Durante o login
+    // o evento pode chegar antes de o popup devolver o token do Drive; nesse
+    // caso aguardamos startGoogleLogin concluir a validação.
+    if(getSessionUid()===u.uid&&hasValidDriveToken()){
+      openApp(u,{persist:true});
+      return;
+    }
+    if(loginInProgress)return;
+    currentUser=null;
+    appUserUid=null;
+    showLogin();
     return;
   }
 
@@ -245,7 +315,7 @@ onAuthStateChanged(auth,u=>{
 
 (async function startAuthRecovery(){
   try{
-    if(auth.currentUser){
+    if(auth.currentUser&&getSessionUid()===auth.currentUser.uid&&hasValidDriveToken()){
       openApp(auth.currentUser,{persist:true});
       return;
     }
