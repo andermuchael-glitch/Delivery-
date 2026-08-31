@@ -53,7 +53,7 @@ const SESSION="dcv2:session";
 const LOGIN_PENDING="entrega365:googleLoginPending";
 const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 const DRIVE_APPDATA_SCOPE="https://www.googleapis.com/auth/drive.appdata";
-const FULL_LOGO="./logo-entrega365.jpg?v=149";
+const FULL_LOGO="./logo-entrega365.jpg?v=150";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -69,9 +69,9 @@ function setLoading(){
 }
 
 function loadLoginStyle(){
-  if(document.getElementById("entrega365-login-v149"))return;
+  if(document.getElementById("entrega365-login-v150"))return;
   const s=document.createElement("style");
-  s.id="entrega365-login-v149";
+  s.id="entrega365-login-v150";
   s.textContent='.login{align-items:flex-start!important;padding:24px 14px calc(40px + env(safe-area-inset-bottom))!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:min(58vw,300px)!important;min-height:180px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;min-height:54px;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';
   document.head.appendChild(s);
 }
