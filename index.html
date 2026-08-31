@@ -332,7 +332,7 @@ input:focus,select:focus{
 .locale-save{width:100%;margin-top:18px}
 
 </style>
-<script>window.__ENTREGA365_RELEASE__="v184";</script>
+<script>window.__ENTREGA365_RELEASE__="v185";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -345,18 +345,38 @@ const localeCode=()=>localeSettings.lang==="en"?"en-US":localeSettings.lang==="e
 const brl=n=>(Number(n)||0).toLocaleString(localeCode(),{style:"currency",currency:localeSettings.currency||"BRL"});
 const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);return dt.toLocaleDateString(localeCode(),{day:"2-digit",month:"2-digit",weekday:"short"})};
 const I18N={
- pt:{Dia:"Dia",Gastos:"Gastos","Mecânica":"Mecânica","Mês":"Mês","Mais recursos":"Mais recursos","Ferramentas adicionais do Entrega365":"Ferramentas adicionais do Entrega365","Modo PRO":"Modo PRO","Recursos avançados":"Recursos avançados",Agenda:"Agenda","Compromissos e lembretes":"Compromissos e lembretes","Controle financeiro":"Controle financeiro","Contas pessoais e mensais":"Contas pessoais e mensais",Calculadora:"Calculadora","Cálculos rápidos":"Cálculos rápidos","Idioma e moeda":"Idioma e moeda","Escolha como deseja visualizar o aplicativo e os valores.":"Escolha como deseja visualizar o aplicativo e os valores.","Idioma":"Idioma","Moeda":"Moeda","Salvar preferências":"Salvar preferências"},
- en:{Dia:"Day",Gastos:"Expenses","Mecânica":"Maintenance","Mês":"Month","Mais recursos":"More features","Ferramentas adicionais do Entrega365":"Additional Entrega365 tools","Modo PRO":"PRO Mode","Recursos avançados":"Advanced features",Agenda:"Calendar","Compromissos e lembretes":"Appointments and reminders","Controle financeiro":"Financial control","Contas pessoais e mensais":"Personal and monthly bills",Calculadora:"Calculator","Cálculos rápidos":"Quick calculations","Idioma e moeda":"Language & currency","Escolha como deseja visualizar o aplicativo e os valores.":"Choose how you want to view the app and amounts.","Idioma":"Language","Moeda":"Currency","Salvar preferências":"Save preferences"},
- es:{Dia:"Día",Gastos:"Gastos","Mecânica":"Mecánica","Mês":"Mes","Mais recursos":"Más recursos","Ferramentas adicionais do Entrega365":"Herramientas adicionales de Entrega365","Modo PRO":"Modo PRO","Recursos avançados":"Funciones avanzadas",Agenda:"Agenda","Compromissos e lembretes":"Citas y recordatorios","Controle financeiro":"Control financiero","Contas pessoais e mensais":"Cuentas personales y mensuales",Calculadora:"Calculadora","Cálculos rápidos":"Cálculos rápidos","Idioma e moeda":"Idioma y moneda","Escolha como deseja visualizar o aplicativo e os valores.":"Elige cómo quieres ver la aplicación y los valores.","Idioma":"Idioma","Moeda":"Moneda","Salvar preferências":"Guardar preferencias"}
+ pt:{},
+ en:{
+  "Dia":"Day","Gastos":"Expenses","Mecânica":"Maintenance","Mês":"Month","Mais":"More","Entregas":"Deliveries","Ganhos":"Earnings","Conferidas":"Checked","Comandas":"Orders",
+  "Nenhuma entrega lançada no dia.":"No deliveries recorded today.","Toque em \"+ Nova comanda\" para iniciar.":"Tap \"+ New order\" to start.","+ Nova comanda":"+ New order","Lançamento rápido":"Quick entry",
+  "Esqueceu de lançar comanda por comanda? Informe a quantidade de entregas e o valor total das taxas.":"Forgot to enter orders one by one? Enter the number of deliveries and the total amount.","Quantidade de entregas":"Number of deliveries","Total das taxas (R$)":"Total fees","Somatória do dia":"Today's summary","Arrancada / Diária":"Base pay / Daily","Entregas realizadas":"Deliveries completed","Soma das taxas":"Total fees","Arrancada":"Base pay","Total líquido do dia":"Today's net total","Quilometragem do dia":"Today's mileage","KM inicial":"Starting KM","KM final":"Ending KM","KM rodados no dia":"KM driven today","Entregue":"Delivered","Pendente":"Pending","Excluir":"Delete",
+  "Principal":"Main","Novo":"New","Idioma e moeda":"Language & currency","Sair":"Sign out","Mais recursos":"More features","Ferramentas adicionais do Entrega365":"Additional Entrega365 tools","Modo PRO":"PRO Mode","Recursos avançados":"Advanced features","Agenda":"Calendar","Compromissos e lembretes":"Appointments and reminders","Controle financeiro":"Financial control","Contas pessoais e mensais":"Personal and monthly bills","Calculadora":"Calculator","Cálculos rápidos":"Quick calculations","Escolha como deseja visualizar o aplicativo e os valores.":"Choose how you want to view the app and amounts.","Idioma":"Language","Moeda":"Currency","Salvar preferências":"Save preferences",
+  "Controle Financeiro":"Financial Control","Meta: organizar entradas e pagar todas as contas":"Goal: organize income and pay all bills","Receitas do mês":"Monthly income","Contas e gastos":"Bills and expenses","Já entrou":"Received","Falta pagar":"Remaining to pay","Saldo previsto após pagar todas as contas":"Expected balance after paying all bills","Receitas − contas e gastos":"Income − bills and expenses","Novo lançamento financeiro":"New financial entry","Conta ou gasto":"Bill or expense","Ganho ou renda":"Income or earnings","Categoria":"Category","Descrição":"Description","Valor (R$)":"Amount","Vencimento":"Due date","Data prevista":"Expected date","Frequência":"Frequency","Lançamento único":"One-time entry","Repetir todos os meses":"Repeat every month","Seus lançamentos":"Your entries","Resumo do Mês":"Monthly summary","Gastos do mês":"Monthly expenses","Lucro Líquido":"Net profit","Nenhum registro encontrado para este mês.":"No records found for this month.","Combustível":"Fuel","Manutenção":"Maintenance","Alimentação":"Food","Outros":"Other"
+ },
+ es:{
+  "Dia":"Día","Gastos":"Gastos","Mecânica":"Mecánica","Mês":"Mes","Mais":"Más","Entregas":"Entregas","Ganhos":"Ganancias","Conferidas":"Revisadas","Comandas":"Pedidos",
+  "Nenhuma entrega lançada no dia.":"No hay entregas registradas hoy.","Toque em \"+ Nova comanda\" para iniciar.":"Toca \"+ Nuevo pedido\" para comenzar.","+ Nova comanda":"+ Nuevo pedido","Lançamento rápido":"Registro rápido",
+  "Esqueceu de lançar comanda por comanda? Informe a quantidade de entregas e o valor total das taxas.":"¿Olvidaste registrar pedido por pedido? Indica la cantidad de entregas y el valor total.","Quantidade de entregas":"Cantidad de entregas","Total das taxas (R$)":"Total de tarifas","Somatória do dia":"Resumen del día","Arrancada / Diária":"Base / Jornada","Entregas realizadas":"Entregas realizadas","Soma das taxas":"Total de tarifas","Arrancada":"Base","Total líquido do dia":"Total neto del día","Quilometragem do dia":"Kilometraje del día","KM inicial":"KM inicial","KM final":"KM final","KM rodados no dia":"KM recorridos hoy","Entregue":"Entregado","Pendente":"Pendiente","Excluir":"Eliminar",
+  "Principal":"Principal","Novo":"Nuevo","Idioma e moeda":"Idioma y moneda","Sair":"Salir","Mais recursos":"Más recursos","Ferramentas adicionais do Entrega365":"Herramientas adicionales de Entrega365","Modo PRO":"Modo PRO","Recursos avançados":"Funciones avanzadas","Agenda":"Agenda","Compromissos e lembretes":"Citas y recordatorios","Controle financeiro":"Control financiero","Contas pessoais e mensais":"Cuentas personales y mensuales","Calculadora":"Calculadora","Cálculos rápidos":"Cálculos rápidos","Escolha como deseja visualizar o aplicativo e os valores.":"Elige cómo quieres ver la aplicación y los valores.","Idioma":"Idioma","Moeda":"Moneda","Salvar preferências":"Guardar preferencias",
+  "Controle Financeiro":"Control financiero","Meta: organizar entradas e pagar todas as contas":"Objetivo: organizar ingresos y pagar todas las cuentas","Receitas do mês":"Ingresos del mes","Contas e gastos":"Cuentas y gastos","Já entrou":"Ya recibido","Falta pagar":"Falta pagar","Saldo previsto após pagar todas as contas":"Saldo previsto después de pagar todas las cuentas","Receitas − contas e gastos":"Ingresos − cuentas y gastos","Novo lançamento financeiro":"Nuevo registro financiero","Conta ou gasto":"Cuenta o gasto","Ganho ou renda":"Ganancia o ingreso","Categoria":"Categoría","Descrição":"Descripción","Valor (R$)":"Valor","Vencimento":"Vencimiento","Data prevista":"Fecha prevista","Frequência":"Frecuencia","Lançamento único":"Registro único","Repetir todos os meses":"Repetir cada mes","Seus lançamentos":"Tus registros","Resumo do Mês":"Resumen del mes","Gastos do mês":"Gastos del mes","Lucro Líquido":"Beneficio neto","Nenhum registro encontrado para este mês.":"No se encontraron registros para este mes.","Combustível":"Combustible","Manutenção":"Mantenimiento","Alimentação":"Alimentación","Outros":"Otros"
+ }
 };
 const tr=x=>I18N[localeSettings.lang]?.[x]||x;
 function applyI18n(root=document.body){
+ document.documentElement.lang=localeSettings.lang==="en"?"en":localeSettings.lang==="es"?"es":"pt-BR";
  if(localeSettings.lang==="pt")return;
  const dict=I18N[localeSettings.lang]||{};
+ const translateText=value=>{
+   const leading=(value.match(/^\s*/)||[""])[0], trailing=(value.match(/\s*$/)||[""])[0], raw=value.trim();
+   return Object.prototype.hasOwnProperty.call(dict,raw)?leading+dict[raw]+trailing:value;
+ };
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
- nodes.forEach(n=>{const raw=n.nodeValue.trim();if(dict[raw])n.nodeValue=n.nodeValue.replace(raw,dict[raw])});
- root.querySelectorAll("[title],[placeholder],[aria-label]").forEach(el=>["title","placeholder","aria-label"].forEach(a=>{if(el.hasAttribute(a)&&dict[el.getAttribute(a)])el.setAttribute(a,dict[el.getAttribute(a)])}));
+ nodes.forEach(n=>{n.nodeValue=translateText(n.nodeValue)});
+ root.querySelectorAll("[title],[placeholder],[aria-label],option").forEach(el=>{
+   ["title","placeholder","aria-label"].forEach(a=>{if(el.hasAttribute(a))el.setAttribute(a,translateText(el.getAttribute(a)))});
+   if(el.tagName==="OPTION")el.textContent=translateText(el.textContent);
+ });
 }
 function openLocaleSettings(){
  document.querySelector(".locale-settings")?.remove();
@@ -847,7 +867,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v184",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v185",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
