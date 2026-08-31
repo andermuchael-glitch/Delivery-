@@ -429,6 +429,22 @@ window.__e365BaseShell=shell;
 function tab(v,i,t){return `<button class="tab ${view===v?"active":""}" onclick="go('${v}')"><b>${i}</b>${t}</button>`}
 function go(v){view=v;render()}
 window.go=go;
+function openMore(){
+  document.querySelector(".moremodal")?.remove();
+  const m=document.createElement("div");
+  m.className="moremodal";
+  m.innerHTML='<div class="morebox"><div class="morehandle"></div><div class="moretitle">Mais recursos</div><div class="small">Ferramentas adicionais do Entrega365</div><div class="moregrid"><button class="moreitem pro" data-more="pro"><b>⭐</b><span>Modo PRO</span><small>Recursos avançados</small></button><button class="moreitem" data-more="calendar"><b>📅</b><span>Agenda</span><small>Compromissos e lembretes</small></button><button class="moreitem pro" data-more="finance"><b>💰</b><span>Controle financeiro</span><small>Contas pessoais e mensais</small></button><button class="moreitem" data-more="calculator"><b>🧮</b><span>Calculadora</span><small>Cálculos rápidos</small></button></div></div>';
+  document.body.appendChild(m);
+  m.onclick=e=>{if(e.target===m)m.remove()};
+  m.querySelectorAll("[data-more]").forEach(b=>b.onclick=()=>{
+    const x=b.dataset.more;m.remove();
+    if(x==="pro")return window.e365OpenPro?.();
+    if(x==="calendar")return window.e365OpenAgenda?.();
+    if(x==="calculator")return window.e365OpenCalculator?.();
+    if(x==="finance"){view="finance";render()}
+  });
+}
+
 
 let commandListExpanded=false;
 
