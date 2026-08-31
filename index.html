@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v180">
+<meta name="entrega365-release" content="v181">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -320,7 +320,7 @@ input:focus,select:focus{
 .finance-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.finance-stat{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.finance-stat small{display:block;color:var(--muted);text-transform:uppercase;font-weight:800;font-size:10px}.finance-stat b{display:block;font-size:20px;margin-top:4px}.finance-row{padding:12px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.finance-row:last-child{border-bottom:0}.finance-meta{font-size:11px;color:var(--muted);margin-top:2px}.finance-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}.finance-tag{font-size:10px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted)}.finance-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:7px}.finance-actions button{padding:7px 9px;border-radius:9px;border:1px solid var(--line);font-weight:800;color:var(--text)}.finance-paid{color:var(--green)}.finance-due{color:var(--accent)}.finance-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.finance-form .full{grid-column:1/-1}.finance-monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.pro-lock{padding:28px 18px;text-align:center}.pro-lock .lockicon{font-size:42px;margin-bottom:10px}.tabs [data-pro]{display:none!important}.finance-add-title{font-weight:950;font-size:16px;margin:14px 0 8px}.finance-form label{display:block;font-size:11px;font-weight:850;color:var(--muted);margin:0 0 5px}.finance-form input,.finance-form select{width:100%;min-height:48px}.finance-value{font-size:19px;font-weight:900}.finance-save{grid-column:1/-1;margin:0!important;min-height:50px}.finance-help{font-size:11px;color:var(--muted);line-height:1.4;margin:6px 0 12px}
 
 </style>
-<script>window.__ENTREGA365_RELEASE__="v180";</script>
+<script>window.__ENTREGA365_RELEASE__="v181";</script>
 </head>
 <body><div id="app"></div>
 <script>
@@ -790,11 +790,11 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v180",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v181",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
-<script type="module" src="./auth-fix.js?v=164"></script>
+<script type="module" src="./auth-fix.js?v=165"></script>
 <script src="./brand-update.js?v=155"></script>
 <script src="./entrega365-features.js?v=165"></script>
 <script src="./session-policy.js?v=155"></script>
