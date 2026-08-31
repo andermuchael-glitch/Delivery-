@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v183">
+<meta name="entrega365-release" content="v184">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -319,16 +319,59 @@ input:focus,select:focus{
 .moremodal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;backdrop-filter:blur(8px)}.morebox{width:100%;max-width:600px;margin:auto 0 0;background:#1b1b1b;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:18px 14px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.45)}.morehandle{width:42px;height:4px;background:#555;border-radius:9px;margin:0 auto 14px}.moretitle{font-size:18px;font-weight:900;margin-bottom:4px}.moregrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.moreitem{min-height:92px;padding:14px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,var(--panel),var(--panel2));color:var(--text);text-align:left}.moreitem b{display:block;font-size:23px;margin-bottom:5px}.moreitem span{font-weight:800}.moreitem small{display:block;color:var(--muted);margin-top:2px;font-size:10px}.moreitem.pro{border-color:rgba(255,208,0,.5)}
 .finance-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.finance-stat{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.finance-stat small{display:block;color:var(--muted);text-transform:uppercase;font-weight:800;font-size:10px}.finance-stat b{display:block;font-size:20px;margin-top:4px}.finance-row{padding:12px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.finance-row:last-child{border-bottom:0}.finance-meta{font-size:11px;color:var(--muted);margin-top:2px}.finance-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}.finance-tag{font-size:10px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted)}.finance-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:7px}.finance-actions button{padding:7px 9px;border-radius:9px;border:1px solid var(--line);font-weight:800;color:var(--text)}.finance-paid{color:var(--green)}.finance-due{color:var(--accent)}.finance-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.finance-form .full{grid-column:1/-1}.finance-monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.pro-lock{padding:28px 18px;text-align:center}.pro-lock .lockicon{font-size:42px;margin-bottom:10px}.tabs [data-pro]{display:none!important}.finance-add-title{font-weight:950;font-size:16px;margin:14px 0 8px}.finance-form label{display:block;font-size:11px;font-weight:850;color:var(--muted);margin:0 0 5px}.finance-form input,.finance-form select{width:100%;min-height:48px}.finance-value{font-size:19px;font-weight:900}.finance-save{grid-column:1/-1;margin:0!important;min-height:50px}.finance-help{font-size:11px;color:var(--muted);line-height:1.4;margin:6px 0 12px}.finance-type-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 2px}.finance-type-switch button{min-height:50px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--muted);font-weight:900}.finance-type-switch button.active-income{border-color:rgba(65,220,120,.65);color:var(--green);box-shadow:inset 0 0 18px rgba(65,220,120,.08)}.finance-type-switch button.active-expense{border-color:rgba(255,95,85,.55);color:var(--accent);box-shadow:inset 0 0 18px rgba(255,95,85,.07)}.finance-balance{margin-top:10px;padding:13px 14px;border:1px solid rgba(255,208,0,.28);border-radius:14px;background:linear-gradient(135deg,rgba(255,208,0,.08),rgba(255,208,0,.015));display:flex;justify-content:space-between;align-items:center;gap:12px}.finance-balance small{display:block;color:var(--muted);font-weight:800}.finance-balance b{font-size:19px}.finance-row.income{border-left:3px solid rgba(65,220,120,.65);padding-left:10px}.finance-row.expense{border-left:3px solid rgba(255,95,85,.48);padding-left:10px}.finance-income{color:var(--green)!important}.finance-expense{color:var(--accent)!important}
 
+
+/* Idioma e moeda */
+.locale-settings{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:0}
+.locale-sheet{width:min(680px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+.locale-handle{width:46px;height:5px;border-radius:99px;background:#666;margin:0 auto 18px}
+.locale-title{font-size:22px;font-weight:950;margin:0 0 4px}.locale-sub{color:var(--muted);margin:0 0 18px}
+.locale-section{margin:18px 0 8px;font-weight:900}.locale-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.locale-option{padding:13px 9px;border:1px solid var(--line);border-radius:16px;background:var(--panel2);color:var(--text);font-weight:900;min-height:62px}
+.locale-option small{display:block;color:var(--muted);font-weight:700;margin-top:4px}
+.locale-option.active{border-color:var(--yellow);box-shadow:0 0 0 1px rgba(255,208,0,.22),0 0 22px rgba(255,208,0,.10);color:var(--yellow)}
+.locale-save{width:100%;margin-top:18px}
+
 </style>
-<script>window.__ENTREGA365_RELEASE__="v183";</script>
+<script>window.__ENTREGA365_RELEASE__="v184";</script>
 </head>
 <body><div id="app"></div>
 <script>
 "use strict";
 const K="dcv2:", $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const brl=n=>(Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const pad=n=>String(n).padStart(2,"0"), today=()=>{let d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
-const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);return dt.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",weekday:"short"})};
+const getLocaleSettings=()=>{try{return {...{lang:"pt",currency:"BRL"},...JSON.parse(localStorage.getItem("entrega365:locale")||"{}")}}catch{return {lang:"pt",currency:"BRL"}}};
+let localeSettings=getLocaleSettings();
+const localeCode=()=>localeSettings.lang==="en"?"en-US":localeSettings.lang==="es"?"es-ES":"pt-BR";
+const brl=n=>(Number(n)||0).toLocaleString(localeCode(),{style:"currency",currency:localeSettings.currency||"BRL"});
+const dateLabel=k=>{let [y,m,d]=k.split("-").map(Number),dt=new Date(y,m-1,d);return dt.toLocaleDateString(localeCode(),{day:"2-digit",month:"2-digit",weekday:"short"})};
+const I18N={
+ pt:{Dia:"Dia",Gastos:"Gastos","Mecânica":"Mecânica","Mês":"Mês","Mais recursos":"Mais recursos","Ferramentas adicionais do Entrega365":"Ferramentas adicionais do Entrega365","Modo PRO":"Modo PRO","Recursos avançados":"Recursos avançados",Agenda:"Agenda","Compromissos e lembretes":"Compromissos e lembretes","Controle financeiro":"Controle financeiro","Contas pessoais e mensais":"Contas pessoais e mensais",Calculadora:"Calculadora","Cálculos rápidos":"Cálculos rápidos","Idioma e moeda":"Idioma e moeda","Escolha como deseja visualizar o aplicativo e os valores.":"Escolha como deseja visualizar o aplicativo e os valores.","Idioma":"Idioma","Moeda":"Moeda","Salvar preferências":"Salvar preferências"},
+ en:{Dia:"Day",Gastos:"Expenses","Mecânica":"Maintenance","Mês":"Month","Mais recursos":"More features","Ferramentas adicionais do Entrega365":"Additional Entrega365 tools","Modo PRO":"PRO Mode","Recursos avançados":"Advanced features",Agenda:"Calendar","Compromissos e lembretes":"Appointments and reminders","Controle financeiro":"Financial control","Contas pessoais e mensais":"Personal and monthly bills",Calculadora:"Calculator","Cálculos rápidos":"Quick calculations","Idioma e moeda":"Language & currency","Escolha como deseja visualizar o aplicativo e os valores.":"Choose how you want to view the app and amounts.","Idioma":"Language","Moeda":"Currency","Salvar preferências":"Save preferences"},
+ es:{Dia:"Día",Gastos:"Gastos","Mecânica":"Mecánica","Mês":"Mes","Mais recursos":"Más recursos","Ferramentas adicionais do Entrega365":"Herramientas adicionales de Entrega365","Modo PRO":"Modo PRO","Recursos avançados":"Funciones avanzadas",Agenda:"Agenda","Compromissos e lembretes":"Citas y recordatorios","Controle financeiro":"Control financiero","Contas pessoais e mensais":"Cuentas personales y mensuales",Calculadora:"Calculadora","Cálculos rápidos":"Cálculos rápidos","Idioma e moeda":"Idioma y moneda","Escolha como deseja visualizar o aplicativo e os valores.":"Elige cómo quieres ver la aplicación y los valores.","Idioma":"Idioma","Moeda":"Moneda","Salvar preferências":"Guardar preferencias"}
+};
+const tr=x=>I18N[localeSettings.lang]?.[x]||x;
+function applyI18n(root=document.body){
+ if(localeSettings.lang==="pt")return;
+ const dict=I18N[localeSettings.lang]||{};
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+ const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+ nodes.forEach(n=>{const raw=n.nodeValue.trim();if(dict[raw])n.nodeValue=n.nodeValue.replace(raw,dict[raw])});
+ root.querySelectorAll("[title],[placeholder],[aria-label]").forEach(el=>["title","placeholder","aria-label"].forEach(a=>{if(el.hasAttribute(a)&&dict[el.getAttribute(a)])el.setAttribute(a,dict[el.getAttribute(a)])}));
+}
+function openLocaleSettings(){
+ document.querySelector(".locale-settings")?.remove();
+ const cur=localeSettings;
+ const m=document.createElement("div");m.className="locale-settings";
+ const langName=cur.lang==="pt"?"Português":cur.lang==="en"?"English":"Español";
+ m.innerHTML='<div class="locale-sheet"><div class="locale-handle"></div><h2 class="locale-title">'+tr("Idioma e moeda")+'</h2><p class="locale-sub">'+tr("Escolha como deseja visualizar o aplicativo e os valores.")+'</p><div class="locale-section">'+tr("Idioma")+'</div><div class="locale-grid"><button class="locale-option '+(cur.lang==="pt"?"active":"")+'" data-lang="pt">🇧🇷<small>Português</small></button><button class="locale-option '+(cur.lang==="en"?"active":"")+'" data-lang="en">🇺🇸<small>English</small></button><button class="locale-option '+(cur.lang==="es"?"active":"")+'" data-lang="es">🇪🇸<small>Español</small></button></div><div class="locale-section">'+tr("Moeda")+'</div><div class="locale-grid"><button class="locale-option '+(cur.currency==="BRL"?"active":"")+'" data-currency="BRL">R$<small>Real</small></button><button class="locale-option '+(cur.currency==="USD"?"active":"")+'" data-currency="USD">$<small>Dólar</small></button><button class="locale-option '+(cur.currency==="EUR"?"active":"")+'" data-currency="EUR">€<small>Euro</small></button></div><button class="primary locale-save" id="saveLocale">'+tr("Salvar preferências")+'</button></div>';
+ document.body.appendChild(m);
+ let next={...cur};
+ m.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{next.lang=b.dataset.lang;m.querySelectorAll("[data-lang]").forEach(x=>x.classList.toggle("active",x.dataset.lang===next.lang))});
+ m.querySelectorAll("[data-currency]").forEach(b=>b.onclick=()=>{next.currency=b.dataset.currency;m.querySelectorAll("[data-currency]").forEach(x=>x.classList.toggle("active",x.dataset.currency===next.currency))});
+ m.onclick=e=>{if(e.target===m)m.remove()};
+ m.querySelector("#saveLocale").onclick=()=>{localeSettings=next;localStorage.setItem("entrega365:locale",JSON.stringify(next));m.remove();render()};
+}
+window.openLocaleSettings=openLocaleSettings;
 // A chave dos dados é calculada dinamicamente para manter cada estabelecimento
 // completamente separado sem sobrescrever o localStorage global.
 const dataKey=(k)=>{
@@ -381,9 +424,11 @@ function showLogin(){
  if(loginScreen==="intro"){
   const slides=[{i:"🏍️",h:"Controle seu <em>dia a dia</em>",p:"Registre entregas, taxas, arrancada e acompanhe quanto realmente entrou no dia.",m:[["ENTREGAS","4"],["GANHOS","R$ 100"],["CONFERIDAS","4"],["KM","120"]]},{i:"💸",h:"Saiba para onde <em>vai seu dinheiro</em>",p:"Acompanhe os gastos da moto, manutenção e organize melhor seus resultados.",m:[["GASTOS","R$ 32"],["LUCRO","R$ 68"],["MÊS","Resumo"],["MOTO","Em dia"]]},{i:"📊",h:"Veja seus <em>resultados</em>",p:"Tenha uma visão clara do seu mês e transforme informação em decisões melhores.",m:[["ENTREGAS","128"],["GANHOS","R$ 1.540"],["GASTOS","R$ 430"],["LUCRO","R$ 1.110"]]},{i:"⭐",h:"No PRO, ainda <em>mais controle</em>",p:"Organize diferentes estabelecimentos e tenha recursos avançados para sua rotina.",m:[["PRO","Ativo"],["CLIENTES","Vários"],["CONTROLE","Completo"],["ROTINA","Organizada"]]}],s=slides[introSlide];
   document.body.innerHTML='<div id="app"><div class="login-intro"><div class="introbox"><div class="introbrand"><div class="biglogo"></div><strong>Entrega365</strong></div><div class="introhero"><div class="intro-slide"><div class="intro-icon">'+s.i+'</div><h1>'+s.h+'</h1><p>'+s.p+'</p><div class="intro-mock">'+s.m.map(x=>'<div class="intro-mini"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')+'</div></div></div><div class="intro-dots">'+slides.map((_,i)=>'<span class="intro-dot '+(i===introSlide?'active':'')+'"></span>').join('')+'</div><div class="intro-actions"><button class="intro-nav" id="introPrev">‹</button><button class="intro-enter" id="introEnter">'+(introSlide===slides.length-1?'COMEÇAR AGORA':'ENTRAR NO ENTREGA365')+'</button><button class="intro-nav" id="introNext">›</button></div><div class="intro-skip">Aplicativo web para organizar sua rotina de entregas.</div></div></div></div>';
+  applyI18n();
   $("#introPrev").onclick=()=>{introSlide=(introSlide+slides.length-1)%slides.length;showLogin()};$("#introNext").onclick=()=>{introSlide=(introSlide+1)%slides.length;showLogin()};$("#introEnter").onclick=()=>{loginScreen="login";showLogin()};return;
  }
  document.body.innerHTML='<div id="app"><div class="login"><div class="loginbox"><button class="add" id="backIntro" style="margin:0 0 14px">← Conheça o Entrega365</button><div class="biglogo"></div><h1>Entrega365</h1><p>'+ (loginMode==="login"?"Controle suas entregas de forma simples":"Crie sua conta neste dispositivo") +'</p><div class="card"><label>Usuário</label><input id="u" autocomplete="username" placeholder="Digite seu usuário"><label>Senha</label><div class="password-wrapper"><input id="p" type="'+(showPass?"text":"password")+'" autocomplete="'+(loginMode==="login"?"current-password":"new-password")+'" placeholder="••••••••"><button type="button" class="password-toggle" id="togglePass">'+(showPass?"🙈":"👁️")+'</button></div><button class="primary" id="go">'+(loginMode==="login"?"ENTRAR":"CRIAR CONTA")+'</button><button class="add" id="switch">'+(loginMode==="login"?"Criar novo usuário":"Já tenho uma conta")+'</button><button class="google-btn" id="restoreBackupBtn">📁 Entrar / Restaurar Backup</button></div><div class="small">Dados salvos localmente neste dispositivo.</div></div></div></div>';
+ applyI18n();
  $("#backIntro").onclick=()=>{loginScreen="intro";showLogin()};$("#togglePass").onclick=()=>{showPass=!showPass;showLogin()};
  $("#go").onclick=()=>{let u=$("#u").value.trim().toLowerCase(),p=$("#p").value;if(!u||!p)return alert("Preencha usuário e senha.");let us=users();if(loginMode==="register"){if(us[u])return alert("Usuário já existe.");us[u]={p:btoa(unescape(encodeURIComponent(p)))};setUsers(us)}else if(!login(u,p))return alert("Usuário ou senha inválidos.");user=u;localStorage.setItem(K+"session",u);location.reload()};
  $("#switch").onclick=()=>{loginMode=loginMode==="login"?"register":"login";showLogin()};
@@ -410,6 +455,7 @@ function shell(content){
         </div>
       </div>
       <div class="actions">
+        <button class="ico" onclick="openLocaleSettings()" title="Idioma e moeda" aria-label="Idioma e moeda">🌐</button>
         <button class="ico" onclick="logout()" title="Sair">⏻</button>
       </div>
     </header>
@@ -658,7 +704,7 @@ function renderFinance(){
   const help=type==="income"
     ?"Registre todo dinheiro que entra: salário, entregas, extras, comissões ou qualquer outra fonte de renda."
     :"Registre tudo o que precisa pagar fora dos gastos da moto: aluguel, mercado, parcelas, boletos e despesas pessoais.";
-  return '<div class="card"><div class="finance-monthbar"><button class="navbtn" onclick="shiftFinanceMonth(-1)">‹</button><div><div class="title" style="margin:0">💰 Controle Financeiro</div><div class="small">Meta: organizar entradas e pagar todas as contas</div></div><button class="navbtn" onclick="shiftFinanceMonth(1)">›</button></div><div class="small" style="text-align:center;margin-bottom:12px">'+financeMonth.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})+'</div><div class="finance-top"><div class="finance-stat"><small>Receitas do mês</small><b class="green">'+brl(incomeTotal)+'</b></div><div class="finance-stat"><small>Contas e gastos</small><b class="red">'+brl(expenseTotal)+'</b></div><div class="finance-stat"><small>Já entrou</small><b class="green">'+brl(incomeReceived)+'</b></div><div class="finance-stat"><small>Falta pagar</small><b class="'+(open>0?"yellow":"green")+'">'+brl(open)+'</b></div></div><div class="finance-balance"><div><small>Saldo previsto após pagar todas as contas</small><span class="small">Receitas − contas e gastos</span></div><b class="'+(balance>=0?"green":"red")+'">'+brl(balance)+'</b></div><div class="finance-add-title">➕ Novo lançamento financeiro</div><div class="finance-type-switch"><button id="finTypeExpense" class="'+(type==="expense"?"active-expense":"")+'">💸 Conta ou gasto</button><button id="finTypeIncome" class="'+(type==="income"?"active-income":"")+'">💰 Ganho ou renda</button></div><div class="finance-help">'+help+'</div><div class="finance-form"><div><label>Categoria</label><select id="finCat">'+cats+'</select></div><div><label>Descrição</label><input id="finDesc" placeholder="'+(type==="income"?"Ex.: Salário, iFood, entrega extra":"Ex.: Aluguel de setembro")+'"></div><div><label>💰 Valor (R$)</label><input class="finance-value" id="finVal" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Ex.: 1200,00"></div><div><label>'+ (type==="income"?"Data prevista":"Vencimento") +'</label><input id="finDate" type="date" value="'+ym+'-01"></div><div class="full"><label>Frequência</label><select id="finFreq"><option value="once">Lançamento único</option><option value="monthly">Repetir todos os meses</option></select></div><button class="primary finance-save" id="finSave">SALVAR '+(type==="income"?"GANHO / RENDA":"CONTA / GASTO")+'</button></div></div><div class="card"><div class="title">📋 Seus lançamentos</div>'+rows+'</div>';
+  return '<div class="card"><div class="finance-monthbar"><button class="navbtn" onclick="shiftFinanceMonth(-1)">‹</button><div><div class="title" style="margin:0">💰 Controle Financeiro</div><div class="small">Meta: organizar entradas e pagar todas as contas</div></div><button class="navbtn" onclick="shiftFinanceMonth(1)">›</button></div><div class="small" style="text-align:center;margin-bottom:12px">'+financeMonth.toLocaleDateString(localeCode(),{month:"long",year:"numeric"})+'</div><div class="finance-top"><div class="finance-stat"><small>Receitas do mês</small><b class="green">'+brl(incomeTotal)+'</b></div><div class="finance-stat"><small>Contas e gastos</small><b class="red">'+brl(expenseTotal)+'</b></div><div class="finance-stat"><small>Já entrou</small><b class="green">'+brl(incomeReceived)+'</b></div><div class="finance-stat"><small>Falta pagar</small><b class="'+(open>0?"yellow":"green")+'">'+brl(open)+'</b></div></div><div class="finance-balance"><div><small>Saldo previsto após pagar todas as contas</small><span class="small">Receitas − contas e gastos</span></div><b class="'+(balance>=0?"green":"red")+'">'+brl(balance)+'</b></div><div class="finance-add-title">➕ Novo lançamento financeiro</div><div class="finance-type-switch"><button id="finTypeExpense" class="'+(type==="expense"?"active-expense":"")+'">💸 Conta ou gasto</button><button id="finTypeIncome" class="'+(type==="income"?"active-income":"")+'">💰 Ganho ou renda</button></div><div class="finance-help">'+help+'</div><div class="finance-form"><div><label>Categoria</label><select id="finCat">'+cats+'</select></div><div><label>Descrição</label><input id="finDesc" placeholder="'+(type==="income"?"Ex.: Salário, iFood, entrega extra":"Ex.: Aluguel de setembro")+'"></div><div><label>💰 Valor (R$)</label><input class="finance-value" id="finVal" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Ex.: 1200,00"></div><div><label>'+ (type==="income"?"Data prevista":"Vencimento") +'</label><input id="finDate" type="date" value="'+ym+'-01"></div><div class="full"><label>Frequência</label><select id="finFreq"><option value="once">Lançamento único</option><option value="monthly">Repetir todos os meses</option></select></div><button class="primary finance-save" id="finSave">SALVAR '+(type==="income"?"GANHO / RENDA":"CONTA / GASTO")+'</button></div></div><div class="card"><div class="title">📋 Seus lançamentos</div>'+rows+'</div>';
 }
 function bindFinance(){
   const lock=$("#openProFinance");
@@ -746,7 +792,7 @@ function renderMonth(){
   <div class="card">
     <div class="monthnav">
       <button class="navbtn" onclick="shiftMonth(-1)">‹</button>
-      <strong>${month.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}</strong>
+      <strong>${month.toLocaleDateString(localeCode(),{month:"long",year:"numeric"})}</strong>
       <button class="navbtn" onclick="shiftMonth(1)">›</button>
     </div>
   </div>
@@ -787,7 +833,8 @@ function render(){
   if(view==="day")bindDay();
   if(view==="expenses")bindExpenses();
   if(view==="mechanic")bindMechanic();
-  if(view==="finance")bindFinance()
+  if(view==="finance")bindFinance();
+  applyI18n();
 }
 
 // Exposto explicitamente para o módulo de autenticação Firebase concluir o login.
@@ -800,7 +847,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{t
     const keys=await caches.keys();
     await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
   }
-  localStorage.setItem("entrega365:runtime-v183",String(Date.now()));
+  localStorage.setItem("entrega365:runtime-v184",String(Date.now()));
 }catch(e){console.warn("Cache cleanup:",e)}})()});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
