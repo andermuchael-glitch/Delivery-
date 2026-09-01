@@ -1,0 +1,1 @@
+Entrega365 v205 — redeploy da versão estável anterior à v206.
