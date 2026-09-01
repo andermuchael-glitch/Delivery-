@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v202">
+<meta name="entrega365-release" content="v203">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -804,9 +804,28 @@ function bindFinance(){
     row.querySelectorAll("[data-fin-action]").forEach(b=>b.onclick=()=>financeAction(row.dataset.fin,b.dataset.finAction));
   });
 }
-function exportFinancePDF(){
+async function financePdfLogo(){
+  try{
+    const res=await fetch("logo-moto.svg",{cache:"force-cache"});
+    if(!res.ok)throw new Error("logo");
+    const svg=await res.text();
+    const blob=new Blob([svg],{type:"image/svg+xml"});
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
+    const canvas=document.createElement("canvas");
+    canvas.width=420;canvas.height=420;
+    const ctx=canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(url);
+    return canvas.toDataURL("image/png");
+  }catch(e){return null;}
+}
+async function exportFinancePDF(){
   if(!window.jspdf?.jsPDF){alert("O recurso de PDF ainda está carregando. Tente novamente em alguns segundos.");return;}
   const {jsPDF}=window.jspdf;
+  const pdfLogo=await financePdfLogo();
   const doc=new jsPDF({unit:"mm",format:"a4",compress:true});
   const W=210,H=297,M=14;
   const f=getFinance(),items=financeItemsForMonth(),goal=f.goal||{};
@@ -830,6 +849,14 @@ function exportFinancePDF(){
   // Cover / executive summary
   rgb(18,18,22);doc.rect(0,0,W,43,"F");
   rgb(255,208,0);doc.rect(0,0,7,43,"F");
+  // Logo oficial do Entrega365
+  if(pdfLogo){
+    rgb(255,255,255);doc.roundedRect(158,7,36,29,5,5,"F");
+    try{doc.addImage(pdfLogo,"PNG",163,9,26,25,undefined,"FAST");}catch(e){}
+  }else{
+    rgb(255,208,0);doc.roundedRect(165,10,24,22,5,5,"F");
+    text("365",168,24,11,[18,18,22],"bold");
+  }
   text("ENTREGA",16,15,19,[255,255,255],"bold");text("365",78,15,19,[255,208,0],"bold");
   text("RELATÓRIO FINANCEIRO INTELIGENTE",16,23,8,[205,205,212],"bold");
   text(monthLabel.toUpperCase(),16,32,10,[255,208,0],"bold");
