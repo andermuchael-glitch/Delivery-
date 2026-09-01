@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta name="entrega365-release" content="v204">
+<meta name="entrega365-release" content="v205">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
@@ -825,10 +825,9 @@ async function financePdfLogo(){
 }
 async function exportFinancePDF(){
   if(!window.jspdf?.jsPDF){alert("O recurso de PDF ainda está carregando. Tente novamente em alguns segundos.");return;}
-  const {jsPDF}=window.jspdf;
-  const pdfLogo=await financePdfLogo();
+  const {jsPDF}=window.jspdf, pdfLogo=await financePdfLogo();
   const doc=new jsPDF({unit:"mm",format:"a4",compress:true});
-  const W=210,H=297,M=14;
+  const W=210,H=297,M=9;
   const f=getFinance(),items=financeItemsForMonth(),goal=f.goal||{};
   const incomes=items.filter(x=>financeTypeOf(x)==="income"),expenses=items.filter(x=>financeTypeOf(x)==="expense");
   const incomeTotal=incomes.reduce((s,x)=>s+(+x.val||0),0);
@@ -836,112 +835,152 @@ async function exportFinancePDF(){
   const received=incomes.filter(financePaid).reduce((s,x)=>s+(+x.val||0),0)+delivery;
   const expenseTotal=expenses.reduce((s,x)=>s+(+x.val||0),0);
   const paid=expenses.filter(financePaid).reduce((s,x)=>s+(+x.val||0),0);
-  const open=Math.max(0,expenseTotal-paid),availableNow=received-paid,balance=incomeTotal-expenseTotal;
+  const open=Math.max(0,expenseTotal-paid),availableNow=received-paid;
   const target=Math.max(+goal.target||0,expenseTotal),remaining=Math.max(0,target-received);
   const monthLabel=financeMonth.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
   const fmt=n=>"R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
   const clean=s=>String(s||"").replace(/[💰🏍️🏠🛒📄💳📱👨‍👩‍👧📦🏦💵⚠️🎯📈📉]/g,"").trim();
   const rgb=(r,g,b)=>doc.setFillColor(r,g,b);
-  const text=(t,x,y,size=10,color=[30,30,35],style="normal")=>{doc.setFont("helvetica",style);doc.setFontSize(size);doc.setTextColor(...color);doc.text(String(t),x,y);};
-  const wrap=(t,x,y,w,size=9,color=[80,80,88],line=4.6)=>{doc.setFont("helvetica","normal");doc.setFontSize(size);doc.setTextColor(...color);const a=doc.splitTextToSize(String(t),w);doc.text(a,x,y);return y+a.length*line;};
-  const pill=(label,x,y,w,bg,fg)=>{rgb(...bg);doc.roundedRect(x,y,w,7,3,3,"F");text(label,x+3,y+4.7,7,fg,"bold");};
-  const card=(x,y,w,h,label,value,accent)=>{rgb(248,248,250);doc.roundedRect(x,y,w,h,4,4,"F");doc.setDrawColor(230,230,234);doc.roundedRect(x,y,w,h,4,4,"S");rgb(...accent);doc.roundedRect(x,y,3,h,1,1,"F");text(label,x+8,y+7,7,[110,110,118],"bold");text(value,x+8,y+16,12,[26,26,32],"bold");};
+  const stroke=(r,g,b)=>doc.setDrawColor(r,g,b);
+  const text=(t,x,y,size=10,color=[30,34,42],style="normal",align)=>{doc.setFont("helvetica",style);doc.setFontSize(size);doc.setTextColor(...color);doc.text(String(t),x,y,align?{align}:undefined);};
+  const wrap=(t,x,y,w,size=9,color=[80,84,92],line=4.6)=>{doc.setFont("helvetica","normal");doc.setFontSize(size);doc.setTextColor(...color);const a=doc.splitTextToSize(String(t),w);doc.text(a,x,y);return y+a.length*line;};
+  const round=(x,y,w,h,r=4,fill=[255,255,255],line=[222,225,231])=>{rgb(...fill);doc.roundedRect(x,y,w,h,r,r,"F");stroke(...line);doc.roundedRect(x,y,w,h,r,r,"S");};
+  const accentLine=(x,y,w=8)=>{rgb(255,191,0);doc.roundedRect(x,y,w,0.8,.4,.4,"F");};
+  const icon=(emoji,x,y,bg=[255,191,0])=>{rgb(...bg);doc.circle(x,y,7,"F");text(emoji,x,y+2.5,9,[255,255,255],"bold","center");};
+  const card=(x,y,w,h,label,value,accent,emoji)=>{
+    round(x,y,w,h,4,[248,249,252],[219,222,229]);
+    rgb(...accent);doc.roundedRect(x,y,1.6,h,1,1,"F");
+    if(emoji)icon(emoji,x+10,y+10,accent);
+    text(label,x+(emoji?19:8),y+8,7,[70,75,84],"normal");
+    text(value,x+(emoji?19:8),y+17,11.5,[35,39,48],"bold");
+  };
 
-  // Cabeçalho mais claro para impressão e com apenas a logo oficial, sem moldura branca.
-  rgb(42,42,48);doc.rect(0,0,W,43,"F");
-  rgb(255,208,0);doc.rect(0,0,7,43,"F");
-  if(pdfLogo){
-    try{doc.addImage(pdfLogo,"PNG",16,8,28,28,undefined,"FAST");}catch(e){}
-  }else{
-    rgb(255,208,0);doc.roundedRect(18,10,24,22,5,5,"F");
-    text("365",21,24,11,[42,42,48],"bold");
-  }
-  text("RELATÓRIO FINANCEIRO INTELIGENTE",52,17,10,[255,255,255],"bold");
-  text(monthLabel.toUpperCase(),52,26,9,[255,208,0],"bold");
-  text("Gerado em "+new Date().toLocaleDateString("pt-BR")+" • visão mensal",52,34,7,[205,205,212]);
+  // ===== PÁGINA 1 =====
+  // Cabeçalho no estilo da referência: faixa escura com a logo integrada.
+  const headerH=43;
+  rgb(25,27,31);doc.rect(0,0,W,headerH,"F");
+  // gradação/linhas de movimento à direita para dar aspecto premium.
+  for(let i=0;i<12;i++){stroke(56+i*3,58+i*3,64+i*3);doc.setLineWidth(.35);doc.line(112+i*4,6+i*.7,205,10+i*1.6);}
+  rgb(255,197,0);doc.rect(0,0,4,headerH,"F");
+  if(pdfLogo){try{doc.addImage(pdfLogo,"PNG",14,6,43,31,undefined,"FAST");}catch(e){}}
+  else {text("ENTREGA 365",14,24,18,[255,197,0],"bold");}
+  stroke(255,191,0);doc.setLineWidth(.45);doc.line(68,8,68,36);
+  text("RELATÓRIO FINANCEIRO INTELIGENTE",76,16,9.5,[238,240,244],"bold");
+  text("▣  "+monthLabel.toUpperCase(),76,25,9,[255,197,0],"bold");
+  text("Gerado em "+new Date().toLocaleDateString("pt-BR")+" • visão mensal",76,33,7.2,[210,213,219]);
 
   let y=51;
-  text("Visão geral",M,y,13,[25,25,30],"bold");y+=5;
-  card(M,y,42,25,"RECEITAS",fmt(incomeTotal),[76,217,100]);
-  card(M+45,y,42,25,"RECEBIDO",fmt(received),[76,217,100]);
-  card(M+90,y,42,25,"A PAGAR",fmt(open),[255,180,0]);
-  card(M+135,y,42,25,"DISPONÍVEL",fmt(availableNow),availableNow>=0?[76,217,100]:[255,69,58]);
-  y+=33;
+  text("Visão geral",M,y,13,[31,35,43],"bold");y+=6;
+  const cw=47,gap=3;
+  card(M,y,cw,23,"RECEITAS",fmt(incomeTotal),[34,173,78],"$");
+  card(M+cw+gap,y,cw,23,"RECEBIDO",fmt(received),[34,173,78],"↗");
+  card(M+(cw+gap)*2,y,cw,23,"A PAGAR",fmt(open),[255,184,0],"▣");
+  card(M+(cw+gap)*3,y,cw,23,"DISPONÍVEL",fmt(availableNow),availableNow>=0?[244,61,61]:[244,61,61],"▣");
+  y+=30;
 
-  const status=target===0?"SEM META DEFINIDA":received>=target?"META ATINGIDA":"EM ANDAMENTO";
-  const statusBg=received>=target?[225,247,232]:[255,244,213];
-  const statusFg=received>=target?[27,115,54]:[145,98,0];
-  pill(status,M,y,34,statusBg,statusFg);
-  text("Meta financeira",M+40,y+5,8,[100,100,108],"bold");
-  text(fmt(target),M+40,y+11,12,[28,28,34],"bold");
-  text("Falta alcançar",M+86,y+5,8,[100,100,108],"bold");
-  text(fmt(remaining),M+86,y+11,12,[28,28,34],"bold");
-  text("Cobertura das contas",M+132,y+5,8,[100,100,108],"bold");
-  text(target>0?Math.min(999,Math.round(received/target*100))+"%":"—",M+132,y+11,12,[28,28,34],"bold");
-  y+=23;
+  // Meta e cobertura com círculo.
+  const coverage=target>0?Math.min(100,Math.round(received/target*100)):0;
+  round(M,y,34,12,5,[255,249,232],[255,239,190]);text("EM ANDAMENTO",M+17,y+7.4,6.5,[170,119,0],"bold","center");
+  text("META FINANCEIRA",M+40,y+4.5,6.5,[78,82,90],"bold");text(fmt(target),M+40,y+11,11,[35,39,48],"bold");
+  text("FALTA ALCANÇAR",M+86,y+4.5,6.5,[78,82,90],"bold");text(fmt(remaining),M+86,y+11,11,[35,39,48],"bold");
+  stroke(215,218,225);doc.setLineWidth(.7);doc.circle(145,y+6,7.3,"S");
+  text(coverage+"%",145,y+7.7,8,[35,39,48],"bold","center");
+  text("COBERTURA DAS CONTAS",157,y+4.5,6.5,[78,82,90],"bold");text(coverage+"%",157,y+11,11,[35,39,48],"bold");
+  y+=18;
 
-  // Priority insight
-  rgb(245,247,250);doc.roundedRect(M,y,182,25,4,4,"F");
-  text("INSIGHT DO MÊS",M+6,y+7,7,[255,165,0],"bold");
-  const insight=expenseTotal===0?"Ainda não há contas cadastradas para este mês.":"Suas contas somam "+fmt(expenseTotal)+", com "+fmt(open)+" ainda pendentes. "+(balance>=0?"O saldo planejado permanece positivo.":"Atenção: o planejamento atual indica saldo negativo.");
-  wrap(insight,M+6,y+14,170,9,[50,50,58]);y+=33;
+  // Insight premium.
+  round(M,y,192,22,4,[255,252,242],[240,204,94]);
+  icon("!",M+11,y+11,[255,184,0]);
+  text("INSIGHT DO MÊS",M+23,y+7,7,[166,116,0],"bold");
+  const insight=expenseTotal===0?"Ainda não há contas cadastradas neste mês.":"Suas contas somam "+fmt(expenseTotal)+", com "+fmt(open)+" ainda pendentes. "+(availableNow>=0?"Seu disponível atual permanece positivo.":"Atenção: o disponível atual está negativo.");
+  wrap(insight,M+23,y+13,160,8,[49,53,61],4.2);y+=30;
 
-  // Category chart
-  text("Onde seu dinheiro está concentrado",M,y,13,[25,25,30],"bold");y+=6;
+  // Concentração + donut.
+  text("Onde seu dinheiro está concentrado",M,y,13,[31,35,43],"bold");accentLine(M,y+3);y+=10;
   const map={};expenses.forEach(x=>{const k=clean(x.cat)||"Outros";map[k]=(map[k]||0)+(+x.val||0);});
   const cats=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,7);
   if(cats.length){
-    const max=Math.max(...cats.map(x=>x[1]),1);
+    const max=Math.max(...cats.map(x=>x[1]),1), colors=[[255,184,0],[255,163,0],[226,143,0],[38,40,44],[70,72,77],[154,157,164],[196,198,203]];
+    const chartY=y, barX=M+28,barW=63,row=8.2;
     cats.forEach(([name,val],i)=>{
-      const yy=y+i*11; text(name,M,yy+4,8,[65,65,72],"bold");
-      rgb(234,236,240);doc.roundedRect(M+42,yy,95,6,3,3,"F");
-      rgb(255,208,0);doc.roundedRect(M+42,yy,Math.max(2,95*val/max),6,3,3,"F");
-      text(fmt(val),141,yy+4.5,7,[55,55,62],"bold");
+      const yy=chartY+i*row;
+      text(name,M,yy+4,7,[55,60,68],"normal");
+      rgb(236,238,242);doc.roundedRect(barX,yy,barW,4.8,2.4,2.4,"F");
+      rgb(...colors[i%colors.length]);doc.roundedRect(barX,yy,Math.max(2,barW*val/max),4.8,2.4,2.4,"F");
+      text(fmt(val),barX+barW+3,yy+3.8,6.6,[55,60,68],"bold");
     });
-    y+=cats.length*11+6;
-  }else{wrap("Sem dados de despesas para montar o gráfico.",M,y+6,170,9);y+=15;}
+    // Donut central.
+    const cx=138,cy=chartY+26,r=23,inner=11,total=cats.reduce((s,x)=>s+x[1],0)||1;
+    let angle=-Math.PI/2;
+    cats.forEach(([,val],i)=>{const next=angle+(val/total)*Math.PI*2;doc.setFillColor(...colors[i%colors.length]);const pts=[[cx,cy]];for(let a=angle;a<=next;a+=.06)pts.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);pts.push([cx+Math.cos(next)*r,cy+Math.sin(next)*r]);doc.lines(pts.slice(1).map((p,j)=>[p[0]-(j?pts[j][0]:cx),p[1]-(j?pts[j][1]:cy)]),cx,cy,[1,1],"F",true);angle=next;});
+    rgb(255,255,255);doc.circle(cx,cy,inner,"F");text("Total",cx,cy-1,8,[55,60,68],"bold","center");text(fmt(total),cx,cy+6,7.5,[35,39,48],"bold","center");
+    cats.forEach(([name,val],i)=>{const yy=chartY+2+i*6.2;rgb(...colors[i%colors.length]);doc.circle(167,yy,1.8,"F");text(name,171,yy+1.7,6.7,[55,60,68]);text((val/total*100).toFixed(1).replace(".",",")+"%",199,yy+1.7,6.7,[55,60,68],"bold","right");});
+    y+=Math.max(cats.length*row,52)+7;
+  }else{wrap("Sem dados de despesas para montar os gráficos.",M,y+6,170,9);y+=18;}
 
-  // 7 day trend
-  if(y>225){doc.addPage();y=18;}
-  text("Ritmo de ganhos das entregas",M,y,13,[25,25,30],"bold");y+=8;
+  stroke(241,191,0);doc.setLineWidth(.45);doc.line(M,278,201,278);
+  if(pdfLogo){try{doc.addImage(pdfLogo,"PNG",M,282,7,7,undefined,"FAST");}catch(e){}}
+  text("Entrega365 • Relatório financeiro inteligente",M+10,286.5,7,[90,94,102]);
+  text("Página 1 de 2",201,286.5,7,[90,94,102],"normal","right");
+
+  // ===== PÁGINA 2 =====
+  doc.addPage();
+  y=14;
+  // Pequena marca.
+  if(pdfLogo){try{doc.addImage(pdfLogo,"PNG",M,y-5,19,19,undefined,"FAST");}catch(e){}}
+  text("Ritmo de ganhos das entregas",M+23,y+5,13,[31,35,43],"bold");accentLine(M+23,y+8);
+  text("Contas e cartões",122,y+5,13,[31,35,43],"bold");accentLine(122,y+8);
+  stroke(225,228,233);doc.setLineWidth(.5);doc.line(112,13,112,121);
+
+  // 7-day chart left.
   const days=[];for(let back=6;back>=0;back--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-back);const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");days.push({label:d.toLocaleDateString("pt-BR",{weekday:"short"}).replace(".",""),value:totals(getDay(key)).total||0});}
-  const dmax=Math.max(...days.map(x=>x.value),1),chartY=y+43,baseY=chartY;
-  doc.setDrawColor(225,225,230);doc.line(M,baseY,196,baseY);
-  days.forEach((d,i)=>{const x=M+7+i*25,h=Math.max(d.value?3:0,(d.value/dmax)*34);rgb(76,217,100);doc.roundedRect(x,baseY-h,13,h,2,2,"F");text(d.label,x,baseY+6,7,[90,90,98]);if(d.value>0)text(Math.round(d.value).toLocaleString("pt-BR"),x,baseY-h-3,6,[60,60,67],"bold");});
-  y=baseY+16;
-  text("Total dos últimos 7 dias: "+fmt(days.reduce((s,d)=>s+d.value,0)),M,y,8,[85,85,93],"bold");y+=12;
+  const maxDay=Math.max(...days.map(d=>d.value),1),baseY=108,leftX=20;
+  [0,.25,.5,.75,1].forEach(k=>{const yy=baseY-k*40;stroke(230,232,236);doc.setLineWidth(.35);doc.line(leftX,yy,107,yy);text("R$ "+Math.round(maxDay*k),10,yy+2,6,[105,109,116]);});
+  days.forEach((d,i)=>{const x=23+i*12,h=d.value/maxDay*40;if(d.value>0){rgb(34,158,68);doc.roundedRect(x,baseY-h,7,h,2,2,"F");text(Math.round(d.value),x+3.5,baseY-h-2.5,6,[50,55,62],"bold","center");}text(d.label,x+3.5,baseY+7,6,[80,85,93],"normal","center");});
+  const total7=days.reduce((s,d)=>s+d.value,0);
+  round(20,117,83,12,4,[238,249,242],[218,236,224]);icon("↗",29,123,[34,158,68]);text("Total dos últimos 7 dias: "+fmt(total7),39,125.3,7.5,[48,55,62],"bold");
 
-  // Account/card summary
-  text("Contas e cartões",M,y,13,[25,25,30],"bold");y+=6;
+  // Account cards right.
   const accounts={};expenses.forEach(x=>{const k=clean(x.account)||"Sem conta/cartão";accounts[k]=(accounts[k]||0)+(+x.val||0);});
-  const acc=Object.entries(accounts).sort((a,b)=>b[1]-a[1]);
-  if(acc.length){acc.slice(0,8).forEach(([name,val],i)=>{const yy=y+i*8;rgb(248,248,250);doc.roundedRect(M,yy,182,6.5,2,2,"F");text(name,M+4,yy+4.4,7,[55,55,62],"bold");text(fmt(val),155,yy+4.4,7,[55,55,62],"bold");});y+=Math.min(acc.length,8)*8+8;}
-  else {wrap("Nenhuma conta ou cartão utilizado neste mês.",M,y+6,170,9);y+=15;}
+  const acc=Object.entries(accounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  acc.forEach(([name,val],i)=>{const yy=22+i*14;round(122,yy,79,11,3,[248,249,252],[220,223,230]);icon(name.toLowerCase().includes("cart")?"▣":"▰",130,yy+5.5,i===1?[255,184,0]:[230,233,239]);text(name,138,yy+6.8,7.3,[50,55,62]);text(fmt(val),198,yy+6.8,8,[35,39,48],"bold","right");});
+  if(!acc.length)text("Nenhuma conta ou cartão neste mês.",122,30,8,[100,104,112]);
 
-  // Entries page
-  doc.addPage();y=18;
-  text("Lançamentos do mês",M,y,16,[20,20,26],"bold");text(monthLabel,M,y+7,8,[100,100,108]);y+=15;
+  // Summary by category.
+  y=137;text("Resumo por categoria",M,y,13,[31,35,43],"bold");accentLine(M,y+3);
+  const grouped={};
+  cats.forEach(([name,val])=>{let key=name.toLowerCase().includes("cart")?"Cartão / Cartão":name;grouped[key]=(grouped[key]||0)+val;});
+  const summary=Object.entries(grouped).slice(0,5), sw=192/Math.max(summary.length,1);
+  summary.forEach(([name,val],i)=>{
+    const x=M+i*sw;round(x,y+8,sw-1,30,1,[248,249,252],[220,223,230]);
+    text(name,x+sw/2,y+16,7,[55,60,68],"bold","center");
+    text(fmt(val),x+sw/2,y+24,8,[35,39,48],"bold","center");
+    text((expenseTotal?val/expenseTotal*100:0).toFixed(1).replace(".",",")+"%",x+sw/2,y+29,6.5,[90,94,102],"normal","center");
+  });
+
+  // Remaining entries.
+  y=184;text("Lançamentos do mês",M,y,13,[31,35,43],"bold");accentLine(M,y+3);y+=10;
   const sorted=items.slice().sort((a,b)=>String(a.date||"").localeCompare(String(b.date||"")));
-  const rowH=9;
-  const header=()=>{rgb(18,18,22);doc.roundedRect(M,y,182,8,2,2,"F");text("DESCRIÇÃO",M+3,y+5.2,6.5,[255,255,255],"bold");text("CATEGORIA / CONTA",M+68,y+5.2,6.5,[255,255,255],"bold");text("STATUS",M+133,y+5.2,6.5,[255,255,255],"bold");text("VALOR",M+161,y+5.2,6.5,[255,255,255],"bold");y+=9;};
-  header();
-  sorted.forEach((x,i)=>{
-    if(y>274){doc.addPage();y=18;header();}
-    if(i%2===0){rgb(248,248,250);doc.rect(M,y,182,rowH,"F");}
+  const rowH=8.3;
+  rgb(40,43,49);doc.roundedRect(M,y,192,7,2,2,"F");
+  text("DESCRIÇÃO",M+3,y+4.8,6.2,[255,255,255],"bold");
+  text("CATEGORIA / CONTA",M+68,y+4.8,6.2,[255,255,255],"bold");
+  text("STATUS",M+136,y+4.8,6.2,[255,255,255],"bold");
+  text("VALOR",M+189,y+4.8,6.2,[255,255,255],"bold","right");y+=8;
+  sorted.slice(0,10).forEach((x,i)=>{
+    if(i%2===0){rgb(248,249,252);doc.rect(M,y,192,rowH,"F");}
     const income=financeTypeOf(x)==="income",status=financePaid(x);
-    const desc=clean(x.desc||"Sem descrição").slice(0,28);
-    const meta=(clean(x.cat||"Outros")+" • "+clean(x.account||"Sem conta/cartão")).slice(0,34);
-    text(desc,M+3,y+5.7,7,[40,40,46],"bold");
-    text(meta,M+68,y+5.7,6.5,[80,80,88]);
-    text(income?(status?"Recebido":"A receber"):(status?"Pago":"Pendente"),M+133,y+5.7,6.5,status?[35,130,60]:[175,105,0],"bold");
-    text((income?"+ ":"− ")+fmt(x.val),M+161,y+5.7,6.5,income?[35,130,60]:[180,65,55],"bold");
+    text(clean(x.desc||"Sem descrição").slice(0,30),M+3,y+5.4,6.6,[45,50,58],"bold");
+    text((clean(x.cat||"Outros")+" • "+clean(x.account||"Sem conta/cartão")).slice(0,34),M+68,y+5.4,6.1,[80,85,93]);
+    text(income?(status?"Recebido":"A receber"):(status?"Pago":"Pendente"),M+136,y+5.4,6.1,status?[35,130,60]:[175,105,0],"bold");
+    text((income?"+ ":"− ")+fmt(x.val),M+189,y+5.4,6.2,income?[35,130,60]:[180,65,55],"bold","right");
     y+=rowH;
   });
-  if(!sorted.length)wrap("Nenhum lançamento financeiro cadastrado neste mês.",M,y+8,170,10);
+  if(!sorted.length)text("Nenhum lançamento financeiro cadastrado neste mês.",M,y+7,8,[100,104,112]);
 
-  // Footer
-  const pages=doc.getNumberOfPages();
-  for(let p=1;p<=pages;p++){doc.setPage(p);text("Entrega365 • Relatório financeiro inteligente",M,291,7,[120,120,128]);text("Página "+p+" de "+pages,175,291,7,[120,120,128]);}
+  stroke(241,191,0);doc.setLineWidth(.45);doc.line(M,278,201,278);
+  text("Entrega365 • Relatório financeiro inteligente",M,286.5,7,[90,94,102]);
+  text("Página 2 de 2",201,286.5,7,[90,94,102],"normal","right");
   doc.save("Entrega365-Relatorio-Financeiro-"+financeMonthKey()+".pdf");
 }
 function openFinanceForm(){
