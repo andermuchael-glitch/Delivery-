@@ -56,6 +56,9 @@ const DRIVE_APPDATA_SCOPE="https://www.googleapis.com/auth/drive.appdata";
 const FULL_LOGO="./logo-entrega365.jpg?v=150";
 const DRIVE_TOKEN="entrega365:driveAccessToken";
 const DRIVE_TOKEN_EXP="entrega365:driveAccessTokenExp";
+// Permissão confirmada uma única vez. O token de acesso expira em cerca de 1 hora,
+// mas isso não deve encerrar a sessão do aplicativo: a autenticação Firebase continua persistente.
+const DRIVE_AUTHORIZED="entrega365:driveAuthorized";
 
 let currentUser=null;
 let loginInProgress=false;
@@ -118,6 +121,13 @@ function hasValidDriveToken(){
   return !!token&&exp>Date.now()+60000;
 }
 
+function hasDrivePermission(){
+  // Depois que a permissão foi validada pelo próprio Google Drive, mantemos
+  // a sessão do usuário mesmo quando o access token temporário expirar.
+  // O token é apenas para sincronizar; ele não é a sessão de login.
+  return localStorage.getItem(DRIVE_AUTHORIZED)==="1";
+}
+
 async function verifyDriveAccess(accessToken){
   const url="https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=1&fields=files(id)";
   let response;
@@ -154,6 +164,7 @@ async function persistDriveCredential(result){
   await verifyDriveAccess(credential.accessToken);
   localStorage.setItem(DRIVE_TOKEN,credential.accessToken);
   localStorage.setItem(DRIVE_TOKEN_EXP,String(Date.now()+3500000));
+  localStorage.setItem(DRIVE_AUTHORIZED,"1");
   window.dispatchEvent(new Event("e365-drive-token"));
 }
 
@@ -173,13 +184,14 @@ function clearSession(){
   localStorage.removeItem("entrega365:lastGoogleAccount");
   localStorage.removeItem("entrega365:driveAccessToken");
   localStorage.removeItem("entrega365:driveAccessTokenExp");
+  localStorage.removeItem(DRIVE_AUTHORIZED);
   sessionStorage.removeItem(LOGIN_PENDING);
 }
 
 function openApp(u,{persist=true}={}){
   if(!u||!u.uid)return;
-  if(!hasValidDriveToken()){
-    console.warn("Entrega365: acesso obrigatório ao Google Drive não confirmado.");
+  if(!hasDrivePermission()){
+    console.warn("Entrega365: acesso obrigatório ao Google Drive ainda não foi confirmado.");
     currentUser=null;
     appUserUid=null;
     if(!loginInProgress)showLogin();
@@ -207,7 +219,7 @@ function openApp(u,{persist=true}={}){
 
 function openSavedSession(){
   const uid=getSessionUid();
-  if(!uid||!hasValidDriveToken())return false;
+  if(!uid||!hasDrivePermission())return false;
   openApp({
     uid,
     email:localStorage.getItem("entrega365:email")||"",
@@ -287,7 +299,7 @@ onAuthStateChanged(auth,u=>{
     // O Firebase autenticado sozinho não libera o aplicativo. Durante o login
     // o evento pode chegar antes de o popup devolver o token do Drive; nesse
     // caso aguardamos startGoogleLogin concluir a validação.
-    if(getSessionUid()===u.uid&&hasValidDriveToken()){
+    if(getSessionUid()===u.uid&&hasDrivePermission()){
       openApp(u,{persist:true});
       return;
     }
@@ -315,7 +327,7 @@ onAuthStateChanged(auth,u=>{
 
 (async function startAuthRecovery(){
   try{
-    if(auth.currentUser&&getSessionUid()===auth.currentUser.uid&&hasValidDriveToken()){
+    if(auth.currentUser&&getSessionUid()===auth.currentUser.uid&&hasDrivePermission()){
       openApp(auth.currentUser,{persist:true});
       return;
     }
