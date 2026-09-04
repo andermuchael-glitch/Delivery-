@@ -31,9 +31,16 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const limit = Math.min(Math.max(Number(req.query?.limit) || 30, 1), 100);
       const rows = await sql`
-        SELECT id, author_uid, author_name, author_email, text, type, url, created_at
-        FROM community_posts
-        ORDER BY created_at DESC
+        SELECT
+          p.id, p.author_uid, p.author_name, p.author_email, p.text, p.type, p.url, p.created_at,
+          (SELECT COUNT(*)::int FROM community_comments c WHERE c.post_id = p.id) AS comment_count,
+          (SELECT COUNT(*)::int FROM community_likes l WHERE l.post_id = p.id) AS like_count,
+          EXISTS(
+            SELECT 1 FROM community_likes me
+            WHERE me.post_id = p.id AND me.author_uid = ${user.uid}
+          ) AS liked
+        FROM community_posts p
+        ORDER BY p.created_at DESC
         LIMIT ${limit}
       `;
       return res.status(200).json({ ok: true, posts: rows });
