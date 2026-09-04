@@ -3,22 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#121212">
-<title>Entrega365</title>
+<meta name="theme-color" content="#0b0c0f">
+<title>Entrega365 — Entrar</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#121212;color:#f5f5f5}body{min-height:100vh;background:radial-gradient(circle at 50% 8%,#303030 0,#121212 52%);display:flex;align-items:flex-start;justify-content:center;padding:20px 14px 40px}.loginbox{width:100%;max-width:430px;text-align:center}.biglogo{width:100%;height:auto;max-height:330px;object-fit:contain;display:block;margin:0 auto 4px}.loginbox h1{font-size:30px;margin:0 0 6px;font-weight:900}.loginbox p{margin:0 0 20px;color:#a0a0a0;font-size:14px}.card{background:linear-gradient(160deg,#1e1e1e,#262626);border:1px solid #333;border-radius:22px;padding:20px;box-shadow:0 8px 24px #0006}.google{width:100%;min-height:54px;border:1px solid #555;border-radius:13px;background:#1e1e1e;color:#ffd000;font-weight:900;font-size:15px;padding:13px;cursor:pointer}.google:active{transform:scale(.99)}.hint{margin-top:12px;color:#888;font-size:11px}.loading{color:#ffd000;font-weight:800;padding:18px}.error{color:#ffb4b0;font-size:13px;margin-top:12px}</style>
+*{box-sizing:border-box}
+:root{--accent:#ffd000;--bg:#0b0c0f;--panel:rgba(24,25,29,.88);--line:rgba(255,255,255,.09);--muted:#a7a9ad}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#fff}
+body{min-height:100dvh;display:flex;align-items:center;justify-content:center;overflow-x:hidden;padding:24px}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 12%,rgba(255,208,0,.12),transparent 34%),linear-gradient(135deg,#101217 0%,#090a0d 100%);z-index:-2}
+.shell{width:min(1080px,100%);min-height:min(680px,calc(100dvh - 48px));display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.75fr);background:rgba(18,19,23,.72);border:1px solid var(--line);border-radius:30px;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,.48);backdrop-filter:blur(18px)}
+.visual{position:relative;display:flex;align-items:center;justify-content:center;padding:44px;background:radial-gradient(circle at 50% 45%,rgba(255,208,0,.09),transparent 45%)}
+.visual:after{content:"";position:absolute;width:62%;height:62%;border-radius:50%;background:rgba(255,208,0,.06);filter:blur(50px)}
+.logo{position:relative;z-index:1;width:min(390px,78%);height:auto;max-height:430px;object-fit:contain;display:block;filter:drop-shadow(0 22px 28px rgba(0,0,0,.35))}
+.copy{position:absolute;z-index:2;left:44px;bottom:38px}.copy strong{display:block;font-size:20px;letter-spacing:.2px}.copy span{display:block;color:#9a9da3;font-size:13px;margin-top:4px}
+.login{display:flex;align-items:center;justify-content:center;padding:48px;background:linear-gradient(180deg,rgba(30,31,36,.78),rgba(18,19,23,.9));border-left:1px solid var(--line)}
+.loginbox{width:min(380px,100%)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid rgba(255,208,0,.2);border-radius:999px;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:rgba(255,208,0,.06);margin-bottom:18px}
+h1{font-size:clamp(30px,4vw,42px);line-height:1.05;margin:0 0 10px;font-weight:900;letter-spacing:-1.2px}p{margin:0 0 28px;color:var(--muted);font-size:14px;line-height:1.6}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.2)}
+.hint{margin-top:16px;text-align:center;color:#74777d;font-size:11px;line-height:1.5}
+.loading{padding:18px;text-align:center;color:var(--accent);font-weight:800}.error{color:#ffb4b0;font-size:13px;margin-top:12px}
+@media(max-width:820px){body{padding:0;align-items:stretch}.shell{min-height:100dvh;width:100%;grid-template-columns:1fr;border:0;border-radius:0;background:transparent;box-shadow:none}.visual{min-height:38dvh;max-height:390px;padding:28px 24px 70px}.logo{width:min(270px,64vw);max-height:270px}.copy{left:24px;bottom:22px}.copy strong{font-size:17px}.login{padding:28px 20px 38px;border-left:0;border-top:1px solid var(--line);align-items:flex-start}.loginbox{width:min(460px,100%)}h1{font-size:32px}}
+@media(max-width:430px){.visual{min-height:32dvh;max-height:330px;padding:20px 18px 58px}.logo{width:min(225px,62vw);max-height:220px}.copy{left:18px;bottom:17px}.login{padding:24px 16px 32px}.card{padding:14px}}
+@media(min-width:1400px){.shell{width:1120px}.visual{padding:56px}.logo{width:430px}}
+</style>
 </head>
 <body>
-<div class="loginbox">
-  <img class="biglogo" src="./logo-entrega365.jpg?v=158" alt="Entrega365">
-  <h1>Entrega365</h1>
-  <p>Entre com sua conta Google para continuar</p>
-  <div class="card">
-    <div id="app"><div class="loading">Conectando...</div></div>
-  </div>
-</div>
-<script>
-</script>
-<script type="module" src="./auth-fix.js?v=158"></script>
+<main class="shell">
+  <section class="visual" aria-label="Entrega365">
+    <img class="logo" src="./logo-entrega365.jpg?v=159" alt="Entrega365">
+    <div class="copy"><strong>Entrega365</strong><span>Controle suas entregas de forma simples e profissional.</span></div>
+  </section>
+  <section class="login">
+    <div class="loginbox">
+      <div class="badge">● Acesso seguro</div>
+      <h1>Bem-vindo de volta</h1>
+      <p>Entre com sua conta Google para continuar no Entrega365.</p>
+      <div class="card">
+        <div id="app"><div class="loading">Conectando...</div></div>
+      </div>
+      <div class="hint">Seu acesso é protegido pelo sistema de autenticação do Entrega365.</div>
+    </div>
+  </section>
+</main>
+<script type="module" src="./auth-fix.js?v=159"></script>
 </body>
 </html>
