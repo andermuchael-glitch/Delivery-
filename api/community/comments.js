@@ -1,4 +1,5 @@
 import { getDb } from '../db.js';
+import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
 
 function cleanText(value, max = 2000) {
@@ -11,6 +12,7 @@ export default async function handler(req, res) {
     if (!user) return unauthorized(res);
 
     const sql = getDb();
+    await ensureSchema(sql);
     const postId = Number(req.query?.postId || req.body?.postId);
     if (!Number.isInteger(postId) || postId < 1) {
       return res.status(400).json({ ok: false, error: 'Publicação inválida.' });
