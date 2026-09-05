@@ -43,12 +43,35 @@ export async function ensureSchema(sql) {
   )`;
   await sql`ALTER TABLE community_likes ADD COLUMN IF NOT EXISTS post_id BIGINT`;
   await sql`ALTER TABLE community_likes ADD COLUMN IF NOT EXISTS author_uid TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE community_likes ADD COLUMN IF NOT EXISTS user_uid TEXT NOT NULL DEFAULT ''`;
   await sql`ALTER TABLE community_likes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
 
-  // Legacy likes used post_id as the sole primary key. The current model is
-  // one like per user per post, so replace that legacy key with the composite
-  // key expected by the API.
-  await sql`ALTER TABLE community_likes DROP CONSTRAINT IF EXISTS community_likes_pkey`;
+  // Older production versions used user_uid and/or a primary key only on
+  // post_id. Normalize those rows, remove invalid/duplicate likes, then
+  // rebuild the primary key as (post_id, author_uid). The DO block removes
+  // whichever primary-key constraint name the legacy database actually uses.
+  await sql`UPDATE community_likes
+    SET author_uid = CASE WHEN NULLIF(author_uid, '') IS NOT NULL THEN author_uid ELSE user_uid END,
+        user_uid = CASE WHEN NULLIF(user_uid, '') IS NOT NULL THEN user_uid ELSE author_uid END`;
+  await sql`DELETE FROM community_likes WHERE NULLIF(author_uid, '') IS NULL`;
+  await sql`DELETE FROM community_likes a USING community_likes b
+    WHERE a.ctid < b.ctid
+      AND a.post_id = b.post_id
+      AND a.author_uid = b.author_uid`;
+  await sql`DO $$
+    DECLARE r RECORD;
+    BEGIN
+      FOR r IN
+        SELECT conname
+        FROM pg_constraint
+        WHERE conrelid = 'community_likes'::regclass
+          AND contype = 'p'
+      LOOP
+        EXECUTE format('ALTER TABLE community_likes DROP CONSTRAINT %I', r.conname);
+      END LOOP;
+    END $$`;
+  await sql`ALTER TABLE community_likes ALTER COLUMN author_uid SET NOT NULL`;
+  await sql`ALTER TABLE community_likes ALTER COLUMN user_uid SET NOT NULL`;
   await sql`ALTER TABLE community_likes ADD CONSTRAINT community_likes_pkey PRIMARY KEY (post_id, author_uid)`;
 
   await sql`CREATE TABLE IF NOT EXISTS marketplace_settings (
@@ -61,8 +84,6 @@ export async function ensureSchema(sql) {
   await sql`ALTER TABLE marketplace_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
   await sql`ALTER TABLE marketplace_settings ADD COLUMN IF NOT EXISTS updated_by_uid TEXT NOT NULL DEFAULT ''`;
 
-  // Older installations created a restrictive type CHECK constraint before
-  // image publications were introduced. Recreate the current constraint.
   await sql`ALTER TABLE community_posts DROP CONSTRAINT IF EXISTS community_posts_type_check`;
   await sql`ALTER TABLE community_posts ADD CONSTRAINT community_posts_type_check CHECK (type IN ('text', 'youtube', 'instagram', 'image'))`;
 
