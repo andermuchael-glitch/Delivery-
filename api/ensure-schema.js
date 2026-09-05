@@ -1,7 +1,10 @@
 export async function ensureSchema(sql) {
+  // Keep this migration safe for databases that already have an older
+  // community_posts table. CREATE TABLE IF NOT EXISTS does not add columns
+  // to an existing table, so explicitly add the newer columns first.
   await sql`CREATE TABLE IF NOT EXISTS community_posts (
     id BIGSERIAL PRIMARY KEY,
-    author_uid TEXT NOT NULL,
+    author_uid TEXT NOT NULL DEFAULT '',
     author_name TEXT NOT NULL DEFAULT 'Entregador',
     author_email TEXT NOT NULL DEFAULT '',
     text TEXT NOT NULL DEFAULT '',
@@ -10,12 +13,20 @@ export async function ensureSchema(sql) {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`;
 
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS author_uid TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS author_name TEXT NOT NULL DEFAULT 'Entregador'`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS author_email TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS text TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'text'`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS url TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
+
   await sql`CREATE TABLE IF NOT EXISTS community_comments (
     id BIGSERIAL PRIMARY KEY,
     post_id BIGINT NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
-    author_uid TEXT NOT NULL,
+    author_uid TEXT NOT NULL DEFAULT '',
     author_name TEXT NOT NULL DEFAULT 'Entregador',
-    text TEXT NOT NULL,
+    text TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`;
 
@@ -34,8 +45,7 @@ export async function ensureSchema(sql) {
   )`;
 
   // Older installations created a restrictive type CHECK constraint before
-  // image publications were introduced. Remove that legacy constraint so
-  // image posts can be persisted safely.
+  // image publications were introduced. Remove it and recreate the current one.
   await sql`ALTER TABLE community_posts DROP CONSTRAINT IF EXISTS community_posts_type_check`;
   await sql`ALTER TABLE community_posts ADD CONSTRAINT community_posts_type_check CHECK (type IN ('text', 'youtube', 'instagram', 'image'))`;
 
