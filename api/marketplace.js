@@ -1,4 +1,5 @@
 import { getDb } from './db.js';
+import { ensureSchema } from './ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from './auth.js';
 
 const ADMIN_EMAIL = 'entrega365.suporte@gmail.com';
@@ -21,6 +22,7 @@ export default async function handler(req, res) {
     if (!user) return unauthorized(res);
 
     const sql = getDb();
+    await ensureSchema(sql);
 
     if (req.method === 'GET') {
       const [setting] = await sql`
