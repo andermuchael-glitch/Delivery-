@@ -4,8 +4,21 @@ const MARKET_DEFAULT='https://meli.la/1Komyrh';
 const ADMIN='entrega365.suporte@gmail.com';
 let modal=null, view='community', posts=[];
 
-function user(){return window.e365GetCurrentUser?.()||window.__e365Auth?.currentUser||null}
-async function token(){const u=user(); if(!u?.getIdToken) throw new Error('Sessão não autenticada.'); return u.getIdToken()}
+function user(){
+  const authUser=window.entrega365Auth?.auth?.currentUser||window.__e365Auth?.currentUser;
+  return authUser||window.e365GetCurrentUser?.()||null;
+}
+async function authUser(){
+  let u=user();
+  if(u?.getIdToken)return u;
+  for(let i=0;i<40;i++){
+    await new Promise(r=>setTimeout(r,250));
+    u=user();
+    if(u?.getIdToken)return u;
+  }
+  throw new Error('Sessão não autenticada. Aguarde o login terminar e tente novamente.');
+}
+async function token(){const u=await authUser();return u.getIdToken();}
 async function api(path,opts={}){const t=await token();const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json',Authorization:'Bearer '+t,...(opts.headers||{})}});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.error||`Erro HTTP ${r.status}`);return d}
 function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function date(v){const d=new Date(v);return Number.isFinite(d.getTime())?d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Agora'}
@@ -19,7 +32,8 @@ function renderFeed(){const el=modal.querySelector('#cm-feed');if(!posts.length)
 async function publish(){const b=modal.querySelector('#cm-publish'),text=modal.querySelector('#cm-text').value.trim(),type=modal.querySelector('#cm-type').value,url=modal.querySelector('#cm-url').value.trim();if(!text&&!url)return alert('Digite um texto ou informe um link.');b.disabled=true;b.textContent='PUBLICANDO…';try{await api('/community/posts',{method:'POST',body:JSON.stringify({text,type,url})});modal.querySelector('#cm-text').value='';modal.querySelector('#cm-url').value='';await loadPosts();}catch(e){alert('Não foi possível publicar: '+e.message)}finally{b.disabled=false;b.textContent='PUBLICAR NA COMUNIDADE'}}
 async function like(id){const p=posts.find(x=>x.id===id);try{const d=await api('/community/likes',{method:p?.liked?'DELETE':'POST',body:JSON.stringify({postId:id})});if(p){p.liked=d.liked;p.like_count=d.likeCount}renderFeed()}catch(e){alert(e.message)}}
 async function comments(id){const box=modal.querySelector('#comments-'+id);if(box.dataset.loaded==='1'){box.dataset.open=box.dataset.open==='1'?'0':'1';box.style.display=box.dataset.open==='1'?'block':'none';return}try{const d=await api('/community/comments?postId='+id);box.innerHTML=(d.comments||[]).map(x=>`<div class="cm-comment"><b>${esc(x.author_name)}</b><div>${esc(x.text)}</div></div>`).join('')+`<div class="cm-comment-form"><input id="comment-input-${id}" placeholder="Escreva um comentário"><button class="cm-primary" id="comment-btn-${id}">➤</button></div>`;box.dataset.loaded='1';box.dataset.open='1';box.querySelector('button').onclick=()=>addComment(id);box.style.display='block'}catch(e){box.innerHTML='<div class="cm-error">'+esc(e.message)+'</div>'}}
-async function addComment(id){const input=modal.querySelector('#comment-input-'+id);if(!input?.value.trim())return;try{await api('/community/comments',{method:'POST',body:JSON.stringify({postId:id,text:input.value.trim()})});await comments(id);const p=posts.find(x=>x.id===id);if(p)p.comment_count=(p.comment_count||0)+1}catch(e){alert(e.message)}}
-async function renderMarket(){const c=modal.querySelector('#cm-content');c.innerHTML='<div class="cm-store">🛍️<h2>Marketplace Entrega365</h2><p class="cm-muted">Loja configurada pelo backend PostgreSQL.</p><div id="cm-store-action">Carregando…</div></div>'+(String(user()?.email||'').toLowerCase()===ADMIN?'<div class="cm-card cm-form"><input id="cm-store-url" placeholder="Link do Mercado Livre"><button id="cm-save" class="cm-primary">SALVAR LOJA</button></div>':'');try{const d=await api('/marketplace');const url=d.affiliateUrl||MARKET_DEFAULT;c.querySelector('#cm-store-action').innerHTML=`<a class="cm-store-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">🛒 VISITAR LOJA</a>`;if(c.querySelector('#cm-store-url')){c.querySelector('#cm-store-url').value=url;c.querySelector('#cm-save').onclick=async()=>{try{const r=await api('/marketplace',{method:'PUT',body:JSON.stringify({affiliateUrl:c.querySelector('#cm-store-url').value})});alert('Loja salva no PostgreSQL.');await renderMarket()}catch(e){alert(e.message)}}}}catch(e){c.querySelector('#cm-store-action').innerHTML='<div class="cm-error">'+esc(e.message)+'</div>'}}
+async function addComment(id){const input=modal.querySelector('#comment-input-'+id);if(!input?.value.trim())return;try{await api('/community/comments',{method:'POST',body:JSON.stringify({postId:id,text:input.value.trim()})});boxReload(id)}catch(e){alert(e.message)}}
+async function boxReload(id){const box=modal.querySelector('#comments-'+id);if(!box)return;box.dataset.loaded='0';await comments(id)}
+async function renderMarket(){const c=modal.querySelector('#cm-content');c.innerHTML='<div class="cm-store">🛍️<h2>Marketplace Entrega365</h2><p class="cm-muted">Loja configurada pelo backend PostgreSQL.</p><div id="cm-store-action">Carregando…</div></div>'+(String(user()?.email||'').toLowerCase()===ADMIN?'<div class="cm-card cm-form"><input id="cm-store-url" placeholder="Link do Mercado Livre"><button id="cm-save" class="cm-primary">SALVAR LOJA</button></div>':'');try{const d=await api('/marketplace');const url=d.affiliateUrl||MARKET_DEFAULT;c.querySelector('#cm-store-action').innerHTML=`<a class="cm-store-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">🛒 VISITAR LOJA</a>`;if(c.querySelector('#cm-store-url')){c.querySelector('#cm-store-url').value=url;c.querySelector('#cm-save').onclick=async()=>{try{await api('/marketplace',{method:'PUT',body:JSON.stringify({affiliateUrl:c.querySelector('#cm-store-url').value})});alert('Loja salva no PostgreSQL.');await renderMarket()}catch(e){alert(e.message)}}}}catch(e){c.querySelector('#cm-store-action').innerHTML='<div class="cm-error">'+esc(e.message)+'</div>'}}
 function ensureButton(){styles();if(document.getElementById('e365-community-plus'))return;const actions=document.querySelector('header .actions'),tabs=document.querySelector('.tabs');const b=document.createElement('button');b.id='e365-community-plus';b.type='button';b.title='Comunidade e Marketplace';b.innerHTML='+';b.className=actions?'ico':'tab';b.onclick=()=>render('community');(actions||tabs)?.appendChild(b)}
 const boot=()=>setTimeout(ensureButton,300);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();window.e365CommunityOpen=()=>render('community');window.e365MarketplaceOpen=()=>render('marketplace');
