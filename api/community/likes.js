@@ -1,4 +1,5 @@
 import { getDb } from '../db.js';
+import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
 
 export default async function handler(req, res) {
@@ -17,6 +18,7 @@ export default async function handler(req, res) {
     }
 
     const sql = getDb();
+    await ensureSchema(sql);
     const [post] = await sql`SELECT id FROM community_posts WHERE id = ${postId} LIMIT 1`;
     if (!post) return res.status(404).json({ ok: false, error: 'Publicação não encontrada.' });
 
