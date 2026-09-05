@@ -1,4 +1,5 @@
 import { getDb } from '../db.js';
+import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
 
 function sendMethodNotAllowed(res) {
@@ -14,8 +15,6 @@ function cleanUrl(value) {
   const url = typeof value === 'string' ? value.trim() : '';
   if (!url) return '';
   if (/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(url)) {
-    // Imagens são comprimidas no celular antes do envio. Mantemos um limite
-    // para evitar que arquivos grandes sejam gravados no PostgreSQL.
     if (url.length > 2500000) return '';
     return url;
   }
@@ -34,6 +33,7 @@ export default async function handler(req, res) {
     if (!user) return unauthorized(res);
 
     const sql = getDb();
+    await ensureSchema(sql);
 
     if (req.method === 'GET') {
       const limit = Math.min(Math.max(Number(req.query?.limit) || 30, 1), 100);
