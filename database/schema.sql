@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS community_posts (
   author_name TEXT NOT NULL DEFAULT 'Entregador',
   author_email TEXT NOT NULL DEFAULT '',
   text TEXT NOT NULL DEFAULT '',
-  type TEXT NOT NULL DEFAULT 'text' CHECK (type IN ('text', 'youtube', 'instagram')),
+  type TEXT NOT NULL DEFAULT 'text' CHECK (type IN ('text', 'youtube', 'instagram', 'image')),
   url TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
