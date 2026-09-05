@@ -24,21 +24,22 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       await sql`
-        INSERT INTO community_likes (post_id, author_uid)
-        VALUES (${postId}, ${user.uid})
+        INSERT INTO community_likes (post_id, author_uid, user_uid)
+        VALUES (${postId}, ${user.uid}, ${user.uid})
         ON CONFLICT (post_id, author_uid) DO NOTHING
       `;
     } else if (req.method === 'DELETE') {
       await sql`
         DELETE FROM community_likes
-        WHERE post_id = ${postId} AND author_uid = ${user.uid}
+        WHERE post_id = ${postId}
+          AND (author_uid = ${user.uid} OR user_uid = ${user.uid})
       `;
     }
 
     const [summary] = await sql`
       SELECT
         COUNT(*)::int AS like_count,
-        COALESCE(BOOL_OR(author_uid = ${user.uid}), false) AS liked
+        COALESCE(BOOL_OR(author_uid = ${user.uid} OR user_uid = ${user.uid}), false) AS liked
       FROM community_likes
       WHERE post_id = ${postId}
     `;
