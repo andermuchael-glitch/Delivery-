@@ -11,8 +11,15 @@ function cleanText(value, max = 4000) {
 }
 
 function cleanUrl(value) {
-  const url = cleanText(value, 2000);
+  const url = typeof value === 'string' ? value.trim() : '';
   if (!url) return '';
+  if (/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(url)) {
+    // Imagens são comprimidas no celular antes do envio. Mantemos um limite
+    // para evitar que arquivos grandes sejam gravados no PostgreSQL.
+    if (url.length > 2500000) return '';
+    return url;
+  }
+  if (url.length > 2000) return '';
   try {
     const parsed = new URL(url);
     return ['http:', 'https:'].includes(parsed.protocol) ? parsed.toString() : '';
@@ -49,12 +56,15 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const text = cleanText(req.body?.text);
       const url = cleanUrl(req.body?.url);
-      const type = ['text', 'youtube', 'instagram'].includes(req.body?.type)
+      const type = ['text', 'youtube', 'instagram', 'image'].includes(req.body?.type)
         ? req.body.type
         : 'text';
 
       if (!text && !url) {
-        return res.status(400).json({ ok: false, error: 'A publicação precisa ter texto ou link.' });
+        return res.status(400).json({ ok: false, error: 'A publicação precisa ter texto, link ou imagem.' });
+      }
+      if (req.body?.url && !url) {
+        return res.status(400).json({ ok: false, error: 'Imagem ou link inválido ou muito grande.' });
       }
 
       const [post] = await sql`
