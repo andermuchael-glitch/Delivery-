@@ -1,34 +1,21 @@
-/* Entrega365 — segunda camada de backup/sincronização (servidor próprio) */
-const API='/api/cloud-backup';
-
+/* Entrega365 — segunda camada independente no Firestore */
+import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+import { getApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+const DB=getFirestore(getApp()),ROOT='entrega365SafetyBackup';
 export function initSecondaryBackup(auth){
-  if(!auth||window.__e365SecondaryBackup)return;
-  window.__e365SecondaryBackup=true;
+  if(!auth||window.__e365SecondaryBackup)return;window.__e365SecondaryBackup=true;
   let busy=false,timer=0,syncing=false;
-  const session=()=>localStorage.getItem('dcv2:session')||'';
-  const uid=()=>session().replace(/^google:/,'');
-  const mail=()=>String(localStorage.getItem('entrega365:email')||auth.currentUser?.email||'').trim().toLowerCase();
-  const stateKey=()=>`entrega365:secondaryState:${session()}`;
-  const state=()=>{try{return JSON.parse(localStorage.getItem(stateKey())||'{}')}catch{return{}}};
-  const setState=x=>localStorage.setItem(stateKey(),JSON.stringify({...state(),...x}));
+  const session=()=>localStorage.getItem('dcv2:session')||'',uid=()=>session().replace(/^google:/,''),mail=()=>String(localStorage.getItem('entrega365:email')||auth.currentUser?.email||'').trim().toLowerCase();const ref=()=>doc(DB,ROOT,uid());
+  const stateKey=()=>`entrega365:secondaryState:${session()}`,state=()=>{try{return JSON.parse(localStorage.getItem(stateKey())||'{}')}catch{return{}}},setState=x=>localStorage.setItem(stateKey(),JSON.stringify({...state(),...x}));
   const included=k=>{const s=session(),pre='dcv2:'+s+':';return !!k&&(k.startsWith(pre)||k===`entrega365:establishments:${s}`||k===`entrega365:currentEstablishment:${s}`||['entrega365:agenda','entrega365:settings','e365month'].includes(k));};
   const keys=()=>{const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&included(k))o[k]=localStorage.getItem(k)}return o};
   const meaningful=()=>Object.keys(keys()).length>0;
-  async function token(){const u=auth.currentUser;if(!u)throw Error('login_required');return u.getIdToken(true);}
-  async function call(method,body){const t=await token();const r=await fetch(API,{method,cache:'no-store',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(d.error||'backup_error'),{data:d,status:r.status});return d;}
-  const snapshot=()=>({format:'Entrega365Backup',version:201,uid:uid(),email:mail(),release:document.querySelector('meta[name="entrega365-release"]')?.content||'unknown',localStorage:keys(),exportedAt:new Date().toISOString()});
-  function safety(){if(!meaningful())return;try{localStorage.setItem(`entrega365:secondarySafety:${uid()}`,JSON.stringify(snapshot()))}catch{}}
-  function apply(p){safety();for(const k of Object.keys(keys()))localStorage.removeItem(k);for(const[k,v]of Object.entries(p.localStorage||{}))if(included(k))localStorage.setItem(k,v);localStorage.setItem('dcv2:session',session());window.dispatchEvent(new Event('e365-secondary-restored'));window.render?.();}
-  async function save(){if(busy||syncing||!session()||!auth.currentUser||!meaningful())return false;busy=true;try{const p=snapshot(),r=await call('PUT',{payload:p,clientAt:Date.parse(p.exportedAt)});setState({initialized:true,lastSyncedAt:r.savedAt||Date.now(),dirty:false});return true}catch(e){if(e.status===409)setState({remoteNewer:true});console.warn('Backup secundário:',e);return false}finally{busy=false}}
-  async function sync(){if(syncing||!session()||!auth.currentUser)return false;syncing=true;try{const r=await call('GET');if(!r.exists){if(meaningful())await save();else setState({initialized:true,lastSyncedAt:0});return false;}const remoteAt=Number(r.updatedAt||0),st=state(),localChanged=Number(st.changedAt||0);if(localChanged&&localChanged>remoteAt){await save();return false;}if(!st.initialized){apply(r.payload);setState({initialized:true,lastSyncedAt:remoteAt,dirty:false});return true;}if(remoteAt>Number(st.lastSyncedAt||0)&&!localChanged){apply(r.payload);setState({initialized:true,lastSyncedAt:remoteAt,dirty:false});return true;}return false;}catch(e){console.warn('Sincronização secundária:',e);return false}finally{syncing=false;}}
-  const queue=()=>{if(!session()||syncing)return;setState({dirty:true,changedAt:Date.now()});clearTimeout(timer);timer=setTimeout(()=>save().catch(()=>{}),1500)};
-  window.entrega365SecondaryBackupSave=save;
-  window.entrega365SecondaryBackupSync=sync;
-  window.entrega365SecondaryBackupStatus=()=>({busy,syncing,state:state()});
-  window.entrega365SecondaryBackupRestore=async()=>{const r=await call('GET');if(!r.exists)return false;apply(r.payload);setState({initialized:true,lastSyncedAt:Number(r.updatedAt||Date.now()),dirty:false,changedAt:0});return true;};
-  window.addEventListener('e365-data-changed',queue);
-  window.addEventListener('online',()=>sync().catch(()=>{}));
-  window.addEventListener('e365-drive-restored',()=>setTimeout(()=>save().catch(()=>{}),1200));
-  setTimeout(()=>sync().catch(()=>{}),1800);
-  setInterval(()=>{if(state().dirty)save().catch(()=>{})},12000);
+  const snapshot=()=>({format:'Entrega365Backup',version:202,uid:uid(),email:mail(),release:document.querySelector('meta[name="entrega365-release"]')?.content||'unknown',localStorage:keys(),exportedAt:new Date().toISOString()});
+  const safety=()=>{if(meaningful())try{localStorage.setItem(`entrega365:secondarySafety:${uid()}`,JSON.stringify(snapshot()))}catch{}};
+  function apply(p){safety();const old=keys();Object.keys(old).forEach(k=>localStorage.removeItem(k));Object.entries(p?.localStorage||{}).forEach(([k,v])=>{if(included(k))localStorage.setItem(k,v)});localStorage.setItem('dcv2:session',session());window.dispatchEvent(new Event('e365-secondary-restored'));window.render?.();}
+  async function save(){if(busy||syncing||!uid()||!auth.currentUser||!meaningful())return false;busy=true;try{const r=ref(),snap=await getDoc(r),remote=snap.exists()?snap.data():null,remoteAt=Number(remote?.updatedAt||0),p=snapshot(),clientAt=Date.parse(p.exportedAt);if(remoteAt&&clientAt<remoteAt-2000){setState({remoteNewer:true,dirty:false});return false}await setDoc(r,{version:202,uid:uid(),email:mail(),payload:p,updatedAt:clientAt},{merge:false});setState({initialized:true,lastSyncedAt:clientAt,dirty:false,remoteNewer:false});return true}catch(e){console.warn('Backup secundário:',e);return false}finally{busy=false}}
+  async function sync(){if(syncing||!uid()||!auth.currentUser)return false;syncing=true;try{const s=await getDoc(ref());if(!s.exists()){if(meaningful())await save();else setState({initialized:true,lastSyncedAt:0});return false}const r=s.data()||{},remoteAt=Number(r.updatedAt||0),st=state(),localChanged=Number(st.changedAt||0);if(localChanged&&localChanged>remoteAt){await save();return false}if(!st.initialized||(!localChanged&&remoteAt>Number(st.lastSyncedAt||0))){if(r.payload?.format==='Entrega365Backup'&&r.payload.localStorage){apply(r.payload);setState({initialized:true,lastSyncedAt:remoteAt,dirty:false,changedAt:0});return true}}return false}catch(e){console.warn('Sincronização secundária:',e);return false}finally{syncing=false}}
+  const queue=()=>{if(!uid()||syncing)return;setState({dirty:true,changedAt:Date.now()});clearTimeout(timer);timer=setTimeout(()=>save().catch(()=>{}),1500)};
+  window.entrega365SecondaryBackupSave=save;window.entrega365SecondaryBackupSync=sync;window.entrega365SecondaryBackupStatus=()=>({busy,syncing,state:state()});window.entrega365SecondaryBackupRestore=async()=>{const s=await getDoc(ref());if(!s.exists()||!s.data()?.payload)return false;apply(s.data().payload);setState({initialized:true,lastSyncedAt:Number(s.data().updatedAt||Date.now()),dirty:false,changedAt:0});return true};
+  window.addEventListener('e365-data-changed',queue);window.addEventListener('online',()=>sync().catch(()=>{}));window.addEventListener('e365-drive-restored',()=>setTimeout(()=>save().catch(()=>{}),1200));setTimeout(()=>sync().catch(()=>{}),2500);setInterval(()=>{if(state().dirty)save().catch(()=>{});else sync().catch(()=>{})},12000);
 }
