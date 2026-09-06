@@ -10,12 +10,15 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email == 'entrega365.suporte@gmail.com';
     }
 
-    // Private per-user application synchronization.
     match /entrega365Sync/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
-    // Public community for authenticated Entrega365 users.
+    // Independent private safety copy for each account.
+    match /entrega365SafetyBackup/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
     match /entrega365CommunityPosts/{postId} {
       allow read: if signedIn();
       allow create: if signedIn()
@@ -32,13 +35,11 @@ service cloud.firestore {
       }
     }
 
-    // Marketplace link: readable by everyone logged in; only the owner/admin can change it.
     match /entrega365CommunitySettings/{settingId} {
       allow read: if signedIn();
       allow write: if admin();
     }
 
-    // Deny everything else by default.
     match /{document=**} {
       allow read, write: if false;
     }
