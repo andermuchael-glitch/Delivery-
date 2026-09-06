@@ -5,8 +5,12 @@
   let busy=false;
   const valid=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());
   function email(){
-    const e=(localStorage.getItem('entrega365:email')||'').trim().toLowerCase();
-    return valid(e)?e:'';
+    const stored=(localStorage.getItem('entrega365:email')||'').trim().toLowerCase();
+    if(valid(stored))return stored;
+    const u=window.e365GetCurrentUser?.()||window.entrega365Auth?.auth?.currentUser;
+    const fromAuth=(u?.email||'').trim().toLowerCase();
+    if(valid(fromAuth)){localStorage.setItem('entrega365:email',fromAuth);return fromAuth;}
+    return '';
   }
   async function sync(){
     const mail=email();
@@ -25,12 +29,14 @@
       localStorage.setItem('entrega365:proSyncedAt',String(Date.now()));
       if(previous!==next)window.dispatchEvent(new CustomEvent('e365-pro-updated',{detail:{active:d.active,status:d.status||''}}));
     }catch(e){
-      // Em falha temporária de rede, preserva o último estado confirmado em vez de derrubar um PRO válido.
+      // Falha temporária não transforma um PRO já confirmado em plano gratuito.
       console.warn('PRO sync:',e);
     }finally{busy=false}
   }
   window.e365IsPro=()=>localStorage.getItem(PLAN_KEY)==='active';
   window.e365SyncPro=sync;
+  // Corrige o menu Mais mesmo quando o app recria a navegação.
+  import('./more-menu-fix.js?v=1').catch(e=>console.warn('More menu fix:',e));
   setTimeout(sync,700);
   setTimeout(sync,2500);
   setInterval(sync,15000);
