@@ -1,123 +1,78 @@
 /* Entrega365 - correção definitiva de largura no celular */
 @media (max-width: 700px){
   html,body,#app{width:100%!important;min-width:0!important;max-width:none!important;overflow-x:hidden!important}
-  main{
-    display:block!important;
-    width:calc(100vw - 20px)!important;
-    max-width:none!important;
-    min-width:0!important;
-    margin-left:10px!important;
-    margin-right:10px!important;
-    padding-left:0!important;
-    padding-right:0!important;
-  }
-  main > *, main .card, main .grid, main .kmgrid{
-    width:100%!important;
-    max-width:none!important;
-    min-width:0!important;
-  }
-  .card{box-sizing:border-box!important}
-  .grid,.kmgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
-  .tablehead,.entry{min-width:0!important}
+  main{display:block!important;width:calc(100vw - 20px)!important;max-width:none!important;min-width:0!important;margin-left:10px!important;margin-right:10px!important;padding-left:0!important;padding-right:0!important}
+  main > *, main .card, main .grid, main .kmgrid{width:100%!important;max-width:none!important;min-width:0!important}
+  .card{box-sizing:border-box!important}.grid,.kmgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.tablehead,.entry{min-width:0!important}
 }
-
-
-/* Cabeçalho compacto e seguro no aplicativo instalado (PWA) */
 @media (max-width: 700px){
-  header{
-    width:100%!important;
-    min-width:0!important;
-    height:auto!important;
-    min-height:64px!important;
-    padding:calc(8px + env(safe-area-inset-top)) 10px 8px!important;
-    gap:8px!important;
-    overflow:visible!important;
-  }
-  header .head{
-    min-width:0!important;
-    flex:1 1 auto!important;
-    gap:8px!important;
-    overflow:hidden!important;
-  }
-  header .logo{
-    flex:0 0 40px!important;
-    width:40px!important;
-    height:40px!important;
-  }
-  header .head > div:not(.logo){
-    min-width:0!important;
-    overflow:hidden!important;
-  }
-  header .brand{
-    display:block!important;
-    max-width:110px!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-  header .sub{
-    display:none!important;
-  }
-  header .actions{
-    flex:0 0 auto!important;
-    min-width:0!important;
-    gap:5px!important;
-    display:flex!important;
-    align-items:center!important;
-    overflow:visible!important;
-  }
-  header .actions .ico{
-    flex:0 0 36px!important;
-    width:36px!important;
-    height:36px!important;
-    min-width:36px!important;
-    padding:0!important;
-    border-radius:11px!important;
-    font-size:16px!important;
-  }
-  header .actions .ico.pro{
-    width:52px!important;
-    min-width:52px!important;
-  }
+  header{width:100%!important;min-width:0!important;height:auto!important;min-height:64px!important;padding:calc(8px + env(safe-area-inset-top)) 10px 8px!important;gap:8px!important;overflow:visible!important}
+  header .head{min-width:0!important;flex:1 1 auto!important;gap:8px!important;overflow:hidden!important}
+  header .logo{flex:0 0 40px!important;width:40px!important;height:40px!important}
+  header .head > div:not(.logo){min-width:0!important;overflow:hidden!important}
+  header .brand{display:block!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  header .sub{display:none!important}
+  header .actions{flex:0 0 auto!important;min-width:0!important;gap:5px!important;display:flex!important;align-items:center!important;overflow:visible!important}
+  header .actions .ico{flex:0 0 36px!important;width:36px!important;height:36px!important;min-width:36px!important;padding:0!important;border-radius:11px!important;font-size:16px!important}
+  header .actions .ico.pro{width:52px!important;min-width:52px!important}
 }
-
-/* Em telas muito estreitas, mantém todos os botões acessíveis sem cortar o último. */
 @media (max-width: 390px){
-  header{
-    padding-left:8px!important;
-    padding-right:8px!important;
-    gap:5px!important;
-  }
-  header .logo{
-    flex-basis:36px!important;
-    width:36px!important;
-    height:36px!important;
-  }
-  header .brand{
-    max-width:82px!important;
-    font-size:14px!important;
-  }
-  header .actions{
-    gap:4px!important;
-  }
-  header .actions .ico{
-    flex-basis:34px!important;
-    width:34px!important;
-    height:34px!important;
-    min-width:34px!important;
-  }
-  header .actions .ico.pro{
-    width:48px!important;
-    min-width:48px!important;
-  }
+  header{padding-left:8px!important;padding-right:8px!important;gap:5px!important} header .logo{flex-basis:36px!important;width:36px!important;height:36px!important}
+  header .brand{max-width:82px!important;font-size:14px!important} header .actions{gap:4px!important}
+  header .actions .ico{flex-basis:34px!important;width:34px!important;height:34px!important;min-width:34px!important} header .actions .ico.pro{width:48px!important;min-width:48px!important}
 }
+@media (display-mode: standalone){body{padding-top:0!important}header{top:0!important}}
 
-/* Standalone instalado: reserva corretamente a área superior do sistema. */
-@media (display-mode: standalone){
-  body{
-    padding-top:0!important;
-  }
-  header{
-    top:0!important;
-  }
-}
+/* TEMA CLARO — corrige textos que permaneciam brancos sobre fundo claro */
+:root[data-theme="day"] body,
+:root[data-theme="day"] main,
+:root[data-theme="day"] .card,
+:root[data-theme="day"] .stat,
+:root[data-theme="day"] .kmresult,
+:root[data-theme="day"] .delivery-entry,
+:root[data-theme="day"] .delivery-details,
+:root[data-theme="day"] .more-panel,
+:root[data-theme="day"] .modal,
+:root[data-theme="day"] .daycenter,
+:root[data-theme="day"] .monthnav,
+:root[data-theme="day"] .dayitem,
+:root[data-theme="day"] .entry,
+:root[data-theme="day"] label{color:#17191c!important}
+
+:root[data-theme="day"] .title,
+:root[data-theme="day"] .sum,
+:root[data-theme="day"] .sum.total,
+:root[data-theme="day"] .delivery-summary-name,
+:root[data-theme="day"] .brand,
+:root[data-theme="day"] .navbtn,
+:root[data-theme="day"] .google-btn,
+:root[data-theme="day"] .more-item,
+:root[data-theme="day"] .modal button{color:#17191c!important}
+
+:root[data-theme="day"] .tab,
+:root[data-theme="day"] .small,
+:root[data-theme="day"] .muted,
+:root[data-theme="day"] .delivery-label,
+:root[data-theme="day"] .delivery-summary-meta,
+:root[data-theme="day"] .tablehead,
+:root[data-theme="day"] .daycenter input{color:#68707a!important}
+
+:root[data-theme="day"] input,
+:root[data-theme="day"] select,
+:root[data-theme="day"] textarea{color:#17191c!important;background:#fff!important}
+:root[data-theme="day"] input::placeholder,
+:root[data-theme="day"] textarea::placeholder{color:#68707a!important;opacity:1!important}
+
+:root[data-theme="day"] .ico,
+:root[data-theme="day"] .navbtn,
+:root[data-theme="day"] .delivery-action,
+:root[data-theme="day"] .quick-action{color:#17191c!important}
+:root[data-theme="day"] .blue{color:#1687b5!important}
+:root[data-theme="day"] .green{color:#168b35!important}
+:root[data-theme="day"] .yellow,
+:root[data-theme="day"] .dayvalue,
+:root[data-theme="day"] .kmresult b,
+:root[data-theme="day"] .delivery-action.map,
+:root[data-theme="day"] .quick-action.map{color:#b48700!important}
+:root[data-theme="day"] .red,
+:root[data-theme="day"] .trash{color:#c62828!important}
