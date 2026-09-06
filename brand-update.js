@@ -9,5 +9,6 @@ function applyEntrega365Brand(){
   const icon=document.querySelector('link[rel="icon"]');if(icon)icon.href=ICON_LOGO;
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyEntrega365Brand);else applyEntrega365Brand();setTimeout(applyEntrega365Brand,250);
-(function loadScript(src,key){if(window[key])return;window[key]=true;const s=document.createElement('script');s.src=src;s.async=false;s.onerror=()=>console.warn(src+' indisponível');document.head.appendChild(s);})('./plus-buttons-fix.js?v=2','__e365PlusButtonsFixLoader');
+(function loadScript(src,key,type){if(window[key])return;window[key]=true;const s=document.createElement('script');s.src=src;s.async=false;if(type)s.type=type;s.onerror=()=>console.warn(src+' indisponível');document.head.appendChild(s);})('./plus-buttons-fix.js?v=2','__e365PlusButtonsFixLoader');
 (function loadSecondary(){if(window.__e365SecondaryBackupLoader)return;window.__e365SecondaryBackupLoader=true;const s=document.createElement('script');s.type='module';s.src='./secondary-backup-loader.js?v=1';s.onerror=()=>console.warn('Backup secundário indisponível');document.head.appendChild(s);})();
+(function loadCommunityPerformance(){if(window.__e365CommunityPerformanceLoader)return;window.__e365CommunityPerformanceLoader=true;const s=document.createElement('script');s.src='./community-performance.js?v=1';s.async=true;s.onerror=()=>console.warn('Pré-carregamento da Comunidade indisponível');document.head.appendChild(s);})();
