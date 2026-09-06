@@ -32,3 +32,14 @@ function applyEntrega365Brand(){
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyEntrega365Brand);
 else applyEntrega365Brand();
 setTimeout(applyEntrega365Brand,250);
+
+// Carrega o reparo dos botões + de forma independente do módulo PRO.
+(function loadPlusButtonsFix(){
+  if(window.__e365PlusButtonsFixLoader)return;
+  window.__e365PlusButtonsFixLoader=true;
+  const s=document.createElement('script');
+  s.src='./plus-buttons-fix.js?v=1';
+  s.async=false;
+  s.onerror=()=>console.warn('Plus buttons fix: falha ao carregar');
+  document.head.appendChild(s);
+})();
