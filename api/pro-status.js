@@ -22,13 +22,10 @@ function isEntrega365(item, email) {
   const reasonMatches = /entrega\s*365/.test(reason);
   const amountOk = amountMatches(amount);
   const payerMatches = !payer || sameEmail(payer, email);
-
-  // Assinaturas antigas podem não ter external_reference. Nelas, o vínculo
-  // é confirmado pelo e-mail do pagador, valor mensal e identificação Entrega365.
   return payerMatches && amountOk && (referenceMatches || reasonMatches || !reference);
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
@@ -63,10 +60,8 @@ module.exports = async (req, res) => {
       });
       const result = await response.json();
       if (!response.ok) return res.status(response.status).json({ error: 'subscription_search_failed' });
-
       const candidates = Array.isArray(result.results) ? result.results : [];
       const matches = candidates.filter(item => isEntrega365(item, email));
-      // Uma assinatura ativa/autorizada tem prioridade sobre outra pendente.
       data = matches.find(item => isActive(item.status)) || matches[0] || null;
       if (data) match = 'payer_email';
     }
@@ -86,7 +81,6 @@ module.exports = async (req, res) => {
     const reference = String(data.external_reference || '').trim().toLowerCase();
     const reason = String(data.reason || '').trim().toLowerCase();
     const amount = data?.auto_recurring?.transaction_amount;
-
     const payerMatches = !payer || sameEmail(payer, email);
     const referenceMatches = reference === 'entrega365:' + email;
     const reasonMatches = /entrega\s*365/.test(reason);
@@ -106,4 +100,4 @@ module.exports = async (req, res) => {
     console.error('pro-status error', error);
     return res.status(500).json({ error: 'internal_error' });
   }
-};
+}
