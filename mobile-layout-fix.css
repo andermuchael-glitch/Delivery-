@@ -23,7 +23,7 @@
 }
 @media (display-mode: standalone){body{padding-top:0!important}header{top:0!important}}
 
-/* TEMA CLARO — corrige textos que permaneciam brancos sobre fundo claro */
+/* TEMA CLARO — nenhum texto branco sobre fundo claro */
 :root[data-theme="day"] body,
 :root[data-theme="day"] main,
 :root[data-theme="day"] .card,
@@ -38,7 +38,6 @@
 :root[data-theme="day"] .dayitem,
 :root[data-theme="day"] .entry,
 :root[data-theme="day"] label{color:#17191c!important}
-
 :root[data-theme="day"] .title,
 :root[data-theme="day"] .sum,
 :root[data-theme="day"] .sum.total,
@@ -48,7 +47,6 @@
 :root[data-theme="day"] .google-btn,
 :root[data-theme="day"] .more-item,
 :root[data-theme="day"] .modal button{color:#17191c!important}
-
 :root[data-theme="day"] .tab,
 :root[data-theme="day"] .small,
 :root[data-theme="day"] .muted,
@@ -56,13 +54,11 @@
 :root[data-theme="day"] .delivery-summary-meta,
 :root[data-theme="day"] .tablehead,
 :root[data-theme="day"] .daycenter input{color:#68707a!important}
-
 :root[data-theme="day"] input,
 :root[data-theme="day"] select,
 :root[data-theme="day"] textarea{color:#17191c!important;background:#fff!important}
 :root[data-theme="day"] input::placeholder,
 :root[data-theme="day"] textarea::placeholder{color:#68707a!important;opacity:1!important}
-
 :root[data-theme="day"] .ico,
 :root[data-theme="day"] .navbtn,
 :root[data-theme="day"] .delivery-action,
@@ -76,3 +72,50 @@
 :root[data-theme="day"] .quick-action.map{color:#b48700!important}
 :root[data-theme="day"] .red,
 :root[data-theme="day"] .trash{color:#c62828!important}
+
+/* TEMA CLARO — Comunidade: a interface não pode permanecer com o painel escuro */
+:root[data-theme="day"] .cm-overlay{background:#f4f5f7!important;color:#17191c!important}
+:root[data-theme="day"] .cm-sheet{background:linear-gradient(#fff,#f4f5f7)!important;color:#17191c!important}
+:root[data-theme="day"] .cm-head,
+:root[data-theme="day"] .cm-tabs{background:rgba(255,255,255,.97)!important;border-color:#d8dbe0!important;color:#17191c!important}
+:root[data-theme="day"] .cm-title,
+:root[data-theme="day"] .cm-hero h2,
+:root[data-theme="day"] .cm-composer-label,
+:root[data-theme="day"] .cm-feed-title,
+:root[data-theme="day"] .cm-author,
+:root[data-theme="day"] .cm-side-title{color:#17191c!important}
+:root[data-theme="day"] .cm-title small{color:#b48700!important}
+:root[data-theme="day"] .cm-close{background:#fff!important;color:#17191c!important;border-color:#cfd3d8!important}
+:root[data-theme="day"] .cm-tab{background:#fff!important;color:#4d535a!important;border-color:#cfd3d8!important}
+:root[data-theme="day"] .cm-tab.active{background:#ffd000!important;color:#17191c!important;border-color:#ffd000!important}
+:root[data-theme="day"] .cm-hero,
+:root[data-theme="day"] .cm-card,
+:root[data-theme="day"] .cm-side-card{background:linear-gradient(160deg,#fff,#f1f2f4)!important;border-color:#d8dbe0!important;color:#17191c!important;box-shadow:0 5px 18px rgba(0,0,0,.06)!important}
+:root[data-theme="day"] .cm-hero p,
+:root[data-theme="day"] .cm-composer-sub,
+:root[data-theme="day"] .cm-feed-note,
+:root[data-theme="day"] .cm-muted,
+:root[data-theme="day"] .cm-side-line,
+:root[data-theme="day"] .cm-empty,
+:root[data-theme="day"] .cm-image-file{color:#68707a!important}
+:root[data-theme="day"] .cm-form textarea,
+:root[data-theme="day"] .cm-form input,
+:root[data-theme="day"] .cm-form select,
+:root[data-theme="day"] .cm-comment-form input{background:#fff!important;color:#17191c!important;border-color:#cfd3d8!important}
+:root[data-theme="day"] .cm-form textarea::placeholder,
+:root[data-theme="day"] .cm-form input::placeholder{color:#68707a!important;opacity:1!important}
+:root[data-theme="day"] .cm-btn{background:#fff!important;color:#17191c!important;border-color:#cfd3d8!important}
+:root[data-theme="day"] .cm-side-icon{background:#e9ebee!important}
+:root[data-theme="day"] .cm-comments{border-color:#d8dbe0!important}
+:root[data-theme="day"] .cm-comment{border-color:#e1e3e6!important;color:#17191c!important}
+:root[data-theme="day"] .cm-media,
+:root[data-theme="day"] .cm-image{border-color:#d8dbe0!important}
+:root[data-theme="day"] .cm-link{color:#9a7400!important;border-color:#d8dbe0!important}
+
+/* TEMA CLARO — menu Mais e painel das outras funções */
+:root[data-theme="day"] .more-panel,
+:root[data-theme="day"] .more-panel *{color:#17191c!important}
+:root[data-theme="day"] .more-panel{background:#fff!important;border-color:#d8dbe0!important;box-shadow:0 12px 35px rgba(0,0,0,.16)!important}
+:root[data-theme="day"] .more-item{background:#f7f8f9!important;border-color:#d8dbe0!important}
+:root[data-theme="day"] .more-item:hover{background:#eef0f2!important}
+:root[data-theme="day"] .more-item small{color:#68707a!important}
