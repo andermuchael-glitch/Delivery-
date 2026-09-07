@@ -1,7 +1,7 @@
 import { getDb } from '../db.js';
 import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
-import { moderateCommunityContent } from './moderation.js';
+import { moderateCommunityContent } from '../../community-moderation.js';
 
 function sendMethodNotAllowed(res) {
   res.setHeader('Allow', 'GET, POST');
@@ -29,8 +29,6 @@ function cleanUrl(value) {
 }
 
 async function purgeExpired(sql) {
-  // Posts, comments and likes are retained for at most 7 days. Foreign keys
-  // remove comments/likes automatically when a post is deleted.
   await sql`DELETE FROM community_posts WHERE created_at < NOW() - INTERVAL '7 days'`;
 }
 
@@ -78,7 +76,12 @@ export default async function handler(req, res) {
 
       const moderation = moderateCommunityContent({ text, url });
       if (!moderation.allowed) {
-        return res.status(422).json({ ok: false, code: 'COMMUNITY_CONTENT_BLOCKED', category: moderation.category, error: moderation.error });
+        return res.status(422).json({
+          ok: false,
+          code: 'COMMUNITY_CONTENT_BLOCKED',
+          category: moderation.category,
+          error: moderation.error
+        });
       }
 
       const [post] = await sql`
