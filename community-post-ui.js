@@ -1,4 +1,4 @@
-/* Entrega365 — Community post composer collapsed by default */
+/* Entrega365 — Community post composer collapsed + moderation notice */
 (function(){
   const STYLE_ID='e365-community-post-ui';
   function styles(){
@@ -11,6 +11,8 @@
       .cm-new-post-toggle:hover{filter:brightness(1.04);transform:translateY(-1px)}
       .cm-composer-collapsed{display:none!important}
       .cm-compose-close{width:100%;padding:10px;border:1px solid #555;border-radius:11px;background:#292929;color:#ddd;font-weight:800;cursor:pointer}
+      .cm-moderation-notice{margin:2px 0 4px;padding:10px 12px;border:1px solid #4b4b4b;border-radius:11px;background:#191919;color:#bbb;font-size:11px;line-height:1.45}
+      .cm-moderation-notice b{color:#ffd000}
     `;
     document.head.appendChild(s)
   }
@@ -31,6 +33,12 @@
     wrap.appendChild(toggle);
     form.parentNode.insertBefore(wrap,form);
     form.classList.add('cm-composer-collapsed');
+
+    const notice=document.createElement('div');
+    notice.className='cm-moderation-notice';
+    notice.innerHTML='<b>🛡️ Moderação ativa</b><br>Não são permitidos conteúdos políticos, sexuais ou pornográficos, linguagem obscena, ameaças, discriminação ou outras condutas inadequadas. As publicações permanecem por 7 dias e depois são removidas.';
+    form.insertBefore(notice,form.firstChild);
+
     const close=document.createElement('button');
     close.type='button';
     close.className='cm-compose-close';
@@ -40,18 +48,6 @@
     function closeForm(){form.classList.add('cm-composer-collapsed');toggle.innerHTML='➕ <span>Nova publicação</span>'}
     toggle.onclick=()=>form.classList.contains('cm-composer-collapsed')?open():closeForm();
     close.onclick=closeForm;
-    const publishBtn=form.querySelector('#cm-publish');
-    if(publishBtn&&!publishBtn.dataset.postUiWrapped){
-      const old=publishBtn.onclick;
-      publishBtn.onclick=async function(){
-        if(typeof old==='function')await old.call(this);
-        const text=form.querySelector('#cm-text')?.value.trim()||'';
-        const url=form.querySelector('#cm-url')?.value.trim()||'';
-        const file=form.querySelector('#cm-image')?.value||'';
-        if(!text&&!url&&!file)closeForm();
-      };
-      publishBtn.dataset.postUiWrapped='1';
-    }
   }
   function schedule(){
     let tries=0;
@@ -74,10 +70,6 @@
           const wrappedOpen=async function(){const result=await open.apply(this,arguments);setTimeout(collapseComposer,0);return result};
           wrappedOpen.__e365PostUiWrapped=true;
           window.e365CommunityOpen=wrappedOpen;
-        }
-        if(window.e365MarketplaceOpen&&!window.e365MarketplaceOpen.__e365PostUiWrapped){
-          const openMarket=window.e365MarketplaceOpen;
-          window.e365MarketplaceOpen=async function(){const result=await openMarket.apply(this,arguments);return result};
         }
         if(tries>40)clearInterval(timer);
       }else if(tries>80)clearInterval(timer);
