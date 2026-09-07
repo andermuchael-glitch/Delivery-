@@ -1,6 +1,7 @@
 import { getDb } from '../db.js';
 import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
+import { moderateCommunityContent } from './moderation.js';
 
 function sendMethodNotAllowed(res) {
   res.setHeader('Allow', 'GET, POST');
@@ -27,6 +28,12 @@ function cleanUrl(value) {
   }
 }
 
+async function purgeExpired(sql) {
+  // Posts, comments and likes are retained for at most 7 days. Foreign keys
+  // remove comments/likes automatically when a post is deleted.
+  await sql`DELETE FROM community_posts WHERE created_at < NOW() - INTERVAL '7 days'`;
+}
+
 export default async function handler(req, res) {
   try {
     const user = await requireFirebaseUser(req);
@@ -34,6 +41,7 @@ export default async function handler(req, res) {
 
     const sql = getDb();
     await ensureSchema(sql);
+    await purgeExpired(sql);
 
     if (req.method === 'GET') {
       const limit = Math.min(Math.max(Number(req.query?.limit) || 30, 1), 100);
@@ -47,10 +55,11 @@ export default async function handler(req, res) {
             WHERE me.post_id = p.id AND me.author_uid = ${user.uid}
           ) AS liked
         FROM community_posts p
+        WHERE p.created_at >= NOW() - INTERVAL '7 days'
         ORDER BY p.created_at DESC
         LIMIT ${limit}
       `;
-      return res.status(200).json({ ok: true, posts: rows });
+      return res.status(200).json({ ok: true, posts: rows, retentionDays: 7 });
     }
 
     if (req.method === 'POST') {
@@ -61,10 +70,15 @@ export default async function handler(req, res) {
         : 'text';
 
       if (!text && !url) {
-        return res.status(400).json({ ok: false, error: 'A publicação precisa ter texto, link ou imagem.' });
+        return res.status(400).json({ ok: false, error: 'A publicação precisa ter texto, informe um link ou adicione uma imagem.' });
       }
       if (req.body?.url && !url) {
         return res.status(400).json({ ok: false, error: 'Imagem ou link inválido ou muito grande.' });
+      }
+
+      const moderation = moderateCommunityContent({ text, url });
+      if (!moderation.allowed) {
+        return res.status(422).json({ ok: false, code: 'COMMUNITY_CONTENT_BLOCKED', category: moderation.category, error: moderation.error });
       }
 
       const [post] = await sql`
@@ -76,7 +90,7 @@ export default async function handler(req, res) {
         RETURNING id, author_uid, author_name, author_email, text, type, url, created_at
       `;
 
-      return res.status(201).json({ ok: true, post });
+      return res.status(201).json({ ok: true, post, retentionDays: 7 });
     }
 
     return sendMethodNotAllowed(res);
