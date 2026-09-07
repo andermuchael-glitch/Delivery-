@@ -1,7 +1,7 @@
 import { getDb } from '../db.js';
 import { ensureSchema } from '../ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from '../auth.js';
-import { moderateCommunityContent } from './moderation.js';
+import { moderateCommunityContent } from '../../community-moderation.js';
 
 function cleanText(value, max = 2000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -44,7 +44,12 @@ export default async function handler(req, res) {
 
       const moderation = moderateCommunityContent({ text });
       if (!moderation.allowed) {
-        return res.status(422).json({ ok: false, code: 'COMMUNITY_CONTENT_BLOCKED', category: moderation.category, error: moderation.error });
+        return res.status(422).json({
+          ok: false,
+          code: 'COMMUNITY_CONTENT_BLOCKED',
+          category: moderation.category,
+          error: moderation.error
+        });
       }
 
       const [post] = await sql`
