@@ -1,10 +1,7 @@
 const FULL_LOGO="./logo-entrega365.jpg?v=122";
 const ICON_LOGO="./app-icon.svg?v=122";
 function applyEntrega365Brand(){
-  document.querySelectorAll(".biglogo").forEach(el=>{
-    el.style.background="none";el.style.border="0";el.style.borderRadius="0";el.style.boxShadow="none";el.innerHTML="";
-    const img=document.createElement("img");img.src=FULL_LOGO;img.alt="Entrega365";img.decoding="async";img.loading="eager";img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";el.appendChild(img);el.style.width="min(94vw,520px)";el.style.height="300px";
-  });
+  document.querySelectorAll(".biglogo").forEach(el=>{el.style.background="none";el.style.border="0";el.style.borderRadius="0";el.style.boxShadow="none";el.innerHTML="";const img=document.createElement("img");img.src=FULL_LOGO;img.alt="Entrega365";img.decoding="async";img.loading="eager";img.style.cssText="display:block;width:100%;height:100%;object-fit:contain";el.appendChild(img);el.style.width="min(94vw,520px)";el.style.height="300px";});
   document.querySelectorAll(".logo").forEach(el=>{el.style.background="none";el.style.backgroundImage=`url(\"${ICON_LOGO}\")`;el.style.backgroundSize="contain";el.style.backgroundPosition="center";el.style.backgroundRepeat="no-repeat";el.style.border="0";el.style.boxShadow="none";});
   const icon=document.querySelector('link[rel="icon"]');if(icon)icon.href=ICON_LOGO;
 }
@@ -14,23 +11,6 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 (function loadSyncBridge(){if(window.__e365SyncBridgeLoader)return;window.__e365SyncBridgeLoader=true;const s=document.createElement('script');s.type='module';s.src='./sync-bridge.js?v=220';s.onerror=()=>console.warn('Sincronização entre navegadores indisponível');document.head.appendChild(s);})();
 (function loadCommunityPerformance(){if(window.__e365CommunityPerformanceLoader)return;window.__e365CommunityPerformanceLoader=true;const s=document.createElement('script');s.src='./community-performance.js?v=1';s.async=true;s.onerror=()=>console.warn('Pré-carregamento da Comunidade indisponível');document.head.appendChild(s);})();
 (function loadCommunityPostUI(){if(window.__e365CommunityPostUILoader)return;window.__e365CommunityPostUILoader=true;const s=document.createElement('script');s.src='./community-post-ui.js?v=1';s.async=true;s.onerror=()=>console.warn('Interface de publicação da Comunidade indisponível');document.head.appendChild(s);})();
+(function loadMarketplaceCatalog(){if(window.__e365MarketplaceCatalogLoader)return;window.__e365MarketplaceCatalogLoader=true;const s=document.createElement('script');s.src='./marketplace-catalog.js?v=1';s.async=true;s.onerror=()=>console.warn('Catálogo do Marketplace indisponível');document.head.appendChild(s);})();
 (function loadRouteGeo(){if(window.__e365RouteGeoLoader)return;window.__e365RouteGeoLoader=true;const s=document.createElement('script');s.src='./route-geolocation.js?v=2';s.async=true;s.onerror=()=>console.warn('Rastreamento de rota indisponível');document.head.appendChild(s);})();
-
-/* Correção do total mensal: o cartão superior precisa incluir também o lançamento rápido de entregas. */
-(function fixMonthlyDeliveryTotal(){
-  if(window.__e365MonthlyDeliveryTotalFix)return;
-  window.__e365MonthlyDeliveryTotalFix=true;
-  function update(){
-    try{
-      if(typeof view!=="undefined" && view!=="month")return;
-      if(typeof user==="undefined" || !user || typeof monthKeys!=="function" || typeof getDay!=="function" || typeof totals!=="function")return;
-      const total=monthKeys().reduce((sum,k)=>sum+totals(getDay(k)).ent,0);
-      const stats=[...document.querySelectorAll("main .stat")];
-      const stat=stats.find(x=>/entregas/i.test(x.querySelector(".l")?.textContent||""));
-      if(stat){const value=stat.querySelector(".v");if(value)value.textContent=String(total);}
-    }catch(e){console.warn("Total mensal de entregas:",e)}
-  }
-  window.addEventListener("e365-data-changed",()=>setTimeout(update,0));
-  new MutationObserver(()=>setTimeout(update,0)).observe(document.documentElement,{childList:true,subtree:true});
-  setTimeout(update,300);
-})();
+(function fixMonthlyDeliveryTotal(){if(window.__e365MonthlyDeliveryTotalFix)return;window.__e365MonthlyDeliveryTotalFix=true;function update(){try{if(typeof view!=="undefined"&&view!=="month")return;if(typeof user==="undefined"||!user||typeof monthKeys!=="function"||typeof getDay!=="function"||typeof totals!=="function")return;const total=monthKeys().reduce((sum,k)=>sum+totals(getDay(k)).ent,0);const stats=[...document.querySelectorAll("main .stat")];const stat=stats.find(x=>/entregas/i.test(x.querySelector(".l")?.textContent||""));if(stat){const value=stat.querySelector(".v");if(value)value.textContent=String(total)}}catch(e){console.warn("Total mensal de entregas:",e)}}window.addEventListener("e365-data-changed",()=>setTimeout(update,0));new MutationObserver(()=>setTimeout(update,0)).observe(document.documentElement,{childList:true,subtree:true});setTimeout(update,300)})();
