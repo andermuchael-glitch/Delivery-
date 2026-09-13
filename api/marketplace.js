@@ -2,7 +2,7 @@ import { getDb } from './db.js';
 import { ensureSchema } from './ensure-schema.js';
 import { requireFirebaseUser, unauthorized } from './auth.js';
 
-const ADMIN_EMAIL='entrega365.suporte@gmail.com';
+const ADMIN_EMAILS=['entrega365.suporte@gmail.com','andermuchael@gmail.com'];
 function cleanUrl(value){if(typeof value!=='string')return '';const raw=value.trim().slice(0,2000);if(!raw)return '';try{const u=new URL(raw);return ['http:','https:'].includes(u.protocol)?u.toString():''}catch{return ''}}
 function cleanItems(value){
   if(!Array.isArray(value)) return [];
@@ -24,7 +24,7 @@ export default async function handler(req,res){
       return res.status(200).json({ok:true,affiliateUrl:setting?.affiliate_url||'',items:Array.isArray(items)?items:[],updatedAt:setting?.updated_at||null});
     }
     if(req.method==='PUT'){
-      if((user.email||'').toLowerCase()!==ADMIN_EMAIL)return res.status(403).json({ok:false,error:'Apenas o administrador pode alterar a loja.'});
+      if(!ADMIN_EMAILS.includes((user.email||'').toLowerCase()))return res.status(403).json({ok:false,error:'Apenas o administrador pode alterar a loja.'});
       const body=req.body||{};const items=cleanItems(body.items);
       let affiliateUrl=cleanUrl(body.affiliateUrl);
       if(!affiliateUrl&&items[0]?.link)affiliateUrl=items[0].link;
