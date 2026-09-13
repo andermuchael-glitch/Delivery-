@@ -4,13 +4,22 @@ import { requireFirebaseUser, unauthorized } from './auth.js';
 
 const ADMIN_EMAILS=['entrega365.suporte@gmail.com','andermuchael@gmail.com'];
 function cleanUrl(value){if(typeof value!=='string')return '';const raw=value.trim().slice(0,2000);if(!raw)return '';try{const u=new URL(raw);return ['http:','https:'].includes(u.protocol)?u.toString():''}catch{return ''}}
+function cleanImage(value){
+  if(typeof value!=='string')return '';
+  const raw=value.trim();
+  if(/^https?:\/\//i.test(raw))return cleanUrl(raw);
+  // Permite foto enviada pelo administrador diretamente do celular/computador.
+  // Limite aproximado de 2 MB por imagem para não inflar o banco/payload.
+  if(/^data:image\/(jpeg|jpg|png|webp|gif);base64,[a-z0-9+/=\r\n]+$/i.test(raw) && raw.length<=2_800_000)return raw;
+  return '';
+}
 function cleanItems(value){
   if(!Array.isArray(value)) return [];
   return value.slice(0,100).map((x,i)=>({
     id:String(x?.id||`${Date.now()}-${i}`).slice(0,80),
     title:String(x?.title||'Produto').trim().slice(0,120),
     description:String(x?.description||'').trim().slice(0,300),
-    imageUrl:cleanUrl(x?.imageUrl),
+    imageUrl:cleanImage(x?.imageUrl),
     link:cleanUrl(x?.link)
   })).filter(x=>x.title&&x.link);
 }
