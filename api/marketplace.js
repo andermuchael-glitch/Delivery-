@@ -38,19 +38,34 @@ function safeRemoteUrl(raw){
     return u;
   }catch{return null}
 }
+function absoluteUrl(value,base){try{return new URL(value,base).href}catch{return ''}}
+async function fetchPreviewPage(startUrl){
+  let current=safeRemoteUrl(startUrl);if(!current)throw new Error('Link não permitido.');
+  const headers={'User-Agent':'Mozilla/5.0 (compatible; Entrega365Bot/1.0; +https://entrega365.com.br)','Accept':'text/html,application/xhtml+xml'};
+  for(let hop=0;hop<6;hop++){
+    const r=await fetch(current.href,{redirect:'manual',headers,signal:AbortSignal.timeout(8000)});
+    if(r.status>=300&&r.status<400){
+      const location=r.headers.get('location');
+      if(!location)throw new Error('O site bloqueou a prévia automática.');
+      const next=safeRemoteUrl(absoluteUrl(location,current.href));
+      if(!next)throw new Error('O redirecionamento do link não é permitido.');
+      current=next;continue;
+    }
+    return {response:r,url:current};
+  }
+  throw new Error('Muitos redirecionamentos no link.');
+}
 async function linkPreview(url){
-  const u=safeRemoteUrl(url);if(!u)throw new Error('Link não permitido.');
-  const r=await fetch(u.href,{redirect:'manual',headers:{'User-Agent':'Mozilla/5.0 (compatible; Entrega365Bot/1.0; +https://entrega365.com.br)'},signal:AbortSignal.timeout(8000)});
-  if(r.status>=300&&r.status<400)throw new Error('O site bloqueou a prévia automática.');
+  const {response:r,url:finalUrl}=await fetchPreviewPage(url);
   const type=r.headers.get('content-type')||'';
-  if(!type.includes('text/html'))return {url:u.href,title:u.hostname.replace(/^www\./,''),description:'',imageUrl:'',ok:false,message:'Este link não fornece uma página HTML para prévia.'};
+  if(!type.includes('text/html'))return {url:finalUrl.href,title:finalUrl.hostname.replace(/^www\./,''),description:'',imageUrl:'',ok:false,message:'Este link não fornece uma página HTML para prévia.'};
   const html=(await r.text()).slice(0,1200000);
   let title=meta(html,'og:title')||meta(html,'twitter:title');
   if(!title)title=decodeHtml(stripTags(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]||''));
   let description=meta(html,'og:description')||meta(html,'twitter:description')||meta(html,'description');
   let image=meta(html,'og:image')||meta(html,'twitter:image')||meta(html,'twitter:image:src');
-  try{if(image)image=new URL(image,u.href).href}catch{image=''}
-  return {ok:true,url:u.href,title:title.slice(0,120),description:description.slice(0,300),imageUrl:cleanUrl(image),site:u.hostname.replace(/^www\./,'')};
+  try{if(image)image=new URL(image,finalUrl.href).href}catch{image=''}
+  return {ok:true,url:finalUrl.href,title:title.slice(0,120),description:description.slice(0,300),imageUrl:cleanUrl(image),site:finalUrl.hostname.replace(/^www\./,'')};
 }
 export default async function handler(req,res){
   try{
