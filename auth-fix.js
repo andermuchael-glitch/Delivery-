@@ -1,37 +1,11 @@
 import "./tools.js?v=152";
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import {
-  initializeAuth,
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  browserLocalPersistence,
-  browserPopupRedirectResolver,
-  signOut,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-
+import { initializeAuth,getAuth,GoogleAuthProvider,signInWithPopup,browserLocalPersistence,browserPopupRedirectResolver,signOut,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 const AUTH_DOMAIN="entrega365.firebaseapp.com";
 const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:AUTH_DOMAIN,projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
-const app=initializeApp(firebaseConfig);
-let auth;
-try{auth=initializeAuth(app,{persistence:browserLocalPersistence,popupRedirectResolver:browserPopupRedirectResolver});}
-catch(e){console.warn("Firebase initializeAuth fallback:",e);auth=getAuth(app);}
-window.__e365AuthBooted=true;
-window.__e365Auth=auth;
-
-const SESSION="dcv2:session";
-const LOGIN_PENDING="entrega365:googleLoginPending";
-const FULL_LOGO="./logo-entrega365.jpg?v=150";
-let currentUser=null;
-let loginInProgress=false;
-let appUserUid=null;
-let startupTimer=null;
-let recoveryFinished=false;
-let introSlide=0;
-let loginStage="intro";
-
+const app=initializeApp(firebaseConfig);let auth;try{auth=initializeAuth(app,{persistence:browserLocalPersistence,popupRedirectResolver:browserPopupRedirectResolver});}catch(e){console.warn("Firebase initializeAuth fallback:",e);auth=getAuth(app);}
+window.__e365AuthBooted=true;window.__e365Auth=auth;
+const SESSION="dcv2:session",LOGIN_PENDING="entrega365:googleLoginPending",FULL_LOGO="./logo-entrega365.jpg?v=150";let currentUser=null,loginInProgress=false,appUserUid=null,startupTimer=null,recoveryFinished=false,introSlide=0,loginStage="intro";
 function setLoading(){const root=document.getElementById("app");if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';}
 function loadLoginStyle(){if(document.getElementById("entrega365-login-v150"))return;const s=document.createElement("style");s.id="entrega365-login-v150";s.textContent='.login{align-items:flex-start!important;padding:24px 14px calc(40px + env(safe-area-inset-bottom))!important;overflow-y:auto}.loginbox{max-width:430px!important}.biglogo{width:min(94vw,520px)!important;height:min(58vw,300px)!important;min-height:180px!important;margin:0 auto 2px!important;border-radius:0!important;background:none!important;border:0!important;box-shadow:none!important}.biglogo img{display:block;width:100%;height:100%;object-fit:contain}.loginbox .card{padding:20px!important;border-radius:22px!important}.google-only{display:flex;flex-direction:column;gap:10px}.google-new{width:100%;min-height:54px;border-radius:12px;padding:13px 14px;font-weight:900;border:1px solid #555;background:#1e1e1e;color:#ffd000}.google-new:disabled{opacity:.65}';document.head.appendChild(s);}
 function getSessionUid(){const value=localStorage.getItem(SESSION)||"";return value.startsWith("google:")?value.slice(7):"";}
@@ -41,16 +15,9 @@ function showLogin(){if(currentUser&&getSessionUid()===currentUser.uid)return;cu
 function openApp(u,{persist=true}={}){if(!u?.uid||typeof u.getIdToken!=="function")return;currentUser=u;if(persist)persistUser(u);loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);recoveryFinished=true;if(startupTimer){clearTimeout(startupTimer);startupTimer=null;}if(appUserUid===u.uid)return;appUserUid=u.uid;window.__e365SetUser?.("google:"+u.uid);window.render?.();[250,1200,3000].forEach(ms=>setTimeout(()=>{window.e365SyncPro?.();window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e));window.entrega365CloudSync?.().catch(e=>console.warn("Cloud auto sync:",e));},ms));}
 function openSavedSession(){const uid=getSessionUid(),u=auth.currentUser;if(!uid||!u?.uid||u.uid!==uid||typeof u.getIdToken!=="function")return false;openApp(u,{persist:true});return true;}
 function authError(e){console.error("Entrega365 Google auth:",e);const code=e?.code||"unknown";const map={"auth/unauthorized-domain":"O domínio ainda não está autorizado no Firebase.","auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.","auth/network-request-failed":"Falha de conexão. Verifique sua internet.","auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.","auth/invalid-api-key":"A configuração do Firebase está inválida.","auth/popup-blocked":"O navegador bloqueou a janela de login.","auth/popup-closed-by-user":"A janela de login foi fechada antes da conclusão.","auth/argument-error":"O resolvedor de popup não pôde ser inicializado."};alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente.")+"\n\nCódigo: "+code);}
-async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true;sessionStorage.setItem(LOGIN_PENDING,"1");const b=document.querySelector("#google-login");if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let settled=false;let checks=0;const watchdog=setInterval(()=>{checks++;if(auth.currentUser?.uid){settled=true;clearInterval(watchdog);openApp(auth.currentUser,{persist:true});return;}if(checks>=60){clearInterval(watchdog);if(!settled){loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}}}},500);try{const result=await signInWithPopup(auth,provider);settled=true;clearInterval(watchdog);if(result?.user){openApp(result.user,{persist:true});return;}throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/no-user"});}catch(e){settled=true;clearInterval(watchdog);if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}authError(e);}}
-window.entrega365SignOut=async()=>{try{await signOut(auth);}catch(e){console.warn("Firebase signOut:",e);}finally{currentUser=null;appUserUid=null;recoveryFinished=true;clearSession();window.__e365SetUser?.(null);location.replace(location.pathname||"/");}};
-window.e365Logout=window.entrega365SignOut;
-window.__e365Logout=window.entrega365SignOut;
-window.startGoogleLogin=startGoogleLogin;
-window.e365GetCurrentUser=()=>auth.currentUser||currentUser;
-window.entrega365Auth={auth};
-
+async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true;sessionStorage.setItem(LOGIN_PENDING,"1");const b=document.querySelector("#google-login");if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let settled=false,checks=0;const watchdog=setInterval(()=>{checks++;if(auth.currentUser?.uid){settled=true;clearInterval(watchdog);openApp(auth.currentUser,{persist:true});return;}if(checks>=60){clearInterval(watchdog);if(!settled){loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}}}},500);try{const result=await signInWithPopup(auth,provider);settled=true;clearInterval(watchdog);if(result?.user){openApp(result.user,{persist:true});return;}throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/no-user"});}catch(e){settled=true;clearInterval(watchdog);if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}authError(e);}}
+window.entrega365SignOut=async()=>{try{await signOut(auth);}catch(e){console.warn("Firebase signOut:",e);}finally{currentUser=null;appUserUid=null;recoveryFinished=true;clearSession();window.__e365SetUser?.(null);location.replace(location.pathname||"/");}};window.e365Logout=window.entrega365SignOut;window.__e365Logout=window.entrega365SignOut;window.startGoogleLogin=startGoogleLogin;window.e365GetCurrentUser=()=>auth.currentUser||currentUser;window.entrega365Auth={auth};
 onAuthStateChanged(auth,u=>{if(u){openApp(u,{persist:true});return;}if(getSessionUid()){if(!currentUser)openSavedSession();return;}currentUser=null;if(recoveryFinished||loginInProgress)return;showLogin();});
 (async function startAuthRecovery(){try{if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}if(openSavedSession())return;setLoading();startupTimer=setTimeout(()=>{if(auth.currentUser)openApp(auth.currentUser,{persist:true});else if(!openSavedSession()){recoveryFinished=true;loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);showLogin();}},3500);}catch(e){console.error("Firebase startup:",e);if(!openSavedSession()){recoveryFinished=true;showLogin();}}})();
-
 import("./drive-backup.js?v=164").then(m=>m.initDriveBackup?.(auth)).catch(e=>console.warn("Drive backup indisponível",e));
-import("./cloud-sync.js?v=164").then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud backup indisponível",e))).catch(e=>console.warn("Cloud sync indisponível",e));
+import("./cloud-sync.js?v=171").then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud sync indisponível",e))).catch(e=>console.warn("Cloud sync indisponível",e));
