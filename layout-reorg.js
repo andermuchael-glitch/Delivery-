@@ -1,41 +1,49 @@
-/* Entrega365 — reorganização do cabeçalho e menu Mais */
+/* Entrega365 — reorganização do cabeçalho e menu Mais — abertura robusta */
 (function(){
   'use strict';
   const STYLE_ID='e365-layout-reorg-style';
+  let communityLoadPromise=null;
   function actions(){ return document.querySelector('header .actions,.actions'); }
   function actionButtons(){ const a=actions(); return a?[...a.querySelectorAll('.ico,button')]:[]; }
   function findAction(re){ return actionButtons().find(b=>re.test((b.textContent||'').trim())); }
   function clickLanguage(){ const b=findAction(/🌐|idioma|language/i); if(b){ b.click(); return true; } return false; }
   function clickExit(){ const b=findAction(/🚪|sair|logout|exit/i); if(b){ b.click(); return true; } return false; }
-  function openCommunity(){
-    const existing=document.querySelector('.cm-overlay');
-    if(existing){
-      existing.style.display='block';
-      const tab=existing.querySelector('.cm-tab[data-v="community"]');
-      if(tab){ tab.click(); return existing; }
-    }
-    if(typeof window.render==='function'){
-      try{ window.render('community'); return document.querySelector('.cm-overlay'); }catch(e){ console.warn('Comunidade:',e); }
-    }
-    return null;
+  function ensureCommunityScript(){
+    if(window.e365CommunityOpen||window.e365MarketplaceOpen||typeof window.render==='function') return Promise.resolve();
+    if(communityLoadPromise) return communityLoadPromise;
+    communityLoadPromise=new Promise(resolve=>{
+      let s=document.querySelector('script[data-e365-community]')||[...document.scripts].find(x=>(x.src||'').includes('/community-market.js'));
+      const done=()=>resolve();
+      if(s){
+        if(window.e365CommunityOpen||window.e365MarketplaceOpen||typeof window.render==='function'){resolve();return;}
+        s.addEventListener('load',done,{once:true}); s.addEventListener('error',done,{once:true}); setTimeout(done,3000); return;
+      }
+      s=document.createElement('script'); s.src='./community-market.js?v=167'; s.dataset.e365Community='1'; s.async=false;
+      s.onload=done; s.onerror=done; document.head.appendChild(s);
+    });
+    return communityLoadPromise;
   }
-  function openMarketplace(){
+  async function openCommunity(){
+    await ensureCommunityScript();
+    const existing=document.querySelector('.cm-overlay');
+    if(existing) existing.style.display='block';
+    if(typeof window.e365CommunityOpen==='function'){ await window.e365CommunityOpen(); return; }
+    if(typeof window.e365OpenCommunity==='function'){ await window.e365OpenCommunity(); return; }
+    if(typeof window.render==='function'){ await window.render('community'); return; }
+    console.warn('Entrega365: Comunidade indisponível');
+  }
+  async function openMarketplace(){
+    await ensureCommunityScript();
+    if(typeof window.e365MarketplaceOpen==='function'){ await window.e365MarketplaceOpen(); return; }
     const existing=document.querySelector('.cm-overlay');
     if(existing){
       existing.style.display='block';
       const tab=existing.querySelector('.cm-tab[data-v="marketplace"]');
-      if(tab){ tab.click(); return; }
+      if(tab){tab.click();return;}
     }
-    if(typeof window.render==='function'){
-      try{ window.render('marketplace'); return; }catch(e){ console.warn('Marketplace:',e); }
-    }
-    openCommunity();
-    let n=0;
-    const t=setInterval(()=>{
-      const x=document.querySelector('.cm-tab[data-v="marketplace"]');
-      if(x){clearInterval(t);x.click();}
-      if(++n>40)clearInterval(t);
-    },100);
+    if(typeof window.render==='function'){ await window.render('marketplace'); return; }
+    await openCommunity();
+    let n=0;const t=setInterval(()=>{const x=document.querySelector('.cm-tab[data-v="marketplace"]');if(x){clearInterval(t);x.click();}if(++n>40)clearInterval(t)},100);
   }
   function styles(){
     if(document.getElementById(STYLE_ID))return;
@@ -60,49 +68,19 @@
     styles();
     const m=document.createElement('div');m.className='e365-more-layout';
     m.innerHTML=`<div class="e365-more-layout-card"><div class="e365-more-layout-handle"></div><div class="e365-more-layout-title">Mais recursos</div><div class="e365-more-layout-sub">Ferramentas e opções do Entrega365</div><div class="e365-more-layout-grid">
-      <button data-e365-more="pro">⭐<br>Modo PRO</button>
-      <button data-e365-more="agenda">📅<br>Agenda</button>
-      <button data-e365-more="finance">💰<br>Controle financeiro</button>
-      <button data-e365-more="calculator">🧮<br>Calculadora</button>
-      <button data-e365-more="language">🌐<br>Idioma</button>
-      <button data-e365-more="exit">🚪<br>Sair</button>
+      <button data-e365-more="pro">⭐<br>Modo PRO</button><button data-e365-more="agenda">📅<br>Agenda</button><button data-e365-more="finance">💰<br>Controle financeiro</button><button data-e365-more="calculator">🧮<br>Calculadora</button><button data-e365-more="language">🌐<br>Idioma</button><button data-e365-more="exit">🚪<br>Sair</button>
     </div></div>`;
     document.body.appendChild(m);
-    m.addEventListener('click',e=>{
-      if(e.target===m){m.remove();return;}
-      const b=e.target.closest('[data-e365-more]');if(!b)return;
-      const x=b.dataset.e365More;m.remove();
-      if(x==='pro')window.e365OpenPro?.();
-      else if(x==='agenda')window.e365OpenAgenda?.();
-      else if(x==='finance')window.go?.('finance');
-      else if(x==='calculator')window.e365OpenCalculator?.();
-      else if(x==='language')clickLanguage();
-      else if(x==='exit')clickExit();
-    });
+    m.addEventListener('click',e=>{if(e.target===m){m.remove();return}const b=e.target.closest('[data-e365-more]');if(!b)return;const x=b.dataset.e365More;m.remove();if(x==='pro')window.e365OpenPro?.();else if(x==='agenda')window.e365OpenAgenda?.();else if(x==='finance')window.go?.('finance');else if(x==='calculator')window.e365OpenCalculator?.();else if(x==='language')clickLanguage();else if(x==='exit')clickExit();});
   }
   function build(){
-    styles();
-    const a=actions();
-    if(a){
-      const bs=actionButtons();
-      const plus=bs.find(b=>/^\s*\+\s*$/.test((b.textContent||'')))||bs[bs.length-1];
-      if(plus)plus.style.display='none';
-      const lang=bs.find(b=>/🌐|idioma|language/i.test((b.textContent||'')));
-      const exit=bs.find(b=>/🚪|sair|logout|exit/i.test((b.textContent||'')));
-      if(lang)lang.style.display='none';
-      if(exit)exit.style.display='none';
-    }
+    styles();const a=actions();
+    if(a){const bs=actionButtons();const plus=bs.find(b=>/^\s*\+\s*$/.test((b.textContent||'')))||bs[bs.length-1];if(plus)plus.style.display='none';const lang=bs.find(b=>/🌐|idioma|language/i.test((b.textContent||'')));const exit=bs.find(b=>/🚪|sair|logout|exit/i.test((b.textContent||'')));if(lang)lang.style.display='none';if(exit)exit.style.display='none'}
     let nav=document.querySelector('.e365-social-nav');
-    if(!nav){
-      nav=document.createElement('nav');nav.className='e365-social-nav';
-      nav.innerHTML='<button type="button" data-e365-social="community">👥 Comunidade</button><button type="button" data-e365-social="marketplace">🛍️ Marketplace</button>';
-      const h=document.querySelector('header');
-      if(h)h.insertAdjacentElement('afterend',nav); else document.body.prepend(nav);
-      nav.addEventListener('click',e=>{const b=e.target.closest('[data-e365-social]');if(!b)return;if(b.dataset.e365Social==='community')openCommunity();else openMarketplace();});
-    }
+    if(!nav){nav=document.createElement('nav');nav.className='e365-social-nav';nav.innerHTML='<button type="button" data-e365-social="community">👥 Comunidade</button><button type="button" data-e365-social="marketplace">🛍️ Marketplace</button>';const h=document.querySelector('header');if(h)h.insertAdjacentElement('afterend',nav);else document.body.prepend(nav);nav.addEventListener('click',e=>{const b=e.target.closest('[data-e365-social]');if(!b)return;if(b.dataset.e365Social==='community')void openCommunity();else void openMarketplace();});}
   }
   window.e365OpenMoreLayout=showMore;
-  function boot(){build();setTimeout(build,250);setTimeout(build,1000);}
+  function boot(){build();setTimeout(build,250);setTimeout(build,1000)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   new MutationObserver(()=>{if(!document.querySelector('.e365-social-nav'))build();}).observe(document.documentElement,{childList:true,subtree:true});
 })();
