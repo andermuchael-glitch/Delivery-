@@ -9,15 +9,26 @@
   function clickExit(){ const b=findAction(/🚪|sair|logout|exit/i); if(b){ b.click(); return true; } return false; }
   function openCommunity(){
     const existing=document.querySelector('.cm-overlay');
-    if(existing) return existing;
-    const b=findAction(/🌐/);
-    if(b){ b.click(); return document.querySelector('.cm-overlay'); }
-    if(typeof window.e365CommunityOpen==='function') return window.e365CommunityOpen();
+    if(existing){
+      existing.style.display='block';
+      const tab=existing.querySelector('.cm-tab[data-v="community"]');
+      if(tab){ tab.click(); return existing; }
+    }
+    if(typeof window.render==='function'){
+      try{ window.render('community'); return document.querySelector('.cm-overlay'); }catch(e){ console.warn('Comunidade:',e); }
+    }
     return null;
   }
   function openMarketplace(){
-    const tab=document.querySelector('.cm-tab[data-v="marketplace"]');
-    if(tab){ tab.click(); return; }
+    const existing=document.querySelector('.cm-overlay');
+    if(existing){
+      existing.style.display='block';
+      const tab=existing.querySelector('.cm-tab[data-v="marketplace"]');
+      if(tab){ tab.click(); return; }
+    }
+    if(typeof window.render==='function'){
+      try{ window.render('marketplace'); return; }catch(e){ console.warn('Marketplace:',e); }
+    }
     openCommunity();
     let n=0;
     const t=setInterval(()=>{
