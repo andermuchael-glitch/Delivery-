@@ -3,6 +3,7 @@
   'use strict';
   function openMoreSafe(){
     try{
+      if(typeof window.e365OpenMoreLayout==='function') return window.e365OpenMoreLayout();
       if(typeof window.openMore==='function') return window.openMore();
       const m=document.querySelector('.e365-more-fallback');
       if(m)return;
