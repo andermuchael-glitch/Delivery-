@@ -48,8 +48,15 @@ jobs:
       - name: Verificar preparação mobile
         run: test -d www && echo "www OK - build remoto habilitado"
 
-      - name: Criar projeto Android
-        run: npx cap add android
+      - name: Preparar projeto Android
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            cp android/app/google-services.json /tmp/google-services.json
+          fi
+          rm -rf android
+          npx cap add android
+          test -f /tmp/google-services.json || { echo "::error::Falta android/app/google-services.json no repositório."; exit 1; }
+          cp /tmp/google-services.json android/app/google-services.json
 
       - name: Configurar Firebase Google nativo
         run: |
