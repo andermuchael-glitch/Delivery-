@@ -16,7 +16,7 @@ function openApp(u,{persist=true}={}){if(!u?.uid||typeof u.getIdToken!=="functio
 function openSavedSession(){const uid=getSessionUid(),u=auth.currentUser;if(!uid||!u?.uid||u.uid!==uid||typeof u.getIdToken!=="function")return false;openApp(u,{persist:true});return true;}
 function authError(e){console.error("Entrega365 Google auth:",e);const code=e?.code||"unknown";const map={"auth/unauthorized-domain":"O domínio ainda não está autorizado no Firebase.","auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.","auth/network-request-failed":"Falha de conexão. Verifique sua internet.","auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.","auth/invalid-api-key":"A configuração do Firebase está inválida.","auth/popup-blocked":"O navegador bloqueou a janela de login.","auth/popup-closed-by-user":"A janela de login foi fechada antes da conclusão.","auth/argument-error":"O resolvedor de popup não pôde ser inicializado."};alert("Não foi possível entrar com Google.\n\n"+(map[code]||"Tente novamente.")+"\n\nCódigo: "+code);}
 async function startNativeGoogleLogin(){
-  const native=!!(window.Capacitor?.isNativePlatform?.()||window.Capacitor?.getPlatform?.()!=="web");
+  const platform=window.Capacitor?.getPlatform?.();const native=!!(window.Capacitor?.isNativePlatform?.()||(platform&&platform!=="web"));
   if(!native)return null;
   try{
     const mod=await import("https://esm.sh/@capacitor-firebase/authentication@8.5.2");
