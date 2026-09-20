@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "686578751112",
+    "project_id": "entrega365",
+    "storage_bucket": "entrega365.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:686578751112:android:ac39a6b2c679d95297313d",
+        "android_client_info": {
+          "package_name": "br.com.entrega365.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "686578751112-2a7i0f926dh5mamvdbob4aav38c973of.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOW_LpKv2Y4No24V6M849GBW6_sp-juwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "686578751112-2a7i0f926dh5mamvdbob4aav38c973of.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
