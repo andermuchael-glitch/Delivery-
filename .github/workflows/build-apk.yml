@@ -44,6 +44,9 @@ jobs:
       - name: Preparar versão mobile
         run: npm run mobile:prepare
 
+      - name: Verificar preparação mobile
+        run: test -d www && echo "www OK - build remoto habilitado"
+
       - name: Criar projeto Android
         run: npx cap add android
 
