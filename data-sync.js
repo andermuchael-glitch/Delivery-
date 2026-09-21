@@ -63,7 +63,7 @@
       const serverCheck=await request('/api/data');
       if(!serverCheck.ok)throw new Error('check_'+serverCheck.status);
       const serverState=await serverCheck.json();
-      if(serverState.exists){
+      if(serverState.exists && Object.keys(serverState.data||{}).length>0){
         const serverVersion=Number(serverState.version||0);
         if(localHas && Number(m.serverVersion||0)===serverVersion && !dirty){
           setMeta({serverVersion,updatedAt:serverState.updatedAt||null,lastSyncAt:new Date().toISOString()});
