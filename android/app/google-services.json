@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "686578751112-guoa6rcv00nv36qg5p9c21mt1dvfvfcb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.entrega365.app",
+            "certificate_hash": "f6322345b0d30c616a45fa222598faf4f3fdc68b"
+          }
+        },
+        {
           "client_id": "686578751112-2a7i0f926dh5mamvdbob4aav38c973of.apps.googleusercontent.com",
           "client_type": 3
         }
