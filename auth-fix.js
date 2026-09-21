@@ -39,12 +39,10 @@ const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialMan
   }
 }
 function isMobileWeb(){const p=window.Capacitor?.getPlatform?.();const native=!!(window.Capacitor?.isNativePlatform?.()||(p&&p!=="web"));if(native)return false;return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||window.matchMedia?.("(max-width: 768px)")?.matches;}
-async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true;sessionStorage.setItem(LOGIN_PENDING,"1");const b=document.querySelector("#google-login");if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let settled=false,checks=0;const watchdog=setInterval(()=>{checks++;if(auth.currentUser?.uid){settled=true;clearInterval(watchdog);openApp(auth.currentUser,{persist:true});return;}if(checks>=60){clearInterval(watchdog);if(!settled){loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}}}},500);try{const nativeResult=await startNativeGoogleLogin();if(nativeResult?.user){settled=true;clearInterval(watchdog);openApp(nativeResult.user,{persist:true});return;}if(isMobileWeb()){
-      await signInWithRedirect(auth,provider);
-      return;
-    }
-    let result;
+async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true;sessionStorage.setItem(LOGIN_PENDING,"1");const b=document.querySelector("#google-login");if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let settled=false,checks=0;const watchdog=setInterval(()=>{checks++;if(auth.currentUser?.uid){settled=true;clearInterval(watchdog);openApp(auth.currentUser,{persist:true});return;}if(checks>=60){clearInterval(watchdog);if(!settled){loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}}}},500);try{const nativeResult=await startNativeGoogleLogin();if(nativeResult?.user){settled=true;clearInterval(watchdog);openApp(nativeResult.user,{persist:true});return;}let result;
     try {
+      // No navegador web, tente popup primeiro. Isso evita o fluxo de redirect
+      // no Chrome Android, onde armazenamento de terceiros pode impedir o retorno.
       result=await signInWithPopup(auth,provider,browserPopupRedirectResolver);
     } catch(popupError) {
       const pc=popupError?.code||"";
@@ -59,11 +57,18 @@ window.entrega365SignOut=async()=>{try{await signOut(auth);}catch(e){console.war
 onAuthStateChanged(auth,u=>{if(u){openApp(u,{persist:true});return;}if(getSessionUid()){if(!currentUser)openSavedSession();return;}currentUser=null;if(recoveryFinished||loginInProgress)return;showLogin();});
 (async function startAuthRecovery(){try{
 if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}
-if(!window.Capacitor?.isNativePlatform?.()){
+if(!window.Capacitor?.isNativePlatform?.() && sessionStorage.getItem(LOGIN_PENDING)==="1"){
   try{
     const redirectResult=await Promise.race([getRedirectResult(auth,browserPopupRedirectResolver),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("Tempo excedido ao verificar o retorno do Google."),{code:"auth/redirect-timeout"})),8000))]);
     if(redirectResult?.user){openApp(redirectResult.user,{persist:true});return;}
-  }catch(e){console.error("Firebase redirect login:",e);authError(e);recoveryFinished=true;showLogin();return;}
+    sessionStorage.removeItem(LOGIN_PENDING);
+  }catch(e){
+    console.error("Firebase redirect login:",e);
+    sessionStorage.removeItem(LOGIN_PENDING);
+    // Um timeout/erro de recuperação não pode prender a tela de entrada.
+    if(e?.code==="auth/redirect-timeout"){console.warn("Entrega365: retorno do Google expirou; exibindo login.");}
+    else authError(e);
+  }
 }
 if(openSavedSession())return;setLoading();startupTimer=setTimeout(()=>{if(auth.currentUser)openApp(auth.currentUser,{persist:true});else if(!openSavedSession()){recoveryFinished=true;loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);showLogin();}},3500);}catch(e){console.error("Firebase startup:",e);if(!openSavedSession()){recoveryFinished=true;showLogin();}}})();
 import("./drive-backup.js?v=165").then(m=>m.initDriveBackup?.(auth)).catch(e=>console.warn("Drive backup indisponível",e));
