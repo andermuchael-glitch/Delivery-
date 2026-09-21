@@ -14,14 +14,20 @@ function showLogin(){if(currentUser&&getSessionUid()===currentUser.uid)return;cu
 function openApp(u,{persist=true}={}){if(!u?.uid||typeof u.getIdToken!=="function")return;currentUser=u;if(persist)persistUser(u);loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);recoveryFinished=true;if(startupTimer){clearTimeout(startupTimer);startupTimer=null;}if(appUserUid===u.uid)return;appUserUid=u.uid;window.__e365SetUser?.("google:"+u.uid);window.render?.();[250,1200,3000].forEach(ms=>setTimeout(()=>{window.e365SyncPro?.();window.entrega365DriveAutoSync?.().catch(e=>console.warn("Drive auto sync:",e));window.entrega365CloudSync?.().catch(e=>console.warn("Cloud auto sync:",e));},ms));}
 function openSavedSession(){const uid=getSessionUid(),u=auth.currentUser;if(!uid||!u?.uid||u.uid!==uid||typeof u.getIdToken!=="function")return false;openApp(u,{persist:true});return true;}
 function authError(e){console.error("Entrega365 Google auth:",e);const code=e?.code||e?.errorCode||"unknown";const detail=e?.message||e?.errorMessage||"";const map={"auth/unauthorized-domain":"O domínio ainda não está autorizado no Firebase.","auth/operation-not-allowed":"O login com Google não está habilitado no Firebase.","auth/network-request-failed":"Falha de conexão. Verifique sua internet.","auth/web-storage-unsupported":"O navegador não permite o armazenamento necessário.","auth/invalid-api-key":"A configuração do Firebase está inválida.","auth/popup-blocked":"O navegador bloqueou a janela de login.","auth/popup-closed-by-user":"A janela de login foi fechada antes da conclusão.","auth/argument-error":"O resolvedor de popup não pôde ser inicializado.","auth/redirect-timeout":"O Google demorou para responder. Toque novamente em Entrar com Google.","auth/native-plugin-unavailable":"O componente Google do aplicativo não foi carregado."};alert("Não foi possível entrar com Google.\\n\\n"+(map[code]||"Tente novamente.")+"\\n\\nCódigo: "+code+(detail?"\\n\\nDetalhe: "+detail:""));}
+async function getNativeGooglePlugin(){
+  const mod=await import("https://esm.sh/@capacitor-firebase/authentication@8.5.2");
+  return window.Capacitor?.Plugins?.FirebaseAuthentication||mod?.FirebaseAuthentication;
+}
+function isNativeCapacitor(){
+  const platform=window.Capacitor?.getPlatform?.();
+  return !!(window.Capacitor?.isNativePlatform?.()||(platform&&platform!=="web"));
+}
 async function startNativeGoogleLogin(){
-  const platform=window.Capacitor?.getPlatform?.();const native=!!(window.Capacitor?.isNativePlatform?.()||(platform&&platform!=="web"));
-  if(!native)return null;
+  if(!isNativeCapacitor())return null;
   try{
-    const mod=await import("https://esm.sh/@capacitor-firebase/authentication@8.5.2");
-    const plugin=window.Capacitor?.Plugins?.FirebaseAuthentication||mod?.FirebaseAuthentication;
-if(!plugin?.signInWithGoogle)throw Object.assign(new Error("Plugin FirebaseAuthentication não foi registrado no APK."),{code:"auth/native-plugin-unavailable"});
-const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialManager:true});
+    const plugin=await getNativeGooglePlugin();
+    if(!plugin?.signInWithGoogle)throw Object.assign(new Error("Plugin FirebaseAuthentication não foi registrado no APK."),{code:"auth/native-plugin-unavailable"});
+    const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialManager:true});
     const credential=result?.credential||{};
     if(!credential.idToken&&!credential.accessToken)throw Object.assign(new Error("Google não retornou credencial nativa."),{code:"auth/native-no-credential"});
     const googleCredential=GoogleAuthProvider.credential(credential.idToken||null,credential.accessToken||null);
@@ -32,6 +38,22 @@ const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialMan
     throw e;
   }
 }
+window.entrega365NativeDriveAuthorize=async function(){
+  if(!isNativeCapacitor())return false;
+  const plugin=await getNativeGooglePlugin();
+  if(!plugin?.signInWithGoogle)throw Object.assign(new Error("Plugin FirebaseAuthentication não foi registrado no APK."),{code:"auth/native-plugin-unavailable"});
+  const result=await plugin.signInWithGoogle({
+    skipNativeAuth:true,
+    useCredentialManager:true,
+    scopes:["https://www.googleapis.com/auth/drive.file"]
+  });
+  const credential=result?.credential||{};
+  if(!credential.accessToken)throw Object.assign(new Error("Google não retornou autorização para o Google Drive."),{code:"auth/native-drive-no-token"});
+  localStorage.setItem("entrega365:driveAccessToken",credential.accessToken);
+  localStorage.setItem("entrega365:driveAccessTokenExp",String(Date.now()+3500000));
+  localStorage.setItem("entrega365:driveAuthorized","1");
+  return credential.accessToken;
+};
 function isMobileWeb(){const p=window.Capacitor?.getPlatform?.();const native=!!(window.Capacitor?.isNativePlatform?.()||(p&&p!=="web"));if(native)return false;return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||window.matchMedia?.("(max-width: 768px)")?.matches;}
 async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true;sessionStorage.setItem(LOGIN_PENDING,"1");const b=document.querySelector("#google-login");if(b){b.disabled=true;b.querySelector(".google-label").textContent="ABRINDO GOOGLE...";}const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let settled=false,checks=0;const watchdog=setInterval(()=>{checks++;if(auth.currentUser?.uid){settled=true;clearInterval(watchdog);openApp(auth.currentUser,{persist:true});return;}if(checks>=60){clearInterval(watchdog);if(!settled){loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}}}},500);try{const nativeResult=await startNativeGoogleLogin();if(nativeResult?.user){settled=true;clearInterval(watchdog);openApp(nativeResult.user,{persist:true});return;}let result;
     try {
@@ -65,5 +87,5 @@ if(!window.Capacitor?.isNativePlatform?.() && sessionStorage.getItem(LOGIN_PENDI
   }
 }
 if(openSavedSession())return;setLoading();startupTimer=setTimeout(()=>{if(auth.currentUser)openApp(auth.currentUser,{persist:true});else if(!openSavedSession()){recoveryFinished=true;loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);showLogin();}},3500);}catch(e){console.error("Firebase startup:",e);if(!openSavedSession()){recoveryFinished=true;showLogin();}}})();
-import("./drive-backup.js?v=165").then(m=>m.initDriveBackup?.(auth)).catch(e=>console.warn("Drive backup indisponível",e));
+import("./drive-backup.js?v=166").then(m=>m.initDriveBackup?.(auth)).catch(e=>console.warn("Drive backup indisponível",e));
 import("./cloud-sync.js?v=171").then(()=>window.entrega365CloudSync?.().catch(e=>console.warn("Cloud sync indisponível",e))).catch(e=>console.warn("Cloud sync indisponível",e));
