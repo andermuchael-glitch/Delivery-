@@ -23,7 +23,12 @@
     });
     return communityLoadPromise;
   }
+  function authenticated(){
+    const u=window.entrega365Auth?.auth?.currentUser||window.__e365Auth?.currentUser||window.e365GetCurrentUser?.();
+    return !!(u?.uid&&typeof u.getIdToken==="function");
+  }
   async function openCommunity(){
+    if(!authenticated()) return;
     await ensureCommunityScript();
     const existing=document.querySelector('.cm-overlay');
     if(existing) existing.style.display='block';
@@ -33,6 +38,7 @@
     console.warn('Entrega365: Comunidade indisponível');
   }
   async function openMarketplace(){
+    if(!authenticated()) return;
     await ensureCommunityScript();
     if(typeof window.e365MarketplaceOpen==='function'){ await window.e365MarketplaceOpen(); return; }
     const existing=document.querySelector('.cm-overlay');
@@ -73,8 +79,16 @@
     document.body.appendChild(m);
     m.addEventListener('click',e=>{if(e.target===m){m.remove();return}const b=e.target.closest('[data-e365-more]');if(!b)return;const x=b.dataset.e365More;m.remove();if(x==='pro')window.e365OpenPro?.();else if(x==='agenda')window.e365OpenAgenda?.();else if(x==='finance')window.go?.('finance');else if(x==='calculator')window.e365OpenCalculator?.();else if(x==='language')clickLanguage();else if(x==='exit')clickExit();});
   }
+  function removeSocialNav(){
+    document.querySelectorAll('.e365-social-nav').forEach(n=>n.remove());
+  }
   function build(){
-    styles();const a=actions();
+    styles();
+    if(!authenticated()){
+      removeSocialNav();
+      return;
+    }
+    const a=actions();
     if(a){const bs=actionButtons();const plus=bs.find(b=>/^\s*\+\s*$/.test((b.textContent||'')))||bs[bs.length-1];if(plus)plus.style.display='none';const lang=bs.find(b=>/🌐|idioma|language/i.test((b.textContent||'')));const exit=bs.find(b=>/🚪|sair|logout|exit/i.test((b.textContent||'')));if(lang)lang.style.display='none';if(exit)exit.style.display='none'}
     let nav=document.querySelector('.e365-social-nav');
     if(!nav){nav=document.createElement('nav');nav.className='e365-social-nav';nav.innerHTML='<button type="button" data-e365-social="community">👥 Comunidade</button><button type="button" data-e365-social="marketplace">🛍️ Marketplace</button>';const h=document.querySelector('header');if(h)h.insertAdjacentElement('afterend',nav);else document.body.prepend(nav);nav.addEventListener('click',e=>{const b=e.target.closest('[data-e365-social]');if(!b)return;if(b.dataset.e365Social==='community')void openCommunity();else void openMarketplace();});}
