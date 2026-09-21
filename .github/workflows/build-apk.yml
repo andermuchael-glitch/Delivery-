@@ -69,9 +69,26 @@ jobs:
           }
           EOF
 
+      - name: Preparar chave DEBUG estável
+        run: |
+          mkdir -p "$HOME/.config/.android" "$HOME/.android"
+          if [ ! -f "$HOME/.config/.android/debug.keystore" ]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.config/.android/debug.keystore" \
+              -storepass android -keypass android \
+              -alias AndroidDebugKey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          cp "$HOME/.config/.android/debug.keystore" "$HOME/.android/debug.keystore"
+
       - name: Gerar SHA-1 DEBUG para Firebase
         working-directory: android
-        run: ./gradlew signingReport
+        run: |
+          ./gradlew signingReport
+          echo "=== SHA-1 DEBUG DO APK ==="
+          keytool -list -v -keystore "$HOME/.config/.android/debug.keystore" -alias AndroidDebugKey -storepass android -keypass android | grep -E "Owner:|SHA1:|SHA-256:"
+          echo "=========================="
 
       - name: Gerar ícones Entrega365
         run: npx @capacitor/assets generate --android --assetPath assets --iconBackgroundColor "#ffd21a" --iconBackgroundColorDark "#121212" --splashBackgroundColor "#121212" --splashBackgroundColorDark "#121212"
