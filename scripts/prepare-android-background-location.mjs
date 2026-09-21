@@ -24,6 +24,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.IBinder;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import android.os.Looper;
 
 import androidx.annotation.Nullable;
@@ -37,14 +39,29 @@ public class LocationTrackingService extends Service {
 
     private final LocationListener listener = new LocationListener() {
         @Override public void onLocationChanged(Location location) {
-            getSharedPreferences("entrega365_location", MODE_PRIVATE)
-                .edit()
+            try {
+            android.content.SharedPreferences prefs = getSharedPreferences("entrega365_location", MODE_PRIVATE);
+            JSONArray points;
+            try { points = new JSONArray(prefs.getString("points", "[]")); } catch (Exception ignored) { points = new JSONArray(); }
+            JSONObject item = new JSONObject();
+            item.put("latitude", location.getLatitude());
+            item.put("longitude", location.getLongitude());
+            item.put("accuracy", location.getAccuracy());
+            item.put("altitude", location.hasAltitude() ? location.getAltitude() : JSONObject.NULL);
+            item.put("speed", location.hasSpeed() ? location.getSpeed() : JSONObject.NULL);
+            item.put("heading", location.hasBearing() ? location.getBearing() : JSONObject.NULL);
+            item.put("timestamp", System.currentTimeMillis());
+            points.put(item);
+            while (points.length() > 300) points.remove(0);
+            prefs.edit()
+                .putString("points", points.toString())
                 .putLong("time", System.currentTimeMillis())
                 .putString("lat", String.valueOf(location.getLatitude()))
                 .putString("lng", String.valueOf(location.getLongitude()))
                 .putString("accuracy", String.valueOf(location.getAccuracy()))
                 .putString("provider", location.getProvider() == null ? "" : location.getProvider())
                 .apply();
+        } catch (Exception ignored) {}
         }
     };
 
@@ -214,6 +231,25 @@ public class BackgroundLocationPlugin extends Plugin {
     @PluginMethod
     public void openBackgroundSettings(PluginCall call) {
         openLocationSettings(call);
+    }
+
+    @PluginMethod
+    public void getBufferedLocations(PluginCall call) {
+        try {
+            String raw = getContext().getSharedPreferences("entrega365_location", android.content.Context.MODE_PRIVATE).getString("points", "[]");
+            JSObject ret = new JSObject();
+            ret.put("points", new org.json.JSONArray(raw));
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Não foi possível ler o buffer de localização.", e);
+        }
+    }
+
+    @PluginMethod
+    public void clearBufferedLocations(PluginCall call) {
+        getContext().getSharedPreferences("entrega365_location", android.content.Context.MODE_PRIVATE)
+            .edit().remove("points").apply();
+        call.resolve(new JSObject().put("ok", true));
     }
 
     @PluginMethod
