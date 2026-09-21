@@ -84,10 +84,6 @@
 
     if(isNative()){
       const g=await plugin();
-      watchId=await g.watchPosition(
-        {enableHighAccuracy:true,timeout:15000,maximumAge:5000,minimumUpdateInterval:5000},
-        (position,error)=>{if(!error&&position)save(position);}
-      );
 
       let background={supported:false};
       try{
@@ -95,8 +91,20 @@
           background=await window.e365BackgroundLocation.start();
       }catch(e){
         console.warn('Entrega365 localização em segundo plano:',e);
-        background={supported:true,error:e?.message||String(e)};
+        throw e;
       }
+
+      if(background?.backgroundRequired){
+        throw new Error('background_location_required');
+      }
+      if(background?.error){
+        throw new Error(background.error);
+      }
+
+      watchId=await g.watchPosition(
+        {enableHighAccuracy:true,timeout:15000,maximumAge:5000,minimumUpdateInterval:5000},
+        (position,error)=>{if(!error&&position)save(position);}
+      );
 
       await current().catch(()=>null);
       localStorage.setItem('entrega365:locationTracking','1');
