@@ -60,7 +60,8 @@
         const g=window.entrega365Location;
         if(!g)return alert('Módulo de localização ainda está carregando.');
         g.toggle().then(on=>alert(on?'Localização ativada. O Entrega365 acompanhará sua posição enquanto o recurso estiver ativo.':'Localização desativada.')).catch(err=>alert('Não foi possível ativar a localização. Verifique a permissão de localização do Android.'));
-      }\n      else if(x==='backup'){
+      }
+      else if(x==='backup'){
         if(typeof window.e365OpenManualBackupMenu==='function') window.e365OpenManualBackupMenu();
         else setTimeout(()=>window.e365OpenManualBackupMenu?.(),150);
       }
