@@ -16,7 +16,6 @@
       await loadScript('plus-buttons-fix.js','text/javascript');
       await loadScript('more-menu-fix.js','text/javascript');
       await loadScript('secondary-backup-loader.js','module');
-      await loadScript('drive-backup-loader.js','module');
     }catch(e){console.warn('Entrega365 módulos complementares:',e);}
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
