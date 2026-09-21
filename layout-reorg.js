@@ -42,7 +42,7 @@
         <button data-e365-more="agenda">📅<br>Agenda</button>
         <button data-e365-more="finance">💰<br>Controle financeiro</button>
         <button data-e365-more="calculator">🧮<br>Calculadora</button>
-        <button data-e365-more="location">📍<br>Localização</button><button class="backup" data-e365-more="backup">💾<br>Backup</button>
+        <button data-e365-more="location">📍<br>Localização</button><button data-e365-more="tracking">📡<br>Rastreamento</button><button class="backup" data-e365-more="backup">💾<br>Backup</button>
       </div>
     </div>`;
     document.body.appendChild(m);
@@ -56,6 +56,7 @@
       else if(x==='agenda')window.e365OpenAgenda?.();
       else if(x==='finance')window.go?.('finance');
       else if(x==='calculator')window.e365OpenCalculator?.();
+      else if(x==='tracking'){window.e365OpenLocationTracking?.();}
       else if(x==='location'){
         const g=window.entrega365Location;
         if(!g)return alert('Módulo de localização ainda está carregando.');
