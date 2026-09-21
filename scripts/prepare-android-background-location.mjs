@@ -324,7 +324,7 @@ for (const permission of [
 }
 
 if (!manifest.includes("android.permission.POST_NOTIFICATIONS")) {
-  manifest = manifest.replace(/(<manifest[^>]*>)/, "$1\\n    <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />");
+  manifest = manifest.replace(/(<manifest[^>]*>)/, "$1\n    <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />");
 }
 
 if (!manifest.includes("LocationTrackingService")) {
