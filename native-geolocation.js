@@ -44,6 +44,7 @@
     window.dispatchEvent(new CustomEvent('e365-location',{detail:value}));
     window.dispatchEvent(new Event('e365-data-changed'));
     window.entrega365DataSync?.markDirty?.();
+    window.e365LocationServer?.queue?.(value);
     return value;
   }
 
