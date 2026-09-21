@@ -59,7 +59,7 @@
       else if(x==='location'){
         const g=window.entrega365Location;
         if(!g)return alert('Módulo de localização ainda está carregando.');
-        g.toggle().then(on=>alert(on?'Localização ativada. O Entrega365 acompanhará sua posição enquanto o recurso estiver ativo.':'Localização desativada.')).catch(err=>alert('Não foi possível ativar a localização. Verifique a permissão de localização do Android.'));
+        g.toggle().then(on=>{if(!on)return alert('Localização desativada.');const bg=window.e365BackgroundLocation?.status?null:null;alert('Localização ativada. O Entrega365 acompanhará sua posição enquanto o recurso estiver ativo.'+(window.Capacitor?.isNativePlatform?.()?' Se o Android abrir as configurações de localização, permita o acesso em segundo plano para continuar acompanhando com o app minimizado.':''));}).catch(err=>alert('Não foi possível ativar a localização. Verifique a permissão de localização do Android e tente novamente.'));
       }
       else if(x==='backup'){
         if(typeof window.e365OpenManualBackupMenu==='function') window.e365OpenManualBackupMenu();
