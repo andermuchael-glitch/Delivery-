@@ -2,13 +2,13 @@ import { getDb } from './db.js';
 import { requireFirebaseUser, unauthorized } from './auth.js';
 
 async function ensureSchema(sql) {
-  await sql\x60CREATE TABLE IF NOT EXISTS entrega365_user_data (
+  await sql`CREATE TABLE IF NOT EXISTS entrega365_user_data (
     uid TEXT PRIMARY KEY,
     email TEXT,
     data JSONB NOT NULL DEFAULT '{}'::jsonb,
     version BIGINT NOT NULL DEFAULT 1,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )\x60;
+  )`;
 }
 
 function cleanData(value) {
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     await ensureSchema(sql);
 
     if (req.method === 'GET') {
-      const rows = await sql\x60SELECT uid, email, data, version, updated_at FROM entrega365_user_data WHERE uid = ${user.uid} LIMIT 1\x60;
+      const rows = await sql`SELECT uid, email, data, version, updated_at FROM entrega365_user_data WHERE uid = ${user.uid} LIMIT 1`;
       const row = rows[0] || null;
       return res.status(200).json({
         ok: true,
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       const incoming = cleanData(body.data);
       const clientVersion = Number(body.version || 0);
       const force = body.force === true;
-      const rows = await sql\x60SELECT uid, version, updated_at FROM entrega365_user_data WHERE uid = ${user.uid} LIMIT 1\x60;
+      const rows = await sql`SELECT uid, version, updated_at FROM entrega365_user_data WHERE uid = ${user.uid} LIMIT 1`;
       const current = rows[0] || null;
       const currentVersion = Number(current?.version || 0);
 
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
       }
 
       const nextVersion = Math.max(currentVersion + 1, clientVersion + 1, 1);
-      const saved = await sql\x60
+      const saved = await sql`
         INSERT INTO entrega365_user_data (uid, email, data, version, updated_at)
         VALUES (${user.uid}, ${user.email || ''}, ${JSON.stringify(incoming)}::jsonb, ${nextVersion}, NOW())
         ON CONFLICT (uid) DO UPDATE SET
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
           version = EXCLUDED.version,
           updated_at = NOW()
         RETURNING version, updated_at
-      \x60;
+      `;
 
       return res.status(200).json({ok:true,version:Number(saved[0]?.version||nextVersion),updatedAt:saved[0]?.updated_at||null});
     }
