@@ -90,6 +90,7 @@ jobs:
             echo "Chave DEBUG fixa restaurada do cache."
           fi
           cp "$HOME/.android/debug.keystore" "$HOME/.config/.android/entrega365-debug.keystore"
+          cp "$HOME/.android/debug.keystore" "$HOME/.config/.android/debug.keystore"
 
       - name: Gerar SHA-1 DEBUG para Firebase
         working-directory: android
