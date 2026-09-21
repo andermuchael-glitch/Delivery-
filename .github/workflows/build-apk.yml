@@ -2,7 +2,7 @@ name: Build Entrega365 APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/background-location]
     paths:
       - "package.json"
       - "capacitor.config.json"
