@@ -401,7 +401,7 @@ const dataKey=(k)=>{
   return typeof window.e365MapDataKey==="function" ? window.e365MapDataKey(raw) : raw;
 };
 const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(dataKey(k)))??f}catch{return f}};
-const save=(k,v)=>{localStorage.setItem(dataKey(k),JSON.stringify(v));window.dispatchEvent(new Event("e365-data-changed"));};
+const save=(k,v)=>{localStorage.setItem(dataKey(k),JSON.stringify(v));window.dispatchEvent(new Event("e365-data-changed"));window.entrega365DataSync?.markDirty?.();};
 let user=localStorage.getItem(K+"session"), view="day", day=today(), expDay=today(), month=new Date(), financeMonth=new Date(), loginMode="login", loginScreen="intro", showPass=false, openDeliveryId=null, introSlide=0;
 window.__e365SetUser=v=>{user=v;};
 window.e365OpenPro=()=>{
