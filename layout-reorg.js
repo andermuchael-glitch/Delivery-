@@ -9,7 +9,7 @@
   function clickLanguage(){ const b=findAction(/🌐|idioma|language/i); if(b){ b.click(); return true; } return false; }
   function clickExit(){ const b=findAction(/🚪|sair|logout|exit/i); if(b){ b.click(); return true; } return false; }
   function ensureCommunityScript(){
-    if(window.e365CommunityOpen||window.e365MarketplaceOpen||typeof window.render==='function') return Promise.resolve();
+    if(window.e365CommunityOpen||window.e365MarketplaceOpen) return Promise.resolve();
     if(communityLoadPromise) return communityLoadPromise;
     communityLoadPromise=new Promise(resolve=>{
       let s=document.querySelector('script[data-e365-community]')||[...document.scripts].find(x=>(x.src||'').includes('/community-market.js'));
@@ -18,7 +18,7 @@
         if(window.e365CommunityOpen||window.e365MarketplaceOpen||typeof window.render==='function'){resolve();return;}
         s.addEventListener('load',done,{once:true}); s.addEventListener('error',done,{once:true}); setTimeout(done,3000); return;
       }
-      s=document.createElement('script'); s.src='./community-market.js?v=167'; s.dataset.e365Community='1'; s.async=false;
+      s=document.createElement('script'); s.src='./community-market.js?v=168'; s.dataset.e365Community='1'; s.async=false;
       s.onload=done; s.onerror=done; document.head.appendChild(s);
     });
     return communityLoadPromise;
