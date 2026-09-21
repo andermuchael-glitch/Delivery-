@@ -28,13 +28,25 @@
     try{return await p.stop();}catch(e){console.warn("Entrega365 parar localização:",e);}
   }
 
+  async function buffered(){
+    const p=api();
+    if(!p?.getBufferedLocations)return [];
+    try{const r=await p.getBufferedLocations();return Array.isArray(r?.points)?r.points:[];}catch(e){return []}
+  }
+
+  async function clearBuffered(){
+    const p=api();
+    if(!p?.clearBufferedLocations)return;
+    try{return await p.clearBufferedLocations();}catch(e){console.warn("Entrega365 limpar buffer:",e);}
+  }
+
   async function status(){
     const p=api();
     if(!p?.status)return {supported:false};
     try{return await p.status();}catch(e){return {supported:true,error:e?.message||String(e)};}
   }
 
-  window.e365BackgroundLocation={start,stop,status};
+  window.e365BackgroundLocation={start,stop,status,buffered,clearBuffered};
 
   document.addEventListener("visibilitychange",()=>{
     if(document.visibilityState==="visible" && window.e365GetCurrentUser?.()){
