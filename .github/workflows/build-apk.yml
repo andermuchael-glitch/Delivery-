@@ -83,7 +83,7 @@ jobs:
             keytool -genkeypair -v \
               -keystore "$HOME/.config/.android/entrega365-debug.keystore" \
               -storepass android -keypass android \
-              -alias Entrega365Debug \
+              -alias AndroidDebugKey \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Entrega365 Debug,O=Entrega365,C=BR"
           else
