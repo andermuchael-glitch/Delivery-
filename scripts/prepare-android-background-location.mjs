@@ -147,6 +147,12 @@ import com.getcapacitor.annotation.PluginMethod;
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             }
+        ),
+        @Permission(
+            alias = "backgroundLocation",
+            strings = {
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            }
         )
     }
 )
@@ -163,6 +169,10 @@ public class BackgroundLocationPlugin extends Plugin {
             openLocationSettings(call);
             return;
         }
+        if (Build.VERSION.SDK_INT >= 29 && !hasBackgroundLocation()) {
+            requestPermissionForAlias("backgroundLocation", call, "backgroundPermissionsCallback");
+            return;
+        }
         startService();
         JSObject ret = statusObject();
         ret.put("running", true);
@@ -177,6 +187,18 @@ public class BackgroundLocationPlugin extends Plugin {
         }
         if (Build.VERSION.SDK_INT >= 30 && !hasBackgroundLocation()) {
             openLocationSettings(call);
+            return;
+        }
+        startService();
+        JSObject ret = statusObject();
+        ret.put("running", true);
+        call.resolve(ret);
+    }
+
+    @ActivityCallback
+    private void backgroundPermissionsCallback(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= 29 && !hasBackgroundLocation()) {
+            call.reject("Permissão de localização em segundo plano não concedida.");
             return;
         }
         startService();
