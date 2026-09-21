@@ -72,16 +72,16 @@ jobs:
       - name: Restaurar chave DEBUG fixa
         uses: actions/cache@v4
         with:
-          path: ~/.config/.android/entrega365-debug.keystore
-          key: entrega365-debug-keystore-v1
+          path: ~/.android/debug.keystore
+          key: entrega365-debug-keystore-v2
 
       - name: Preparar chave DEBUG fixa
         run: |
           mkdir -p "$HOME/.config/.android" "$HOME/.android"
-          if [ ! -f "$HOME/.config/.android/entrega365-debug.keystore" ]; then
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
             echo "Primeira execução: gerando chave DEBUG fixa para o projeto."
             keytool -genkeypair -v \
-              -keystore "$HOME/.config/.android/entrega365-debug.keystore" \
+              -keystore "$HOME/.android/debug.keystore" \
               -storepass android -keypass android \
               -alias AndroidDebugKey \
               -keyalg RSA -keysize 2048 -validity 10000 \
@@ -89,7 +89,7 @@ jobs:
           else
             echo "Chave DEBUG fixa restaurada do cache."
           fi
-          cp "$HOME/.config/.android/entrega365-debug.keystore" "$HOME/.android/debug.keystore"
+          cp "$HOME/.android/debug.keystore" "$HOME/.config/.android/entrega365-debug.keystore"
 
       - name: Gerar SHA-1 DEBUG para Firebase
         working-directory: android
