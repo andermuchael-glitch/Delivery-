@@ -257,7 +257,7 @@ for (const permission of [
 ]) {
   if (!manifest.includes('android:name="' + permission + '"')) {
     manifest = manifest.replace("<manifest", '<manifest');
-    manifest = manifest.replace(/(<manifest[^>]*>)/, "$1\\n    <uses-permission android:name=\"" + permission + "\" />");
+    manifest = manifest.replace(/(<manifest[^>]*>)/, "$1\n    <uses-permission android:name=\"" + permission + "\" />");
   }
 }
 
@@ -279,11 +279,11 @@ let activity = await readFile(activityPath, "utf8");
 if (!activity.includes("BackgroundLocationPlugin")) {
   activity = activity.replace(
     /package ([^;]+);/,
-    "package $1;\\n\\nimport com.getcapacitor.BridgeActivity;"
+    "package $1;\n\nimport com.getcapacitor.BridgeActivity;"
   );
   activity = activity.replace(
     /public class MainActivity extends BridgeActivity\\s*\\{/,
-    "public class MainActivity extends BridgeActivity {\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        registerPlugin(BackgroundLocationPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }"
+    "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(BackgroundLocationPlugin.class);\n        super.onCreate(savedInstanceState);\n    }"
   );
 }
 await writeFile(activityPath, activity);
