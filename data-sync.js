@@ -18,6 +18,8 @@
       k==='entrega365:establishments:'+u ||
       k==='entrega365:currentEstablishment:'+u ||
       k==='entrega365:locale' ||
+      k==='entrega365:location' ||
+      k==='entrega365:locationTracking' ||
       k==='entrega365:agenda' ||
       k==='e365month';
   }
@@ -56,9 +58,26 @@
       const m=meta();
       const localHas=hasLocalData(local);
 
-      // A browser/device with local data is authoritative on its first sync.
-      // A clean device is allowed to download the existing server copy.
-      if(localHas){
+      // The PostgreSQL copy is authoritative once it exists.
+      // Only the very first device may seed an empty server from its local cache.
+      const serverCheck=await request('/api/data');
+      if(!serverCheck.ok)throw new Error('check_'+serverCheck.status);
+      const serverState=await serverCheck.json();
+      if(serverState.exists){
+        const serverVersion=Number(serverState.version||0);
+        if(localHas && Number(m.serverVersion||0)===serverVersion && !dirty){
+          setMeta({serverVersion,updatedAt:serverState.updatedAt||null,lastSyncAt:new Date().toISOString()});
+          return;
+        }
+        if(!dirty){
+          const incoming=serverState.data||{};
+          for(const [k,v] of Object.entries(incoming))if(allowed(k))localStorage.setItem(k,String(v));
+          setMeta({serverVersion,updatedAt:serverState.updatedAt||null,lastSyncAt:new Date().toISOString()});
+          window.__e365SetUser?.('google:'+uid());
+          window.render?.();
+          dirty=false;
+          return;
+        }
         const response=await request('/api/data',{method:'POST',body:JSON.stringify({
           data:local,
           version:Number(m.serverVersion||0),
@@ -79,7 +98,17 @@
         setMeta({serverVersion:Number(result.version||0),updatedAt:result.updatedAt||new Date().toISOString(),lastSyncAt:new Date().toISOString()});
         dirty=false;
       }else{
-        await pull();
+        if(localHas){
+          const response=await request('/api/data',{method:'POST',body:JSON.stringify({
+            data:local,
+            version:0,
+            force:false
+          })});
+          if(!response.ok)throw new Error('seed_'+response.status);
+          const result=await response.json();
+          setMeta({serverVersion:Number(result.version||0),updatedAt:result.updatedAt||new Date().toISOString(),lastSyncAt:new Date().toISOString()});
+          dirty=false;
+        }else await pull();
       }
     }catch(e){
       console.warn('Entrega365 PostgreSQL sync:',e);
