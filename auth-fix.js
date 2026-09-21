@@ -44,7 +44,18 @@ async function startGoogleLogin(){if(loginInProgress)return;loginInProgress=true
       await signInWithRedirect(auth,provider);
       return;
     }
-    let result;\n    try {\n      result=await signInWithPopup(auth,provider,browserPopupRedirectResolver);\n    } catch(popupError) {\n      const pc=popupError?.code||"";\n      if(pc==="auth/popup-blocked"||pc==="auth/operation-not-supported-in-this-environment"){\n        await signInWithRedirect(auth,provider,browserPopupRedirectResolver);\n        return;\n      }\n      throw popupError;\n    }\n    settled=true;clearInterval(watchdog);if(result?.user){openApp(result.user,{persist:true});return;}throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/no-user"});}catch(e){settled=true;clearInterval(watchdog);if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}authError(e);}}
+    let result;
+    try {
+      result=await signInWithPopup(auth,provider,browserPopupRedirectResolver);
+    } catch(popupError) {
+      const pc=popupError?.code||"";
+      if(pc==="auth/popup-blocked"||pc==="auth/operation-not-supported-in-this-environment"){
+        await signInWithRedirect(auth,provider,browserPopupRedirectResolver);
+        return;
+      }
+      throw popupError;
+    }
+    settled=true;clearInterval(watchdog);if(result?.user){openApp(result.user,{persist:true});return;}throw Object.assign(new Error("Google não retornou um usuário."),{code:"auth/no-user"});}catch(e){settled=true;clearInterval(watchdog);if(auth.currentUser?.uid){openApp(auth.currentUser,{persist:true});return;}loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);if(b){b.disabled=false;b.querySelector(".google-label").textContent="ENTRAR COM GOOGLE";}authError(e);}}
 window.entrega365SignOut=async()=>{try{await signOut(auth);}catch(e){console.warn("Firebase signOut:",e);}finally{currentUser=null;appUserUid=null;recoveryFinished=true;clearSession();window.__e365SetUser?.(null);location.replace(location.pathname||"/");}};window.e365Logout=window.entrega365SignOut;window.__e365Logout=window.entrega365SignOut;window.startGoogleLogin=startGoogleLogin;window.e365GetCurrentUser=()=>auth.currentUser||currentUser;window.entrega365Auth={auth};
 onAuthStateChanged(auth,u=>{if(u){openApp(u,{persist:true});return;}if(getSessionUid()){if(!currentUser)openSavedSession();return;}currentUser=null;if(recoveryFinished||loginInProgress)return;showLogin();});
 (async function startAuthRecovery(){try{
