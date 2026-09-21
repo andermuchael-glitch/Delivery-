@@ -87,5 +87,5 @@ if(!window.Capacitor?.isNativePlatform?.() && sessionStorage.getItem(LOGIN_PENDI
   }
 }
 if(openSavedSession())return;setLoading();startupTimer=setTimeout(()=>{if(auth.currentUser)openApp(auth.currentUser,{persist:true});else if(!openSavedSession()){recoveryFinished=true;loginInProgress=false;sessionStorage.removeItem(LOGIN_PENDING);showLogin();}},3500);}catch(e){console.error("Firebase startup:",e);if(!openSavedSession()){recoveryFinished=true;showLogin();}}})();
-import("./drive-backup.js?v=166").then(m=>m.initDriveBackup?.(auth)).catch(e=>console.warn("Drive backup indisponível",e));
+
 
