@@ -1,4 +1,4 @@
-/* Entrega365 — Backup local manual */
+/* Entrega365 — Backup manual via PostgreSQL */
 (function(){
   'use strict';
   const STYLE='e365-local-backup-style';
@@ -123,36 +123,99 @@
     input.click();
   }
 
+  async function postgresRequest(method='GET', body=null){
+    const u=window.e365GetCurrentUser?.();
+    if(!u?.getIdToken)throw new Error('auth_required');
+    const token=await u.getIdToken(false);
+    const options={method,cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}};
+    if(body)options.body=JSON.stringify(body);
+    const response=await fetch('/api/data',options);
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok){
+      const e=new Error(data?.error||('http_'+response.status));
+      e.status=response.status;e.payload=data;throw e;
+    }
+    return data;
+  }
+
+  async function savePostgres(status){
+    const s=session();
+    if(!s){status.textContent='⚠️ Faça login antes de salvar o backup.';return;}
+    try{
+      status.textContent='⏳ Salvando backup no PostgreSQL...';
+      const data=snapshot();
+      if(!Object.keys(data).length){status.textContent='⚠️ Não há dados para salvar.';return;}
+      const syncStatus=window.entrega365DataSync?.status?.()||{};
+      const result=await postgresRequest('POST',{
+        data,
+        version:Number(syncStatus.serverVersion||0),
+        force:false
+      });
+      status.textContent='✅ Backup salvo no PostgreSQL. Versão '+Number(result.version||0)+'.';
+      window.entrega365DataSync?.sync?.();
+    }catch(e){
+      console.warn('Backup PostgreSQL:',e);
+      if(e?.payload?.error==='version_conflict'||e?.payload?.error==='server_data_exists'){
+        status.textContent='⚠️ O PostgreSQL possui uma versão mais recente. Primeiro sincronize o aplicativo e tente novamente.';
+      }else if(e?.status===401||e?.status===403){
+        status.textContent='⚠️ Sessão não autorizada. Entre novamente no Entrega365.';
+      }else{
+        status.textContent='⚠️ Não foi possível salvar o backup no PostgreSQL.';
+      }
+    }
+  }
+
+  async function restorePostgres(status){
+    const s=session();
+    if(!s){status.textContent='⚠️ Faça login antes de restaurar o backup.';return;}
+    if(!confirm('Restaurar o backup salvo no PostgreSQL substituirá os dados atuais deste dispositivo. Deseja continuar?'))return;
+    try{
+      status.textContent='⏳ Buscando backup do PostgreSQL...';
+      const result=await postgresRequest('GET');
+      const storage=result?.data;
+      if(!result?.exists||!storage||typeof storage!=='object'||!Object.keys(storage).length){
+        status.textContent='⚠️ Não existe backup salvo no PostgreSQL para esta conta.';
+        return;
+      }
+      const keys=Object.keys(storage).filter(allowedKey);
+      if(!keys.length){
+        status.textContent='⚠️ O backup do PostgreSQL não contém dados compatíveis com esta conta.';
+        return;
+      }
+      for(let i=localStorage.length-1;i>=0;i--){
+        const k=localStorage.key(i);
+        if(allowedKey(k))localStorage.removeItem(k);
+      }
+      for(const k of keys)localStorage.setItem(k,String(storage[k]));
+      localStorage.setItem(SESSION_KEY,s);
+      status.textContent='✅ Backup restaurado do PostgreSQL. Recarregando...';
+      setTimeout(()=>location.reload(),600);
+    }catch(e){
+      console.warn('Restauração PostgreSQL:',e);
+      status.textContent=e?.status===401||e?.status===403
+        ?'⚠️ Sessão não autorizada. Entre novamente no Entrega365.'
+        :'⚠️ Não foi possível restaurar o backup do PostgreSQL.';
+    }
+  }
+
   function open(){
     close();styles();
     const m=document.createElement('div');
     m.className='e365-local-backup-overlay';
     m.innerHTML=`<div class="e365-local-backup-card">
-      <div class="e365-local-backup-title">💾 Backup local</div>
-      <div class="e365-local-backup-sub">Use estas opções para proteger ou restaurar os dados deste navegador. Este backup não depende do Google Drive.</div>
-      <button class="e365-local-backup-btn primary" data-backup="drive">☁️ Salvar backup no Google Drive</button>
-      <button class="e365-local-backup-btn" data-backup="download">⬇️ Baixar backup local</button>
-      <button class="e365-local-backup-btn" data-backup="upload">⬆️ Subir backup local</button>
+      <div class="e365-local-backup-title">💾 Backup PostgreSQL</div>
+      <div class="e365-local-backup-sub">O backup da sua conta é salvo no banco PostgreSQL do Entrega365. Ele pode ser restaurado em outro navegador ou dispositivo usando a mesma conta.</div>
+      <button class="e365-local-backup-btn primary" data-backup="save">☁️ Salvar backup no PostgreSQL</button>
+      <button class="e365-local-backup-btn" data-backup="restore">♻️ Restaurar backup do PostgreSQL</button>
+      <button class="e365-local-backup-btn" data-backup="download">⬇️ Baixar cópia local</button>
+      <button class="e365-local-backup-btn" data-backup="upload">⬆️ Importar cópia local</button>
       <div class="e365-local-backup-status"></div>
       <button class="e365-local-backup-close">Fechar</button>
     </div>`;
     document.body.appendChild(m);
     const status=m.querySelector('.e365-local-backup-status');
-    m.querySelector('[data-backup="drive"]').onclick=async()=>{
-      status.textContent='⏳ Salvando backup no Google Drive...';
-      try{
-        if(typeof window.entrega365DriveManualBackup!=='function')throw new Error('drive_module_unavailable');
-        const ok=await window.entrega365DriveManualBackup();
-        if(ok)status.textContent='✅ Backup salvo no Google Drive.';
-        else{
-          const st=window.entrega365DriveManualBackupStatus?.()||{};
-          status.textContent=st.manualSaveError?'⚠️ Não foi possível salvar no Google Drive: '+st.manualSaveError:'⚠️ O backup no Google Drive não foi concluído.';
-        }
-      }catch(e){
-        console.warn('Backup Google Drive:',e);
-        status.textContent='⚠️ Não foi possível salvar no Google Drive. Verifique a autorização do Google Drive e tente novamente.';
-      }
-    };
+    m.querySelector('[data-backup="save"]').onclick=()=>savePostgres(status);
+    m.querySelector('[data-backup="restore"]').onclick=()=>restorePostgres(status);
     m.querySelector('[data-backup="download"]').onclick=()=>downloadBackup(status);
     m.querySelector('[data-backup="upload"]').onclick=()=>importBackup(status);
     m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.e365-local-backup-close'))close()});
