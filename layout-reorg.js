@@ -55,9 +55,6 @@
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');s.id=STYLE_ID;
     s.textContent=`
-      .e365-social-nav{position:sticky;top:64px;z-index:99;display:flex;gap:8px;padding:8px 12px;background:rgba(18,18,18,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-      .e365-social-nav button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:#eee;font-weight:900;font-size:13px}
-      .e365-social-nav button.active,.e365-social-nav button:hover{border-color:var(--accent);color:#111;background:var(--accent)}
       .e365-more-layout{position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.72);display:flex;align-items:flex-end}
       .e365-more-layout-card{width:100%;max-width:600px;margin:auto;background:#1e1e1e;border:1px solid #3a3a3a;border-radius:22px 22px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.5)}
       .e365-more-layout-handle{width:44px;height:5px;border-radius:99px;background:#555;margin:0 auto 16px}
@@ -65,7 +62,7 @@
       .e365-more-layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
       .e365-more-layout-grid button{padding:15px 10px;min-height:72px;border:1px solid #444;border-radius:14px;background:#242424;color:#fff;font-weight:900;font-size:13px}
       .e365-more-layout-grid button:hover{border-color:#ffd000;background:#2c2c2c}
-      @media(max-width:390px){.e365-social-nav button{font-size:12px}.e365-more-layout-grid{gap:8px}}
+      @media(max-width:390px){.e365-more-layout-grid{gap:8px}}
     `;
     document.head.appendChild(s);
   }
@@ -96,5 +93,4 @@
   window.e365OpenMoreLayout=showMore;
   function boot(){build();setTimeout(build,250);setTimeout(build,1000)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  new MutationObserver(()=>{if(!document.querySelector('.e365-social-nav'))build();}).observe(document.documentElement,{childList:true,subtree:true});
 })();
