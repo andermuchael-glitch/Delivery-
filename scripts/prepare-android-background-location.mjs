@@ -301,17 +301,19 @@ if (!manifest.includes("LocationTrackingService")) {
 await writeFile(manifestPath, manifest);
 
 const activityPath = path.join(javaDir, "MainActivity.java");
-let activity = await readFile(activityPath, "utf8");
-if (!activity.includes("BackgroundLocationPlugin")) {
-  activity = activity.replace(
-    /package ([^;]+);/,
-    "package $1;\n\nimport com.getcapacitor.BridgeActivity;"
-  );
-  activity = activity.replace(
-    /public class MainActivity extends BridgeActivity\\s*\\{/,
-    "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(BackgroundLocationPlugin.class);\n        super.onCreate(savedInstanceState);\n    }"
-  );
+const activity = `package br.com.entrega365.app;
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registerPlugin(BackgroundLocationPlugin.class);
+    }
 }
+`;
 await writeFile(activityPath, activity);
 
 console.log("Entrega365: localização em segundo plano preparada no projeto Android.");
