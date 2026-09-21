@@ -2,7 +2,7 @@ name: Build Entrega365 APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/background-location]
     paths:
       - "package.json"
       - "capacitor.config.json"
@@ -57,6 +57,9 @@ jobs:
           npx cap add android
           test -f /tmp/google-services.json || { echo "::error::Falta android/app/google-services.json no repositório."; exit 1; }
           cp /tmp/google-services.json android/app/google-services.json
+
+      - name: Configurar localização em segundo plano
+        run: node scripts/prepare-android-background-location.mjs
 
       - name: Configurar Firebase Google nativo
         run: |
