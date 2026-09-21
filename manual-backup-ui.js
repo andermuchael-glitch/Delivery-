@@ -130,13 +130,29 @@
     m.innerHTML=`<div class="e365-local-backup-card">
       <div class="e365-local-backup-title">💾 Backup local</div>
       <div class="e365-local-backup-sub">Use estas opções para proteger ou restaurar os dados deste navegador. Este backup não depende do Google Drive.</div>
-      <button class="e365-local-backup-btn primary" data-backup="download">⬇️ Baixar backup</button>
+      <button class="e365-local-backup-btn primary" data-backup="drive">☁️ Salvar backup no Google Drive</button>
+      <button class="e365-local-backup-btn" data-backup="download">⬇️ Baixar backup local</button>
       <button class="e365-local-backup-btn" data-backup="upload">⬆️ Subir backup local</button>
       <div class="e365-local-backup-status"></div>
       <button class="e365-local-backup-close">Fechar</button>
     </div>`;
     document.body.appendChild(m);
     const status=m.querySelector('.e365-local-backup-status');
+    m.querySelector('[data-backup="drive"]').onclick=async()=>{
+      status.textContent='⏳ Salvando backup no Google Drive...';
+      try{
+        if(typeof window.entrega365DriveManualBackup!=='function')throw new Error('drive_module_unavailable');
+        const ok=await window.entrega365DriveManualBackup();
+        if(ok)status.textContent='✅ Backup salvo no Google Drive.';
+        else{
+          const st=window.entrega365DriveManualBackupStatus?.()||{};
+          status.textContent=st.manualSaveError?'⚠️ Não foi possível salvar no Google Drive: '+st.manualSaveError:'⚠️ O backup no Google Drive não foi concluído.';
+        }
+      }catch(e){
+        console.warn('Backup Google Drive:',e);
+        status.textContent='⚠️ Não foi possível salvar no Google Drive. Verifique a autorização do Google Drive e tente novamente.';
+      }
+    };
     m.querySelector('[data-backup="download"]').onclick=()=>downloadBackup(status);
     m.querySelector('[data-backup="upload"]').onclick=()=>importBackup(status);
     m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.e365-local-backup-close'))close()});
