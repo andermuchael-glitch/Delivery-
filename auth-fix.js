@@ -19,9 +19,9 @@ async function startNativeGoogleLogin(){
   if(!native)return null;
   try{
     const mod=await import("https://esm.sh/@capacitor-firebase/authentication@8.5.2");
-    const plugin=window.Capacitor?.Plugins?.FirebaseAuthentication||mod.FirebaseAuthentication;
+    const plugin=window.Capacitor?.Plugins?.FirebaseAuthentication||mod?.FirebaseAuthentication;
 if(!plugin?.signInWithGoogle)throw Object.assign(new Error("Plugin FirebaseAuthentication não foi registrado no APK."),{code:"auth/native-plugin-unavailable"});
-const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false});
+const result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialManager:true});
     const credential=result?.credential||{};
     if(!credential.idToken&&!credential.accessToken)throw Object.assign(new Error("Google não retornou credencial nativa."),{code:"auth/native-no-credential"});
     const googleCredential=GoogleAuthProvider.credential(credential.idToken||null,credential.accessToken||null);
