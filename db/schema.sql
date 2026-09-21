@@ -52,3 +52,7 @@ CREATE TABLE IF NOT EXISTS marketplace_settings (
 INSERT INTO marketplace_settings (id, affiliate_url)
 VALUES (1, 'https://meli.la/1Komyrh')
 ON CONFLICT (id) DO NOTHING;
+
+
+CREATE TABLE IF NOT EXISTS entrega365_location_points (id BIGSERIAL PRIMARY KEY,uid TEXT NOT NULL,email TEXT NOT NULL DEFAULT '',latitude DOUBLE PRECISION NOT NULL,longitude DOUBLE PRECISION NOT NULL,accuracy DOUBLE PRECISION,altitude DOUBLE PRECISION,speed DOUBLE PRECISION,heading DOUBLE PRECISION,recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE INDEX IF NOT EXISTS entrega365_location_points_uid_time_idx ON entrega365_location_points(uid,recorded_at DESC);
