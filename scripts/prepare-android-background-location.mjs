@@ -189,6 +189,10 @@ public class BackgroundLocationPlugin extends Plugin {
             openLocationSettings(call);
             return;
         }
+        if (Build.VERSION.SDK_INT >= 29 && !hasBackgroundLocation()) {
+            requestPermissionForAlias("backgroundLocation", call, "backgroundPermissionsCallback");
+            return;
+        }
         startService();
         JSObject ret = statusObject();
         ret.put("running", true);
