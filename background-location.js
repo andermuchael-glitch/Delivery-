@@ -1,6 +1,6 @@
 (function(){
   "use strict";
-  const api=()=>window.Capacitor?.Plugins?.BackgroundLocation;
+  const api=()=>{const c=window.Capacitor;if(!c)return null;return c.Plugins?.BackgroundLocation||(typeof c.registerPlugin==='function'?c.registerPlugin('BackgroundLocation'):null)};
   let starting=false;
 
   async function start(){
