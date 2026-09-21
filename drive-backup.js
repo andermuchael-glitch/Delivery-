@@ -25,6 +25,14 @@ export function initDriveBackup(auth){
   async function tok(interactive=false){
     if(token&&Date.now()<exp-60000)return token;
     if(loadToken())return token;
+    if(window.entrega365NativeDriveAuthorize){
+      try{
+        const nativeToken=await window.entrega365NativeDriveAuthorize();
+        if(nativeToken){token=nativeToken;exp=Date.now()+3500000;window.dispatchEvent(new Event("e365-drive-token"));return token;}
+      }catch(e){
+        if(!interactive)throw Object.assign(Error("drive_authorization_required"),{cause:e});
+      }
+    }
     if(!interactive)throw Error("drive_authorization_required");
     const u=auth.currentUser;
     if(!u)throw Error("login_required");
@@ -82,7 +90,17 @@ export function initDriveBackup(auth){
   function applySnapshot(d){saveLocalSafety();clearData();for(const[k,v]of Object.entries(d.localStorage||{}))if(includedKey(k))localStorage.setItem(k,v);localStorage.setItem("dcv2:session",session())}
   async function restoreFrom(file){restoring=true;try{const d=await read(file.id);if(d.format!=="Entrega365Backup"||!d.localStorage)throw Error("invalid_backup");if((d.email&&mail()&&String(d.email).toLowerCase()!==mail())||(d.uid&&String(d.uid)!==uid()))throw Error("backup_account_mismatch");applySnapshot(d);fileId=file.id;const remoteAt=Date.parse(file.modifiedTime||d.exportedAt||"")||Date.now();setState({initialized:true,dirty:false,remoteAt,restoredAt:Date.now(),changedAt:0,release:release()});window.dispatchEvent(new Event("e365-drive-restored"));return true}catch(e){console.warn("Drive restore:",e);return false}finally{restoring=false}}
   const queue=()=>{if(!session()||restoring)return;setState({dirty:true,changedAt:Date.now()});clearTimeout(timer);timer=setTimeout(()=>save().catch(()=>{}),900)};
-  async function sync(){if(syncing||!session()||(!loadToken()&&!token))return false;syncing=true;try{const remote=await findFile(),st=state(),local=hasLocalData(),remoteAt=remote?Date.parse(remote.modifiedTime||"")||0:0;if(!remote){if(local||st.dirty)await save();else setState({initialized:true,dirty:false,remoteAt:0,release:release()});return false}fileId=remote.id;if(st.initialized&&st.release&&st.release!==release()&&local){saveLocalSafety();await save();return false}if(!st.initialized){if(st.dirty&&Number(st.changedAt||0)>remoteAt){await save();return false}const restored=await restoreFrom(remote);if(restored)window.render?.();return restored}if(st.dirty){await save();return false}if(remoteAt&&remoteAt>Number(st.remoteAt||0)){const restored=await restoreFrom(remote);if(restored)window.render?.();return restored}return false}catch(e){console.warn("Drive sync:",e);return false}finally{syncing=false}}
+  async function sync(){
+    if(syncing||!session())return false;
+    if(!token&&!loadToken()){
+      const st0=state(),lastAttempt=Number(st0.nativeDriveAuthAttemptedAt||0);
+      if(window.entrega365NativeDriveAuthorize && Date.now()-lastAttempt>10*60*1000){
+        setState({nativeDriveAuthAttemptedAt:Date.now(),driveNeedsAuthorization:true});
+        try{await tok(false);}catch(e){return false;}
+      }
+    }
+    if(!loadToken()&&!token)return false;
+    syncing=true;try{const remote=await findFile(),st=state(),local=hasLocalData(),remoteAt=remote?Date.parse(remote.modifiedTime||"")||0:0;if(!remote){if(local||st.dirty)await save();else setState({initialized:true,dirty:false,remoteAt:0,release:release()});return false}fileId=remote.id;if(st.initialized&&st.release&&st.release!==release()&&local){saveLocalSafety();await save();return false}if(!st.initialized){if(st.dirty&&Number(st.changedAt||0)>remoteAt){await save();return false}const restored=await restoreFrom(remote);if(restored)window.render?.();return restored}if(st.dirty){await save();return false}if(remoteAt&&remoteAt>Number(st.remoteAt||0)){const restored=await restoreFrom(remote);if(restored)window.render?.();return restored}return false}catch(e){console.warn("Drive sync:",e);return false}finally{syncing=false}}
   window.entrega365DriveAutoSync=sync;window.entrega365DriveSave=save;window.entrega365DriveManualBackup=manualBackup;window.entrega365DriveManualBackupStatus=()=>state();window.entrega365DriveStatus=()=>({authorized:!!(token||loadToken()),busy,restoring,syncing,fileId,folderId,state:state()});
   window.entrega365DriveLocalSafetyRestore=()=>{try{const d=JSON.parse(localStorage.getItem(safetyKey())||"null");if(!d?.localStorage)return false;if(d.email&&mail()&&String(d.email).toLowerCase()!==mail())return false;clearData();for(const[k,v]of Object.entries(d.localStorage))if(includedKey(k))localStorage.setItem(k,v);window.dispatchEvent(new Event("e365-data-changed"));window.render?.();return true}catch{return false}};
   window.addEventListener("e365-data-changed",queue);window.addEventListener("e365-drive-token",()=>sync().catch(()=>{}));window.addEventListener("online",()=>sync().catch(()=>{}));window.addEventListener("e365-drive-restored",()=>setTimeout(()=>window.render?.(),0));setInterval(()=>{if(session()&&state().dirty)save().catch(()=>{})},10000);setTimeout(()=>sync().catch(()=>{}),700);
