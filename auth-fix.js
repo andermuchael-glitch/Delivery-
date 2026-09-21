@@ -1,9 +1,8 @@
-import "./tools.js?v=152";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { initializeAuth,getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,browserLocalPersistence,browserPopupRedirectResolver,signOut,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 const AUTH_DOMAIN="entrega365.firebaseapp.com";
 const firebaseConfig={apiKey:"AIzaSyDaOy4D6Jr3LPTKEdkHC3OQjiv8_ZySPYU",authDomain:AUTH_DOMAIN,projectId:"entrega365",storageBucket:"entrega365.firebasestorage.app",messagingSenderId:"686578751112",appId:"1:686578751112:web:4c0f8e4b3a569e7297313d",measurementId:"G-RPRXBXXDJK"};
-const app=initializeApp(firebaseConfig);let auth;try{auth=initializeAuth(app,{persistence:browserLocalPersistence,popupRedirectResolver:browserPopupRedirectResolver});}catch(e){console.warn("Firebase initializeAuth fallback:",e);auth=getAuth(app);}
+const app=initializeApp(firebaseConfig);let auth;try{auth=initializeAuth(app,{persistence:browserLocalPersistence});}catch(e){console.warn("Firebase initializeAuth fallback:",e);auth=getAuth(app);}
 window.__e365AuthBooted=true;window.__e365Auth=auth;
 const SESSION="dcv2:session",LOGIN_PENDING="entrega365:googleLoginPending",FULL_LOGO="./logo-entrega365.jpg?v=150";let currentUser=null,loginInProgress=false,appUserUid=null,startupTimer=null,recoveryFinished=false,introSlide=0,loginStage="intro";
 function setLoading(){const root=document.getElementById("app");if(root)root.innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';}
