@@ -6,7 +6,20 @@
   function readQueue(){try{const q=JSON.parse(localStorage.getItem(QUEUE)||'[]');return Array.isArray(q)?q:[]}catch{return[]}}
   function writeQueue(q){localStorage.setItem(QUEUE,JSON.stringify(q.slice(-300)))}
   function queue(point){if(!point)return;const q=readQueue(),last=q.at(-1);if(last&&Math.abs(Number(last.latitude)-Number(point.latitude))<0.00001&&Math.abs(Number(last.longitude)-Number(point.longitude))<0.00001&&Number(point.timestamp)-Number(last.timestamp)<5000)return;q.push(point);writeQueue(q);flush()}
-  async function flush(){const q=readQueue();if(!q.length||!currentUser())return false;try{const t=await auth();const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({points:q.slice(0,200)})});if(!r.ok)throw new Error('HTTP '+r.status);writeQueue(q.slice(200));return true}catch(e){console.warn('Entrega365 localização aguardando sincronização:',e);return false}}
+  async function importBackgroundBuffer(){
+    const points=await window.e365BackgroundLocation?.buffered?.()||[];
+    if(!points.length)return 0;
+    const q=readQueue();
+    points.forEach(p=>{if(p&&Number.isFinite(Number(p.latitude))&&Number.isFinite(Number(p.longitude)))q.push(p)});
+    writeQueue(q);
+    return points.length;
+  }
+  async function flush(){
+    if(!currentUser())return false;
+    await importBackgroundBuffer();
+    const q=readQueue();
+    if(!q.length)return false;
+    try{const t=await auth();const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({points:q.slice(0,200)})});if(!r.ok)throw new Error('HTTP '+r.status);writeQueue(q.slice(200));return true}catch(e){console.warn('Entrega365 localização aguardando sincronização:',e);return false}}
   function time(ts){return ts?new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—'}
   function coord(n){return Number(n).toFixed(6).replace('.',',')}
   function openMaps(p){if(p)window.open('https://www.google.com/maps?q='+encodeURIComponent(p.latitude+','+p.longitude),'_blank')}
