@@ -1,0 +1,209 @@
+name: Build Entrega365 AAB Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Version code inteiro (aumente a cada envio ao Play Console)"
+        required: true
+        default: "1"
+      version_name:
+        description: "Versão exibida na Play Store"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: read
+
+jobs:
+  build-aab-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Preparar versão mobile
+        run: npm run mobile:prepare
+
+      - name: Preparar projeto Android
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            cp android/app/google-services.json /tmp/google-services.json
+          fi
+
+          rm -rf android
+          npx cap add android
+
+          test -f /tmp/google-services.json || {
+            echo "::error::Falta android/app/google-services.json no repositório."
+            exit 1
+          }
+
+          cp /tmp/google-services.json android/app/google-services.json
+
+      - name: Configurar Firebase Google nativo
+        run: |
+          test -f android/app/google-services.json || {
+            echo "::error::Falta android/app/google-services.json."
+            exit 1
+          }
+
+          cat >> android/variables.gradle <<'EOF'
+
+          // Requisitos atuais do Google Play para novos apps.
+          ext {
+              compileSdkVersion = 36
+              targetSdkVersion = 36
+          }
+          EOF
+
+      - name: Gerar ícones Entrega365
+        run: |
+          npx @capacitor/assets generate             --android             --assetPath assets             --iconBackgroundColor "#ffd21a"             --iconBackgroundColorDark "#121212"             --splashBackgroundColor "#121212"             --splashBackgroundColorDark "#121212"
+
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
+
+      - name: Validar versão e API Android
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name }}
+        working-directory: android
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          p = Path("app/build.gradle")
+          s = p.read_text()
+
+          version_code = os.environ["VERSION_CODE"]
+          version_name = os.environ["VERSION_NAME"]
+
+          s = s.replace('versionCode 1', f'versionCode {version_code}', 1)
+          s = s.replace('versionName "1.0"', f'versionName "{version_name}"', 1)
+
+          p.write_text(s)
+          PY
+
+          grep -nE 'applicationId|versionCode|versionName' app/build.gradle
+          grep -nE 'compileSdkVersion|targetSdkVersion' variables.gradle
+
+      - name: Validar secrets de assinatura
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "::error::Configure ANDROID_KEYSTORE_BASE64 nos Secrets do GitHub."; exit 1; }
+          test -n "$KEYSTORE_PASSWORD" || { echo "::error::Configure ANDROID_KEYSTORE_PASSWORD nos Secrets do GitHub."; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::Configure ANDROID_KEY_ALIAS nos Secrets do GitHub."; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "::error::Configure ANDROID_KEY_PASSWORD nos Secrets do GitHub."; exit 1; }
+
+      - name: Instalar chave de upload temporariamente
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        working-directory: android
+        run: |
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > entrega365-upload.jks
+          test -s entrega365-upload.jks
+
+      - name: Configurar assinatura Release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        working-directory: android
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          p = Path("keystore.properties")
+          p.write_text(
+              "storeFile=entrega365-upload.jks\\n"
+              f"storePassword={os.environ['KEYSTORE_PASSWORD']}\\n"
+              f"keyAlias={os.environ['KEY_ALIAS']}\\n"
+              f"keyPassword={os.environ['KEY_PASSWORD']}\\n"
+          )
+
+          build = Path("app/build.gradle")
+          s = build.read_text()
+
+          header = '''def releaseKeystorePropertiesFile = rootProject.file("keystore.properties")
+          def releaseKeystoreProperties = new Properties()
+          if (releaseKeystorePropertiesFile.exists()) {
+              releaseKeystoreProperties.load(new FileInputStream(releaseKeystorePropertiesFile))
+          }
+
+          '''
+
+          if "releaseKeystorePropertiesFile" not in s:
+              s = header + s
+
+          signing = '''    signingConfigs {
+              release {
+                  if (releaseKeystorePropertiesFile.exists()) {
+                      storeFile file(releaseKeystoreProperties["storeFile"])
+                      storePassword releaseKeystoreProperties["storePassword"]
+                      keyAlias releaseKeystoreProperties["keyAlias"]
+                      keyPassword releaseKeystoreProperties["keyPassword"]
+                  }
+              }
+          }
+
+          '''
+
+          if "signingConfigs {" not in s:
+              s = s.replace("android {\\n", "android {\\n" + signing, 1)
+
+          s = s.replace(
+              "release {\\n",
+              'release {\\n            signingConfig signingConfigs.release\\n',
+              1
+          )
+
+          build.write_text(s)
+          PY
+
+          grep -nE 'signingConfigs|signingConfig|storeFile|keyAlias' app/build.gradle
+
+      - name: Gerar AAB Release
+        working-directory: android
+        run: ./gradlew bundleRelease --stacktrace --warning-mode all
+
+      - name: Verificar assinatura do AAB
+        working-directory: android
+        run: |
+          jarsigner -verify -verbose -certs app/build/outputs/bundle/release/app-release.aab
+          echo "AAB Release assinado e pronto para upload no Google Play Console."
+
+      - name: Publicar AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: Entrega365-AAB-release-v${{ inputs.version_name }}-${{ inputs.version_code }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Limpar arquivos de assinatura
+        if: always()
+        working-directory: android
+        run: rm -f entrega365-upload.jks keystore.properties
