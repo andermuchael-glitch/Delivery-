@@ -42,7 +42,7 @@
         <button data-e365-more="agenda">📅<br>Agenda</button>
         <button data-e365-more="finance">💰<br>Controle financeiro</button>
         <button data-e365-more="calculator">🧮<br>Calculadora</button>
-        <button data-e365-more="location">📍<br>Localização</button><button data-e365-more="tracking">📡<br>Rastreamento</button><button class="backup" data-e365-more="backup">💾<br>Backup</button>
+        <button class="backup" data-e365-more="backup">💾<br>Backup</button>
       </div>
     </div>`;
     document.body.appendChild(m);
@@ -56,12 +56,6 @@
       else if(x==='agenda')window.e365OpenAgenda?.();
       else if(x==='finance')window.go?.('finance');
       else if(x==='calculator')window.e365OpenCalculator?.();
-      else if(x==='tracking'){window.e365OpenLocationTracking?.();}
-      else if(x==='location'){
-        const g=window.entrega365Location;
-        if(!g)return alert('Módulo de localização ainda está carregando.');
-        g.toggle().then(on=>{if(!on)return alert('Localização desativada.');const bg=window.e365BackgroundLocation?.status?null:null;alert('Localização ativada. O Entrega365 acompanhará sua posição enquanto o recurso estiver ativo.'+(window.Capacitor?.isNativePlatform?.()?' Se o Android abrir as configurações de localização, permita o acesso em segundo plano para continuar acompanhando com o app minimizado.':''));}).catch(err=>alert('Não foi possível ativar a localização. Verifique a permissão de localização do Android e tente novamente.'));
-      }
       else if(x==='backup'){
         if(typeof window.e365OpenManualBackupMenu==='function') window.e365OpenManualBackupMenu();
         else setTimeout(()=>window.e365OpenManualBackupMenu?.(),150);
