@@ -39,8 +39,6 @@ export async function ensureSchema(sql) {
     await sql`CREATE INDEX IF NOT EXISTS community_posts_created_at_idx ON community_posts(created_at DESC)`;
     await sql`CREATE INDEX IF NOT EXISTS community_posts_author_uid_idx ON community_posts(author_uid)`;
     await sql`CREATE INDEX IF NOT EXISTS community_comments_post_id_created_at_idx ON community_comments(post_id,created_at ASC)`;
-    await sql`CREATE TABLE IF NOT EXISTS entrega365_location_points (id BIGSERIAL PRIMARY KEY,uid TEXT NOT NULL,email TEXT NOT NULL DEFAULT '',latitude DOUBLE PRECISION NOT NULL,longitude DOUBLE PRECISION NOT NULL,accuracy DOUBLE PRECISION,altitude DOUBLE PRECISION,speed DOUBLE PRECISION,heading DOUBLE PRECISION,recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
-    await sql`CREATE INDEX IF NOT EXISTS entrega365_location_points_uid_time_idx ON entrega365_location_points(uid,recorded_at DESC)`;
   })().catch(error=>{schemaPromise=null;throw error});
   return schemaPromise;
 }
