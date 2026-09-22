@@ -1,4 +1,4 @@
-/* Entrega365 — carregamento dos módulos de backup/localização */
+/* Entrega365 — carregamento dos módulos complementares e backup */
 (function(){
   'use strict';
   const base='./';
@@ -10,8 +10,6 @@
   });
   const boot=async()=>{
     try{
-      await loadScript('native-geolocation.js','text/javascript');
-      await loadScript('location-tracking.js','text/javascript');
       await loadScript('manual-backup-ui.js','text/javascript');
       await loadScript('layout-reorg.js','text/javascript');
       await loadScript('plus-buttons-fix.js','text/javascript');
