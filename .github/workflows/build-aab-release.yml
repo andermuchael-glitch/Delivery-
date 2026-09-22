@@ -175,8 +175,8 @@ jobs:
               s = s.replace("android {\\n", "android {\\n" + signing, 1)
 
           s = s.replace(
-              "release {\\n",
-              'release {\\n            signingConfig signingConfigs.release\\n',
+              "buildTypes {\\n        release {\\n",
+              "buildTypes {\\n        release {\\n            signingConfig signingConfigs.release\\n",
               1
           )
 
