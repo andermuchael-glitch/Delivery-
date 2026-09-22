@@ -20,7 +20,7 @@ Depois de validar o APK, podemos preparar uma versão **release assinada**, com:
 - tela de abertura;
 - botão voltar do Android integrado;
 - tratamento de links externos;
-- integração nativa de localização;
+- preparação para distribuição direta fora da Google Play;
 - notificações;
 - assinatura para distribuição.
 
