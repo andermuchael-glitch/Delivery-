@@ -58,9 +58,6 @@ jobs:
           test -f /tmp/google-services.json || { echo "::error::Falta android/app/google-services.json no repositório."; exit 1; }
           cp /tmp/google-services.json android/app/google-services.json
 
-      - name: Configurar localização em segundo plano
-        run: node scripts/prepare-android-background-location.mjs
-
       - name: Configurar Firebase Google nativo
         run: |
           test -f android/app/google-services.json || { echo "::error::Falta android/app/google-services.json. Registre br.com.entrega365.app no Firebase e adicione o arquivo."; exit 1; }
