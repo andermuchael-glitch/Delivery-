@@ -63,6 +63,29 @@ jobs:
       - name: Configurar Firebase Google nativo
         run: |
           test -f android/app/google-services.json || { echo "::error::Falta android/app/google-services.json. Registre br.com.entrega365.app no Firebase e adicione o arquivo."; exit 1; }
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'android/app/google-services.json';
+          const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const client = data.client?.find(c => c.client_info?.android_client_info?.package_name === 'br.com.entrega365.app');
+          if (!client) throw new Error('Cliente Android br.com.entrega365.app não encontrado no google-services.json');
+          client.oauth_client = client.oauth_client || [];
+          const newId = '686578751112-jimtsm0emdeq7b5eevm1gu1ao6tlqv8r.apps.googleusercontent.com';
+          const newSha = 'efe01720465328c7b8ba3be50739fbf610051be0';
+          const exists = client.oauth_client.some(o => o.client_id === newId);
+          if (!exists) {
+            client.oauth_client.unshift({
+              client_id: newId,
+              client_type: 1,
+              android_info: {
+                package_name: 'br.com.entrega365.app',
+                certificate_hash: newSha
+              }
+            });
+          }
+          fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
+          console.log('OAuth Android do certificado DEBUG atual configurado.');
+          NODE
           cat >> android/variables.gradle <<'EOF'
 
           ext {
@@ -82,12 +105,7 @@ jobs:
           mkdir -p "$HOME/.config/.android" "$HOME/.android"
           if [ ! -f "$HOME/.android/debug.keystore" ]; then
             echo "Primeira execução: gerando chave DEBUG fixa para o projeto."
-            keytool -genkeypair -v \
-              -keystore "$HOME/.android/debug.keystore" \
-              -storepass android -keypass android \
-              -alias AndroidDebugKey \
-              -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=Entrega365 Debug,O=Entrega365,C=BR"
+            keytool -genkeypair -v               -keystore "$HOME/.android/debug.keystore"               -storepass android -keypass android               -alias AndroidDebugKey               -keyalg RSA -keysize 2048 -validity 10000               -dname "CN=Entrega365 Debug,O=Entrega365,C=BR"
           else
             echo "Chave DEBUG fixa restaurada do cache."
           fi
