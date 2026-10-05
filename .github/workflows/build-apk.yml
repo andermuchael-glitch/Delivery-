@@ -15,6 +15,7 @@ on:
       - "*.svg"
       - ".github/workflows/build-apk.yml"
       - "android/**"
+      - "android-widget/**"
   workflow_dispatch:
 
 permissions:
