@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:gravity="center"
+    android:background="@drawable/widget_quick_comanda_bg">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ENTREGA365"
+        android:textColor="#121212"
+        android:textStyle="bold"
+        android:textSize="11sp"
+        android:letterSpacing="0.08"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lançamento rápido"
+        android:textColor="#121212"
+        android:textStyle="bold"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/widget_quick_comanda_button"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="42dp"
+        android:gravity="center"
+        android:text="+ NOVA COMANDA"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:background="@drawable/widget_quick_comanda_button" />
+</LinearLayout>
