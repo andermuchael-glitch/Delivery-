@@ -49,6 +49,7 @@ jobs:
 
           rm -rf android
           npx cap add android
+          node scripts/install-android-widget.mjs
 
           test -f /tmp/google-services.json || {
             echo "::error::Falta android/app/google-services.json no repositório."
