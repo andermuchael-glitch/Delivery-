@@ -50,7 +50,7 @@ if (!manifest.includes("Entrega365QuickComandaWidget")) {
 }
 
 manifest = manifest.replace(
-  /(<activity\\s+android:name="\\.MainActivity"[^>]*)(>)/,
+  /(<activity\s+android:name="\.MainActivity"[^>]*)(>)/,
   (full, attrs, end) => attrs.includes("android:launchMode=")
     ? full
     : attrs + ' android:launchMode="singleTop"' + end
