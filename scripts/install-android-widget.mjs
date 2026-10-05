@@ -22,7 +22,8 @@ await Promise.all([
 
 await copyFile(path.join(root, "android-widget/QuickLaunchPlugin.java"), path.join(javaDir, "QuickLaunchPlugin.java"));
 await copyFile(path.join(root, "android-widget/MainActivity.java"), path.join(javaDir, "MainActivity.java"));
-await copyFile(path.join(root, "android-widget/Entrega365QuickComandaWidget.java"), path.join(javaDir, "Entrega365QuickComandaWidget.java"));\nawait copyFile(path.join(root, "android-widget/QuickComandaActivity.java"), path.join(javaDir, "QuickComandaActivity.java"));
+await copyFile(path.join(root, "android-widget/Entrega365QuickComandaWidget.java"), path.join(javaDir, "Entrega365QuickComandaWidget.java"));
+await copyFile(path.join(root, "android-widget/QuickComandaActivity.java"), path.join(javaDir, "QuickComandaActivity.java"));
 await copyFile(path.join(root, "android-widget/widget_quick_comanda.xml"), path.join(layoutDir, "widget_quick_comanda.xml"));
 await copyFile(path.join(root, "android-widget/widget_quick_comanda_bg.xml"), path.join(drawableDir, "widget_quick_comanda_bg.xml"));
 await copyFile(path.join(root, "android-widget/widget_quick_comanda_button.xml"), path.join(drawableDir, "widget_quick_comanda_button.xml"));
@@ -32,7 +33,9 @@ await copyFile(path.join(root, "android-widget/widget_quick_comanda_info.xml"), 
 const manifestPath = path.join(app, "src/main/AndroidManifest.xml");
 let manifest = await readFile(manifestPath, "utf8");
 
-if (!manifest.includes("QuickComandaActivity")) {\n  const activity = `\n        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" />\n`;\n  manifest = manifest.replace("</application>", activity + "    </application>");\n}\n\nif (!manifest.includes("Entrega365QuickComandaWidget")) {
+if (!manifest.includes("QuickComandaActivity")) {\n  const activity = `\n        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" />\n`;\n  manifest = manifest.replace("</application>", activity + "    </application>");\n}
+
+if (!manifest.includes("Entrega365QuickComandaWidget")) {
   const receiver = `
         <receiver
             android:name=".Entrega365QuickComandaWidget"
