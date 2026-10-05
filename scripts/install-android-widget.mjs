@@ -33,7 +33,12 @@ await copyFile(path.join(root, "android-widget/widget_quick_comanda_info.xml"), 
 const manifestPath = path.join(app, "src/main/AndroidManifest.xml");
 let manifest = await readFile(manifestPath, "utf8");
 
-if (!manifest.includes("QuickComandaActivity")) {\n  const activity = `\n        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" />\n`;\n  manifest = manifest.replace("</application>", activity + "    </application>");\n}
+if (!manifest.includes("QuickComandaActivity")) {
+  const activity = `
+        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" />
+`;
+  manifest = manifest.replace("</application>", activity + "    </application>");
+}
 
 if (!manifest.includes("Entrega365QuickComandaWidget")) {
   const receiver = `
