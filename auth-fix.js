@@ -40,7 +40,7 @@ async function startNativeGoogleLogin(){
     } catch(firstError) {
       const message=String(firstError?.message||firstError||"");
       const code=String(firstError?.code||firstError?.errorCode||"");
-      const isReauth16=/\\[16\\]\\s*Account reauth failed/i.test(message)||code.includes("16")||code==="auth/credential-manager-error";
+      const isReauth16=/\[16\]\s*Account reauth failed/i.test(message)||code.includes("16")||code==="auth/credential-manager-error";
       if(!isReauth16)throw firstError;
       console.warn("Entrega365: Credential Manager reauth [16]; tentando Google Sign-In tradicional.",firstError);
       result=await plugin.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false});
