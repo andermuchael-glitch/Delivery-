@@ -403,6 +403,7 @@ const dataKey=(k)=>{
 const load=(k,f)=>{try{return JSON.parse(localStorage.getItem(dataKey(k)))??f}catch{return f}};
 const save=(k,v)=>{localStorage.setItem(dataKey(k),JSON.stringify(v));window.dispatchEvent(new Event("e365-data-changed"));window.entrega365DataSync?.markDirty?.();};
 let user=localStorage.getItem(K+"session"), view="day", day=today(), expDay=today(), month=new Date(), financeMonth=new Date(), loginMode="login", loginScreen="intro", showPass=false, openDeliveryId=null, introSlide=0;
+let quickLaunchBusy=false;
 window.__e365SetUser=v=>{user=v;};
 window.e365OpenPro=()=>{
   if(typeof window.e365Pro==="function"){ window.e365Pro(); return; }
@@ -1102,6 +1103,30 @@ function backup(){
 
 function logout(){if(typeof window.entrega365SignOut==="function"){window.entrega365SignOut();return}localStorage.removeItem(K+"session");location.reload()}
 
+async function consumeQuickLaunch(){
+  if(quickLaunchBusy || !user)return;
+  const plugin=window.Capacitor?.Plugins?.QuickLaunch;
+  if(!plugin?.getPendingAction)return;
+
+  quickLaunchBusy=true;
+  try{
+    const result=await plugin.getPendingAction();
+    if(result?.action==="new_comanda"){
+      view="day";
+      render();
+      setTimeout(()=>{
+        const add=document.querySelector("#add");
+        if(add)add.click();
+        quickLaunchBusy=false;
+      },180);
+      return;
+    }
+  }catch(e){
+    console.warn("QuickLaunch:",e);
+  }
+  quickLaunchBusy=false;
+}
+
 function render(){
   if(!user)return showLogin();
   let c=view==="day"?renderDay():view==="expenses"?renderExpenses():view==="mechanic"?renderMechanic():view==="finance"?renderFinance():renderMonth();
@@ -1111,6 +1136,7 @@ function render(){
   if(view==="mechanic")bindMechanic();
   if(view==="finance")bindFinance();
   applyI18n();
+  setTimeout(()=>consumeQuickLaunch(),80);
 }
 
 // Exposto explicitamente para o módulo de autenticação Firebase concluir o login.
