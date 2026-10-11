@@ -36,6 +36,17 @@ public class QuickLaunchPlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod public void consumePendingConfirmation(PluginCall call) {
+        SharedPreferences p = getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        boolean pending = p.getBoolean("confirmation_pending_sync", false);
+        String numero = p.getString("last_comanda_numero", "");
+        p.edit().putBoolean("confirmation_pending_sync", false).apply();
+        JSObject result = new JSObject();
+        result.put("pending", pending);
+        result.put("numero", numero);
+        call.resolve(result);
+    }
+
     @PluginMethod public void consumePendingComandas(PluginCall call) {
         SharedPreferences p = getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String pending = p.getString("pending_comandas", "[]");
