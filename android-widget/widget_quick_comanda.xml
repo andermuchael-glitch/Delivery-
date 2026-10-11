@@ -3,144 +3,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="10dp"
     android:background="#1B1B1B">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ENTREGA365 • HOJE"
+        android:textColor="#FFD21A"
+        android:textStyle="bold"
+        android:textSize="12sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Comandas"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/widget_comanda_counter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0/1 conferidas"
-            android:textColor="#BDBDBD"
-            android:textSize="13sp" />
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#444444" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:text="COMANDA"
-            android:textColor="#BDBDBD"
-            android:textStyle="bold"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="TAXA"
-            android:textColor="#BDBDBD"
-            android:textStyle="bold"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:text="OK"
-            android:textColor="#BDBDBD"
-            android:textStyle="bold"
-            android:textSize="12sp"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="28dp"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:background="#171717">
-
-        <TextView
-            android:id="@+id/widget_comanda_numero"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_weight="3"
-            android:gravity="center_vertical"
-            android:padding="10dp"
-            android:text="Nº"
-            android:textColor="#D0D0D0"
-            android:textSize="18sp"
-            android:background="#202020" />
-
-        <TextView
-            android:id="@+id/widget_comanda_taxa"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_weight="2"
-            android:layout_marginStart="7dp"
-            android:gravity="center_vertical"
-            android:padding="10dp"
-            android:text="Taxa R$"
-            android:textColor="#D0D0D0"
-            android:textSize="18sp"
-            android:background="#202020" />
-
-        <TextView
-            android:id="@+id/widget_comanda_check"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="7dp"
-            android:gravity="center"
-            android:text=""
-            android:textColor="#111111"
-            android:textStyle="bold"
-            android:textSize="22sp"
-            android:background="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/widget_comanda_delete"
-            android:layout_width="28dp"
-            android:layout_height="45dp"
-            android:gravity="center"
-            android:text="X"
-            android:textColor="#FF5252"
-            android:textStyle="bold"
-            android:textSize="24sp" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_today_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0 entregas hoje"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="15sp" />
+            <TextView
+                android:id="@+id/widget_today_earnings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="R$ 0,00"
+                android:textColor="#4CD964"
+                android:textStyle="bold"
+                android:textSize="19sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <TextView
-        android:id="@+id/widget_comanda_status"
+        android:id="@+id/widget_new_comanda"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="6dp"
-        android:text="Pendente"
-        android:textColor="#BDBDBD"
-        android:textSize="13sp" />
-
+        android:layout_height="42dp"
+        android:gravity="center"
+        android:text="+ NOVA COMANDA"
+        android:textColor="#171717"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:background="@drawable/widget_quick_comanda_bg" />
 </LinearLayout>
