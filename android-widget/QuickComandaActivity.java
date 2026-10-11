@@ -71,6 +71,8 @@ public class QuickComandaActivity extends Activity {
                 JSONObject item=new JSONObject();
                 item.put("numero",n); item.put("taxa",amount);
                 item.put("date",new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
+                item.put("ok", false);
+                prefs.edit().putString("last_comanda_numero", n).putBoolean("last_comanda_confirmed", false).apply();
                 queue.put(item);
                 int count=prefs.getInt("today_count_int",0)+1;
                 double total=(double)prefs.getFloat("today_earnings_value",0f)+amount;
