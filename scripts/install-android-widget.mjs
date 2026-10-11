@@ -36,7 +36,7 @@ let manifest = await readFile(manifestPath, "utf8");
 
 if (!manifest.includes("QuickComandaActivity")) {
   const activity = `
-        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" />
+        <activity android:name=".QuickComandaActivity" android:exported="false" android:theme="@android:style/Theme.Material.Dialog.NoActionBar" android:taskAffinity="br.com.entrega365.app.widget" android:excludeFromRecents="true" android:launchMode="singleTop" />
 `;
   manifest = manifest.replace("</application>", activity + "    </application>");
 }
