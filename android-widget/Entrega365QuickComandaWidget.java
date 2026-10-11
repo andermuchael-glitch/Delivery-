@@ -26,6 +26,14 @@ public class Entrega365QuickComandaWidget extends AppWidgetProvider {
         String count = p.getString("today_count", "0");
         String earnings = p.getString("today_earnings", "R$ 0,00");
         String lastNumber = p.getString("last_comanda_numero", "");
+        boolean confirmed = p.getBoolean("last_comanda_confirmed", false);
+        views.setTextViewText(R.id.widget_last_comanda, lastNumber.isEmpty() ? "Nenhuma comanda recente" : "Última comanda: " + lastNumber);
+        views.setTextViewText(R.id.widget_confirm_delivery, confirmed ? "✓ ENTREGA CONFIRMADA" : "☐ CONFIRMAR ENTREGA");
+        views.setTextColor(R.id.widget_confirm_delivery, confirmed ? 0xFF4CD964 : 0xFFFFFFFF);
+        Intent confirm = new Intent(context, Entrega365QuickComandaWidget.class);
+        confirm.setAction("br.com.entrega365.app.CONFIRM_LAST_COMANDA");
+        views.setOnClickPendingIntent(R.id.widget_confirm_delivery, PendingIntent.getBroadcast(context, REQUEST_CODE + 500 + id, confirm, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        String lastNumber = p.getString("last_comanda_numero", "");
         boolean lastConfirmed = p.getBoolean("last_comanda_confirmed", false);
         views.setTextViewText(R.id.widget_last_comanda, lastNumber.isEmpty() ? "Nenhuma comanda recente" : "Última: " + lastNumber);
         views.setTextViewText(R.id.widget_confirm_delivery, lastConfirmed ? "✓ ENTREGA CONFIRMADA" : "☐ CONFIRMAR ENTREGA");
