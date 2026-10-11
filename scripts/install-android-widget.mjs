@@ -24,7 +24,8 @@ await copyFile(path.join(root, "android-widget/QuickLaunchPlugin.java"), path.jo
 await copyFile(path.join(root, "android-widget/MainActivity.java"), path.join(javaDir, "MainActivity.java"));
 await copyFile(path.join(root, "android-widget/Entrega365QuickComandaWidget.java"), path.join(javaDir, "Entrega365QuickComandaWidget.java"));
 await copyFile(path.join(root, "android-widget/QuickComandaActivity.java"), path.join(javaDir, "QuickComandaActivity.java"));
-await copyFile(path.join(root, "android-widget/widget_quick_comanda.xml"), path.join(layoutDir, "widget_quick_comanda.xml"));\nawait copyFile(path.join(root, "android-widget/widget_quick_comanda_fallback.xml"), path.join(layoutDir, "widget_quick_comanda_fallback.xml"));
+await copyFile(path.join(root, "android-widget/widget_quick_comanda.xml"), path.join(layoutDir, "widget_quick_comanda.xml"));
+await copyFile(path.join(root, "android-widget/widget_quick_comanda_fallback.xml"), path.join(layoutDir, "widget_quick_comanda_fallback.xml"));
 await copyFile(path.join(root, "android-widget/widget_quick_comanda_bg.xml"), path.join(drawableDir, "widget_quick_comanda_bg.xml"));
 await copyFile(path.join(root, "android-widget/widget_quick_comanda_button.xml"), path.join(drawableDir, "widget_quick_comanda_button.xml"));
 await copyFile(path.join(root, "android-widget/widget_strings.xml"), path.join(valuesDir, "widget_strings.xml"));
