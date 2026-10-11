@@ -73,7 +73,7 @@ public class QuickComandaActivity extends Activity {
                 item.put("date",new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
                 queue.put(item);
                 int count=prefs.getInt("today_count_int",0)+1;
-                double total=prefs.getFloat("today_earnings_value",0f).doubleValue()+amount;
+                double total=(double)prefs.getFloat("today_earnings_value",0f)+amount;
                 NumberFormat money=NumberFormat.getCurrencyInstance(new Locale("pt","BR"));
                 prefs.edit().putString("pending_comandas",queue.toString())
                     .putInt("today_count_int",count)
