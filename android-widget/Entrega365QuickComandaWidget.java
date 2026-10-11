@@ -3,119 +3,45 @@ package br.com.entrega365.app;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 public class Entrega365QuickComandaWidget extends AppWidgetProvider {
-    private static final int REQUEST_CODE_BASE = 36510;
-    private static final String PREFS = "entrega365_quick_comanda";
+    static final String PREFS = "entrega365_quick_comanda";
+    static final String ACTION_NEW = "br.com.entrega365.app.NEW_QUICK_COMANDA";
+    static final int REQUEST_CODE = 36510;
 
-    @Override
-    public void onUpdate(Context context, AppWidgetManager manager, int[] appWidgetIds) {
-        for (int appWidgetId : appWidgetIds) {
-            updateWidget(context, manager, appWidgetId);
-        }
+    @Override public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
+        for (int id : ids) updateWidget(context, manager, id);
     }
 
-    @Override
-    public void onEnabled(Context context) {
-        super.onEnabled(context);
+    static void updateWidget(Context context, AppWidgetManager manager, int id) {
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda);
+        SharedPreferences p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String count = p.getString("today_count", "0");
+        String earnings = p.getString("today_earnings", "R$ 0,00");
+        views.setTextViewText(R.id.widget_today_count, count + " entregas hoje");
+        views.setTextViewText(R.id.widget_today_earnings, earnings);
+        Intent add = new Intent(context, QuickComandaActivity.class);
+        add.setAction(ACTION_NEW);
+        views.setOnClickPendingIntent(R.id.widget_new_comanda,
+            PendingIntent.getActivity(context, REQUEST_CODE + id, add,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        manager.updateAppWidget(id, views);
     }
 
-    static void updateWidget(Context context, AppWidgetManager manager, int appWidgetId) {
-        RemoteViews views;
-        try {
-            views = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda);
-        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-
-        String numero = prefs.getString("numero", "");
-        String taxa = prefs.getString("taxa", "");
-        boolean conferida = prefs.getBoolean("conferida", false);
-
-        views.setTextViewText(R.id.widget_comanda_numero, numero.isEmpty() ? "Nº" : numero);
-        views.setTextViewText(R.id.widget_comanda_taxa, taxa.isEmpty() ? "Taxa R$" : "R$ " + taxa);
-        views.setTextViewText(R.id.widget_comanda_status, conferida ? "Conferida" : "Pendente");
-        views.setTextViewText(R.id.widget_comanda_counter, conferida ? "1/1 conferidas" : "0/1 conferidas");
-        views.setTextViewText(R.id.widget_comanda_check, conferida ? "✓" : "");
-
-        Intent numeroIntent = new Intent(context, QuickComandaActivity.class);
-        numeroIntent.putExtra("field", "numero");
-        views.setOnClickPendingIntent(
-            R.id.widget_comanda_numero,
-            PendingIntent.getActivity(context, REQUEST_CODE_BASE + 1, numeroIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
-        );
-
-        Intent taxaIntent = new Intent(context, QuickComandaActivity.class);
-        taxaIntent.putExtra("field", "taxa");
-        views.setOnClickPendingIntent(
-            R.id.widget_comanda_taxa,
-            PendingIntent.getActivity(context, REQUEST_CODE_BASE + 2, taxaIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
-        );
-
-        Intent checkIntent = new Intent(context, Entrega365QuickComandaWidget.class);
-        checkIntent.setAction("br.com.entrega365.app.CHECK_COMANDA");
-        checkIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        views.setOnClickPendingIntent(
-            R.id.widget_comanda_check,
-            PendingIntent.getBroadcast(context, REQUEST_CODE_BASE + 3, checkIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
-        );
-
-        Intent deleteIntent = new Intent(context, Entrega365QuickComandaWidget.class);
-        deleteIntent.setAction("br.com.entrega365.app.DELETE_COMANDA");
-        deleteIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        views.setOnClickPendingIntent(
-            R.id.widget_comanda_delete,
-            PendingIntent.getBroadcast(context, REQUEST_CODE_BASE + 4, deleteIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
-        );
-
-            manager.updateAppWidget(appWidgetId, views);
-        } catch (RuntimeException error) {
-            android.util.Log.e("Entrega365Widget", "Falha ao atualizar layout completo; usando layout simples.", error);
-            RemoteViews fallback = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda_fallback);
-            fallback.setTextViewText(R.id.widget_fallback_title, "Entrega365 • Comandas");
-            fallback.setTextViewText(R.id.widget_fallback_status, "Widget carregado. Toque para abrir.");
-            Intent open = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-            if (open != null) {
-                open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                fallback.setOnClickPendingIntent(R.id.widget_fallback_title,
-                    PendingIntent.getActivity(context, REQUEST_CODE_BASE + 10, open,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-                fallback.setOnClickPendingIntent(R.id.widget_fallback_status,
-                    PendingIntent.getActivity(context, REQUEST_CODE_BASE + 11, open,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-            }
-            manager.updateAppWidget(appWidgetId, fallback);
-        }
+    static void refreshAll(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        int[] ids = manager.getAppWidgetIds(new ComponentName(context, Entrega365QuickComandaWidget.class));
+        for (int id : ids) updateWidget(context, manager, id);
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
+    @Override public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-
-        if (intent == null || intent.getAction() == null) return;
-
-        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-
-        if ("br.com.entrega365.app.CHECK_COMANDA".equals(intent.getAction())) {
-            boolean checked = prefs.getBoolean("conferida", false);
-            prefs.edit().putBoolean("conferida", !checked).apply();
-        } else if ("br.com.entrega365.app.DELETE_COMANDA".equals(intent.getAction())) {
-            prefs.edit().clear().apply();
-        }
-
-        if ("br.com.entrega365.app.CHECK_COMANDA".equals(intent.getAction())
-                || "br.com.entrega365.app.DELETE_COMANDA".equals(intent.getAction())) {
-            AppWidgetManager manager = AppWidgetManager.getInstance(context);
-            int[] ids = manager.getAppWidgetIds(
-                new android.content.ComponentName(context, Entrega365QuickComandaWidget.class)
-            );
-            for (int id : ids) updateWidget(context, manager, id);
-        }
     }
 }
