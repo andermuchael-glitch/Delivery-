@@ -1103,6 +1103,43 @@ function backup(){
 
 function logout(){if(typeof window.entrega365SignOut==="function"){window.entrega365SignOut();return}localStorage.removeItem(K+"session");location.reload()}
 
+async function syncQuickWidget(){
+  const plugin=window.Capacitor?.Plugins?.QuickLaunch;
+  if(!plugin)return;
+  try{
+    if(plugin.consumePendingComandas){
+      const result=await plugin.consumePendingComandas();
+      let items=[];
+      try{items=JSON.parse(result?.items||"[]")}catch(e){}
+      if(Array.isArray(items)&&items.length){
+        const grouped={};
+        items.forEach(item=>{
+          const key=/^\\d{4}-\\d{2}-\\d{2}$/.test(String(item.date||""))?String(item.date):today();
+          if(!grouped[key])grouped[key]=[];
+          grouped[key].push(item);
+        });
+        Object.entries(grouped).forEach(([key,list])=>{
+          const d=getDay(key);
+          if(!Array.isArray(d.entries))d.entries=[];
+          list.forEach(item=>d.entries.push({
+            id:(window.crypto?.randomUUID?crypto.randomUUID():"widget-"+Date.now()+"-"+Math.random().toString(16).slice(2)),
+            comanda:String(item.numero||""),
+            taxa:String(Number(item.taxa)||0),
+            ok:false,
+            source:"home-widget"
+          }));
+          saveDayAnd(key,d);
+        });
+        if(grouped[day])render();
+      }
+    }
+    if(plugin.syncDailySummary){
+      const d=getDay(today()),t=totals(d);
+      await plugin.syncDailySummary({count:t.ent,earnings:t.total});
+    }
+  }catch(e){console.warn("Entrega365 widget sync:",e)}
+}
+
 async function consumeQuickLaunch(){
   if(quickLaunchBusy || !user)return;
   const plugin=window.Capacitor?.Plugins?.QuickLaunch;
@@ -1136,7 +1173,7 @@ function render(){
   if(view==="mechanic")bindMechanic();
   if(view==="finance")bindFinance();
   applyI18n();
-  setTimeout(()=>consumeQuickLaunch(),80);
+  setTimeout(()=>{syncQuickWidget();consumeQuickLaunch()},80);
 }
 
 // Exposto explicitamente para o módulo de autenticação Firebase concluir o login.
