@@ -1133,6 +1133,14 @@ async function syncQuickWidget(){
         if(grouped[day])render();
       }
     }
+    if(plugin.consumePendingConfirmation){
+      const confirmation=await plugin.consumePendingConfirmation();
+      if(confirmation?.pending && confirmation.numero){
+        const key=today(), d=getDay(key);
+        const idx=[...(d.entries||[])].map((e,i)=>({e,i})).reverse().find(x=>String(x.e.comanda||x.e.numero||"")===String(confirmation.numero));
+        if(idx){d.entries[idx.i].ok=true;saveDayAnd(key,d);if(day===key)render();}
+      }
+    }
     if(plugin.syncDailySummary){
       const d=getDay(today()),t=totals(d);
       await plugin.syncDailySummary({count:t.ent,earnings:t.total});
