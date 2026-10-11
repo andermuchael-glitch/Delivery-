@@ -25,7 +25,9 @@ public class Entrega365QuickComandaWidget extends AppWidgetProvider {
     }
 
     static void updateWidget(Context context, AppWidgetManager manager, int appWidgetId) {
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda);
+        RemoteViews views;
+        try {
+            views = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda);
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
         String numero = prefs.getString("numero", "");
@@ -72,7 +74,24 @@ public class Entrega365QuickComandaWidget extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
         );
 
-        manager.updateAppWidget(appWidgetId, views);
+            manager.updateAppWidget(appWidgetId, views);
+        } catch (RuntimeException error) {
+            android.util.Log.e("Entrega365Widget", "Falha ao atualizar layout completo; usando layout simples.", error);
+            RemoteViews fallback = new RemoteViews(context.getPackageName(), R.layout.widget_quick_comanda_fallback);
+            fallback.setTextViewText(R.id.widget_fallback_title, "Entrega365 • Comandas");
+            fallback.setTextViewText(R.id.widget_fallback_status, "Widget carregado. Toque para abrir.");
+            Intent open = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            if (open != null) {
+                open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                fallback.setOnClickPendingIntent(R.id.widget_fallback_title,
+                    PendingIntent.getActivity(context, REQUEST_CODE_BASE + 10, open,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                fallback.setOnClickPendingIntent(R.id.widget_fallback_status,
+                    PendingIntent.getActivity(context, REQUEST_CODE_BASE + 11, open,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+            }
+            manager.updateAppWidget(appWidgetId, fallback);
+        }
     }
 
     @Override
