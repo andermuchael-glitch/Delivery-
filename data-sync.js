@@ -6,18 +6,20 @@
   window.__e365PostgresSyncLoaded=true;
   const SESSION_KEY='dcv2:session', META_KEY='entrega365:postgresSync';
   let timer=0,running=false,suppress=false,hooked=false,loginUid='';
-  const uid=()=>{const s=localStorage.getItem(SESSION_KEY)||'';return s.startsWith('google:')?s.slice(7):''};
+  const session=()=>localStorage.getItem(SESSION_KEY)||'';
+  const uid=()=>{const s=session();return s.startsWith('google:')?s.slice(7):''};
+  const userPrefix=()=> 'dcv2:'+session()+':';
   const allowed=k=>{const u=uid();if(!u||!k||k===SESSION_KEY)return false;
     if(k.startsWith('entrega365:drive')||k.startsWith('entrega365:cloudState')||k.startsWith('entrega365:syncBridge')||k.startsWith('entrega365:runtime')||k===META_KEY)return false;
-    return k.startsWith('dcv2:'+u+':')||k==='entrega365:establishments:'+u||k==='entrega365:currentEstablishment:'+u||['entrega365:locale','entrega365:location','entrega365:locationTracking','entrega365:agenda','entrega365:settings','e365month'].includes(k);
+    return k.startsWith(userPrefix())||k==='entrega365:establishments:'+session()||k==='entrega365:currentEstablishment:'+session()||['entrega365:locale','entrega365:location','entrega365:locationTracking','entrega365:agenda','entrega365:settings','e365month'].includes(k);
   };
   const meta=()=>{try{return JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{return {}}};
   const setMeta=x=>{try{localStorage.setItem(META_KEY,JSON.stringify({...meta(),...x}))}catch(e){console.warn('PostgreSQL sync state:',e)}};
   function snapshot(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(allowed(k))out[k]=localStorage.getItem(k)}return out}
-  const hasData=o=>Object.keys(o||{}).some(k=>k.startsWith('dcv2:'+uid()+':'));
+  const hasData=o=>Object.keys(o||{}).some(k=>k.startsWith(userPrefix()));
   async function token(){const u=window.e365GetCurrentUser?.();if(!u?.getIdToken)throw Error('auth_required');return u.getIdToken(false)}
   async function request(method='GET',body){const idToken=await token();const options={method,cache:'no-store',headers:{Authorization:'Bearer '+idToken,'Content-Type':'application/json'}};if(body)options.body=JSON.stringify(body);const res=await fetch('/api/data',options);const json=await res.json().catch(()=>({}));if(!res.ok){const e=Error(json.error||('http_'+res.status));e.status=res.status;e.payload=json;throw e}return json}
-  function markDirty(key,removed=false){if(suppress||!uid()||!allowed(key))return;const m=meta(),changes={...(m.changes||{})};changes[key]=removed?null:localStorage.getItem(key);setMeta({dirty:true,changes,changedAt:Date.now()});clearTimeout(timer);if(navigator.onLine)timer=setTimeout(()=>sync().catch(()=>{}),900)}
+  function markDirty(key,removed=false){if(suppress||!uid())return;const m=meta(),changes={...(m.changes||{})};if(!key){for(const[k,v]of Object.entries(snapshot()))changes[k]=v;}else{if(!allowed(key))return;changes[key]=removed?null:localStorage.getItem(key)}setMeta({dirty:true,changes,changedAt:Date.now()});clearTimeout(timer);if(navigator.onLine)timer=setTimeout(()=>sync().catch(()=>{}),900)}
   function installStorageHook(){if(hooked)return;hooked=true;const set=Storage.prototype.setItem,remove=Storage.prototype.removeItem,clear=Storage.prototype.clear;
     Storage.prototype.setItem=function(k,v){const old=this.getItem(k),out=set.call(this,k,v);if(this===localStorage&&old!==String(v))markDirty(String(k),false);return out};
     Storage.prototype.removeItem=function(k){const existed=this.getItem(k)!==null,out=remove.call(this,k);if(this===localStorage&&existed)markDirty(String(k),true);return out};
@@ -68,7 +70,7 @@
   }catch(e){console.warn('Entrega365 PostgreSQL sync:',e);setMeta({error:String(e?.message||e),lastAttemptAt:new Date().toISOString()});return false}
   finally{running=false}}
   async function onLogin(){const u=uid();if(!u)return false;loginUid=u;installStorageHook();if(!navigator.onLine)return false;await new Promise(r=>setTimeout(r,500));return sync()}
-  window.entrega365DataSync={sync,pull:sync,markDirty:()=>markDirty('dcv2:'+uid()+':sync-trigger',false),onLogin,status:()=>({...meta(),online:navigator.onLine,running,uid:loginUid})};
+  window.entrega365DataSync={sync,pull:sync,markDirty:()=>markDirty(),onLogin,status:()=>({...meta(),online:navigator.onLine,running,uid:loginUid})};
   installStorageHook();
   window.addEventListener('e365-data-changed',()=>{const u=uid();if(!u)return;clearTimeout(timer);if(navigator.onLine)timer=setTimeout(()=>sync().catch(()=>{}),900)});
   window.addEventListener('online',()=>setTimeout(()=>sync().catch(()=>{}),300));
