@@ -5,7 +5,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
-<link rel="manifest" href="manifest.json?v=148">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Entrega365">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="./logo-entrega365.jpg">
+<link rel="manifest" href="manifest.json?v=149">
 <link rel="icon" href="logo-moto.svg">
 <link rel="stylesheet" href="./mobile-layout-fix.css?v=153">
 <link rel="stylesheet" href="./desktop-layout.css?v=1">
@@ -1187,15 +1192,7 @@ function render(){
 // Exposto explicitamente para o módulo de autenticação Firebase concluir o login.
 window.render=render;
 
-if("serviceWorker" in navigator)window.addEventListener("load",()=>{(async()=>{try{
-  const regs=await navigator.serviceWorker.getRegistrations();
-  await Promise.all(regs.map(r=>r.unregister()));
-  if("caches" in window){
-    const keys=await caches.keys();
-    await Promise.all(keys.filter(k=>k.startsWith("entrega365-")).map(k=>caches.delete(k)));
-  }
-  localStorage.setItem("entrega365:runtime-v187",String(Date.now()));
-}catch(e){console.warn("Cache cleanup:",e)}})()});
+if("serviceWorker" in navigator)window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js?v=1",{scope:"./"}).catch(e=>console.warn("PWA Service Worker:",e));try{localStorage.setItem("entrega365:runtime-v188",String(Date.now()))}catch(e){}});
 document.getElementById("app").innerHTML='<div class="login"><div class="loginbox"><div class="card" style="text-align:center"><b>Carregando Entrega365…</b><div class="small" style="margin-top:8px">Verificando sua sessão.</div></div></div></div>';
 </script><script src="./establishments.js?v=164"></script>
 <script type="module" src="./auth-fix.js?v=177"></script>
