@@ -62,7 +62,16 @@
       }
     }
     if(Number(m.serverVersion||0)===serverVersion&&localHas){setMeta({updatedAt:server.updatedAt||null,lastSyncAt:new Date().toISOString(),error:''});return true}
-    // On login or when another device has newer data, PostgreSQL is authoritative.
+    // Recheck local edits immediately before applying the remote snapshot.
+    // A comanda may be launched while the PostgreSQL GET is still in flight.
+    const lateChanges=currentChanges();
+    if(Object.keys(lateChanges).length){
+      setMeta({serverVersion,dirty:true,error:'',changedAt:Date.now()});
+      clearTimeout(timer);
+      timer=setTimeout(()=>sync().catch(()=>{}),250);
+      return false;
+    }
+    // No local edits are pending, so it is safe to apply the latest PostgreSQL copy.
     applyMerged(server.data||{});
     setMeta({serverVersion,updatedAt:server.updatedAt||null,lastSyncAt:new Date().toISOString(),changes:{},dirty:false,changedAt:0,error:''});
     window.__e365SetUser?.('google:'+uid());window.dispatchEvent(new Event('e365-data-changed'));window.render?.();
