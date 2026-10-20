@@ -15,9 +15,9 @@
 Configure a variável de ambiente:
 
 - `NEON_DATABASE_URL` (ou `DATABASE_URL`) — conexão PostgreSQL já usada pelo backend.
-- `TRACKING_ADMIN_EMAILS` — lista de e-mails Google autorizados a visualizar o mapa, separados por vírgula. Exemplo: `gestor@empresa.com,entrega365.suporte@gmail.com`.
+- `TRACKING_ADMIN_EMAILS` — lista de e-mails Google autorizados a visualizar o mapa, separados por vírgula. Exemplo: `andermuchael@gmail.com`.
 
-O valor padrão, se `TRACKING_ADMIN_EMAILS` não for definido, é `entrega365.suporte@gmail.com`. O administrador deve entrar no Entrega365 com um dos e-mails autorizados.
+O valor padrão, se `TRACKING_ADMIN_EMAILS` não for definido, é `andermuchael@gmail.com`. O administrador deve entrar no Entrega365 com um dos e-mails autorizados.
 
 As tabelas de rastreamento são criadas automaticamente pela API. Não é necessário apagar ou migrar as tabelas existentes de comandas.
 
