@@ -1,5 +1,5 @@
-import { getDb } from './db.js';
-import { tenantAuth, ensureTenantSchema, getEstablishmentForOwner, isSupport, methodNotAllowed } from './tracking-tenant-common.js';
+import { getDb } from '../lib/db.js';
+import { tenantAuth, ensureTenantSchema, getEstablishmentForOwner, isSupport, methodNotAllowed } from '../lib/tracking-tenant-common.js';
 
 const json = (res,code,body) => res.status(code).json(body);
 const idValue = () => globalThis.crypto?.randomUUID?.() || ('e365-'+Date.now()+'-'+Math.random().toString(36).slice(2,10));
