@@ -3,12 +3,15 @@ import { tenantAuth, ensureTenantSchema, methodNotAllowed } from './tracking-ten
 
 export default async function handler(req,res) {
   res.setHeader('Cache-Control','no-store');
-  const user=await tenantAuth(req,res); if(!user)return;
+  const user=await tenantAuth(req,res);if(!user)return;
   if(req.method!=='POST')return methodNotAllowed(res);
   try {
-    const sql=getDb(); await ensureTenantSchema(sql);
-    const rows=await sql`UPDATE e365_tracking_members SET courier_uid=${user.uid},status='accepted',accepted_at=NOW(),display_name=${String(req.body?.displayName||user.displayName||'Motoboy').trim().slice(0,100)} WHERE courier_email=${user.email} AND status='invited' RETURNING establishment_id,courier_email,display_name,status,accepted_at`;
-    return res.status(200).json({ok:true,memberships:rows,message:rows.length?'Vínculo confirmado.':'Não há convite pendente para este e-mail Google.'});
+    const sql=getDb();await ensureTenantSchema(sql);
+    const rows=await sql`UPDATE e365_tracking_members SET courier_uid=${user.uid},status='accepted',accepted_at=NOW(),display_name=${String(req.body?.displayName||user.displayName||'Motoboy').trim().slice(0,100)}
+      WHERE establishment_id=(SELECT establishment_id FROM e365_tracking_members WHERE courier_email=${user.email} AND status='invited' ORDER BY created_at ASC LIMIT 1)
+      AND courier_email=${user.email} AND status='invited'
+      RETURNING establishment_id,courier_email,display_name,status,accepted_at`;
+    return res.status(200).json({ok:true,memberships:rows,message:rows.length?'Vínculo confirmado. Você já pode consultar as rotas e iniciar o expediente.':'Não há convite pendente para este e-mail Google.'});
   } catch(error) {
     console.error('tracking courier accept:',error);
     return res.status(500).json({ok:false,error:'database_error'});
