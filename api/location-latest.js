@@ -1,5 +1,5 @@
-import { getDb } from './db.js';
-import { authenticated, ensureLocationSchema, isTrackingAdmin, methodNotAllowed } from './location-common.js';
+import { getDb } from '../lib/db.js';
+import { authenticated, ensureLocationSchema, isTrackingAdmin, methodNotAllowed } from '../lib/location-common.js';
 
 export default async function handler(req,res) {
   res.setHeader('Cache-Control','no-store');
