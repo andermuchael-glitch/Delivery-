@@ -1,5 +1,5 @@
-import { getDb } from './db.js';
-import { requireFirebaseUser, unauthorized } from './auth.js';
+import { getDb } from '../lib/db.js';
+import { requireFirebaseUser, unauthorized } from '../lib/auth.js';
 
 async function ensureSchema(sql) {
   await sql`CREATE TABLE IF NOT EXISTS entrega365_user_data (

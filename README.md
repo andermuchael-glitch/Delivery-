@@ -45,6 +45,10 @@ A migração:
 - mantém os usuários antigos utilizáveis através do hash legado;
 - não sobrescreve dados novos que já existam.
 
+## Rastreamento GPS de motoboys
+
+O módulo em desenvolvimento está documentado em [RASTREAMENTO-GPS.md](./RASTREAMENTO-GPS.md). Ele usa o backend PostgreSQL/Neon, Firebase Authentication e um serviço Android de localização em primeiro plano. Configure `TRACKING_ADMIN_EMAILS` na Vercel antes de liberar o painel administrativo.
+
 ## PWA
 
 O Service Worker usa uma versão de cache própria e injeta os módulos complementares, incluindo a camada PRO, após o shell principal.

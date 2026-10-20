@@ -32,11 +32,38 @@ module.exports = async (req, res) => {
   }
 
   const payload = req.body || {};
+  const eventType = String(payload.type || req.query.topic || req.query.type || '').toLowerCase();
+  const isPreapproval = ['subscription_preapproval','preapproval'].includes(eventType) || String(payload.action || '').toLowerCase().includes('preapproval');
+  let trackingUpdated = false;
+  if (isPreapproval && dataId && process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    try {
+      const response = await fetch('https://api.mercadopago.com/preapproval/' + encodeURIComponent(dataId), {
+        headers: { Authorization: 'Bearer ' + process.env.MERCADOPAGO_ACCESS_TOKEN }
+      });
+      const subscription = await response.json().catch(() => ({}));
+      if (response.ok && subscription.id && subscription.external_reference) {
+        const { getDb } = await import('../lib/db.js');
+        const { ensureTenantSchema } = await import('../lib/tracking-tenant-common.js');
+        const sql = getDb();
+        await ensureTenantSchema(sql);
+        const status = subscription.status === 'authorized'
+          ? 'authorized'
+          : (['paused','cancelled','cancelled_by_user','rejected'].includes(subscription.status) ? 'inactive' : 'pending');
+        const updated = await sql`UPDATE e365_tracking_establishments SET subscription_status=${status},subscription_updated_at=NOW(),updated_at=NOW() WHERE id=${String(subscription.external_reference)} AND mp_preapproval_id=${String(subscription.id)} RETURNING id`;
+        trackingUpdated = updated.length > 0;
+      }
+    } catch (error) {
+      console.error('Entrega365 tracking subscription webhook:', error);
+      return res.status(500).json({ received: false });
+    }
+  }
+
   console.log('Mercado Pago webhook received', {
-    type: payload.type || null,
+    type: eventType || null,
     action: payload.action || null,
     data_id: payload.data?.id || req.query['data.id'] || null,
     live_mode: payload.live_mode ?? null,
+    tracking_subscription_updated: trackingUpdated,
     source_news: req.query.source_news || null
   });
 
