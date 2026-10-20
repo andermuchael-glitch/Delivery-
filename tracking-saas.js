@@ -117,7 +117,18 @@
     const wrapped=function(...args){original.apply(this,args);const grid=$('.moregrid');if(grid&&!$('#e365-open-saas',grid)){const b=document.createElement('button');b.className='moreitem';b.id='e365-open-saas';b.innerHTML='<b>🏪</b><span>Gestão do Rastreamento</span><small>Estabelecimento, equipe e rotas</small>';b.onclick=()=>{$('.moremodal')?.remove();open();};grid.appendChild(b);}};
     wrapped.__e365SaasPatched=true;window.openMore=wrapped;
   }
-  patchMenu();new MutationObserver(patchMenu).observe(document.documentElement,{childList:true,subtree:true});
+  patchMenu();
+  function patchLandingPromo(){
+    const login=document.querySelector('.login-intro');
+    if(!login||document.getElementById('e365-tracking-promo'))return;
+    const promo=document.createElement('a');promo.id='e365-tracking-promo';promo.href='./rastreamento.html';
+    promo.innerHTML='<span style="font-size:22px">📍</span><span><b>Rastreamento de motoboys</b><small style="display:block;color:#b5c2d4;font-size:12px">Mapa ao vivo, rotas e equipe ilimitada · R$ 19,90/mês</small></span><strong style="margin-left:auto">Conhecer →</strong>';
+    promo.style.cssText='display:flex;align-items:center;gap:12px;max-width:470px;margin:10px auto 18px;padding:13px 15px;border:1px solid #3b4c62;border-radius:14px;background:linear-gradient(110deg,#172b43,#101827);color:#fff;text-decoration:none;box-shadow:0 10px 30px #0003';
+    const box=login.querySelector('.introbox');
+    if(box)box.appendChild(promo);else login.appendChild(promo);
+  }
+  new MutationObserver(()=>{patchMenu();patchLandingPromo();}).observe(document.documentElement,{childList:true,subtree:true});
+  patchLandingPromo();
   const params=new URLSearchParams(location.search);
   if(params.get('tracking')==='signup') {
     const tryOpen=()=>{if(window.e365GetCurrentUser?.()||window.entrega365Auth?.auth?.currentUser){open();return true;}return false;};
