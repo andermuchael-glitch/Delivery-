@@ -2,11 +2,11 @@
 (() => {
   'use strict';
   const API = {
-    establishment: './api/tracking-establishment',
-    couriers: './api/tracking-couriers',
-    accept: './api/tracking-courier-accept',
-    checkout: './api/tracking-checkout',
-    routes: './api/tracking-routes'
+    establishment: './api/tracking-saas?action=establishment',
+    couriers: './api/tracking-saas?action=couriers',
+    accept: './api/tracking-saas?action=accept',
+    checkout: './api/tracking-saas?action=checkout',
+    routes: './api/tracking-saas?action=routes'
   };
   const $ = (s,root=document) => root.querySelector(s);
   const esc = v => String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
