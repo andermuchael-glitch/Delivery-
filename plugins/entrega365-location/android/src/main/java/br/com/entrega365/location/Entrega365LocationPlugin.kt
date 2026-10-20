@@ -2,17 +2,15 @@ package br.com.entrega365.location
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import com.getcapacitor.JSObject
-import com.getcapacitor.PermissionCallback
 import com.getcapacitor.PermissionState
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
 import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
-import com.getcapacitor.annotation.PermissionCallback as CapacitorPermissionCallback
+import com.getcapacitor.annotation.PermissionCallback
 
 @CapacitorPlugin(
     name = "Entrega365Location",
@@ -33,7 +31,7 @@ class Entrega365LocationPlugin : Plugin() {
         startService(call)
     }
 
-    @CapacitorPermissionCallback
+    @PermissionCallback
     private fun startTrackingPermissionResult(call: PluginCall) {
         if (getPermissionState("location") != PermissionState.GRANTED) {
             call.reject("Permita o acesso à localização para iniciar o rastreamento.")
@@ -59,7 +57,6 @@ class Entrega365LocationPlugin : Plugin() {
             putExtra("refreshToken", refreshToken)
             putExtra("apiKey", apiKey)
             putExtra("displayName", displayName)
-            putExtra("email", bridge.getSavedCall(call.callbackId)?.getString("email") ?: "")
         }
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
