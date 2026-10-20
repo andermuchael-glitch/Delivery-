@@ -54,7 +54,7 @@ O módulo comercial funciona como SaaS: cada conta Google pode criar um estabele
 - Preço definido: R$ 19,90 por mês por estabelecimento, motoboys ilimitados.
 - Página de apresentação: `/rastreamento.html`; o login principal também exibe um convite para conhecer o serviço.
 - Interface de gestão: **Mais → Gestão do Rastreamento**.
-- APIs: `/api/tracking-establishment`, `/api/tracking-couriers`, `/api/tracking-courier-accept`, `/api/tracking-checkout`, `/api/tracking-billing-webhook` e `/api/tracking-routes`.
+- APIs: `/api/tracking-saas?action=establishment`, `/api/tracking-saas?action=couriers`, `/api/tracking-saas?action=accept`, `/api/tracking-saas?action=checkout`, `/api/tracking-saas?action=billing-webhook` e `/api/tracking-saas?action=routes`.
 - Rotas: o estabelecimento escolhe um motoboy vinculado, informa endereço e pode incluir latitude/longitude. O entregador consulta as rotas recebidas e abre o Google Maps para navegar. Notificação push direta ao motoboy ainda não está incluída.
 - Pagamento: checkout de assinatura recorrente do Mercado Pago via endpoint Preapproval. O webhook consulta o estado diretamente na API do Mercado Pago e só atualiza a assinatura quando o ID e a referência do estabelecimento correspondem.
 
@@ -65,7 +65,7 @@ O módulo comercial funciona como SaaS: cada conta Google pode criar um estabele
 - `NEON_DATABASE_URL` ou `DATABASE_URL`: banco PostgreSQL.
 - `TRACKING_ADMIN_EMAILS`: e-mails de suporte global, separados por vírgula.
 
-Configure no painel do Mercado Pago as notificações de assinatura/preapproval para `https://entrega365.com.br/api/tracking-billing-webhook`. Teste primeiro em ambiente de teste do Mercado Pago. A variável `MERCADOPAGO_WEBHOOK_SECRET` deve permanecer secreta; o webhook atual confirma o estado consultando a API autenticada do Mercado Pago antes de alterar o plano.
+Configure no painel do Mercado Pago as notificações de assinatura/preapproval para `https://entrega365.com.br/api/tracking-saas?action=billing-webhook`. Teste primeiro em ambiente de teste do Mercado Pago. A variável `MERCADOPAGO_WEBHOOK_SECRET` deve permanecer secreta; o webhook atual confirma o estado consultando a API autenticada do Mercado Pago antes de alterar o plano.
 
 ### Pendências antes de produção
 
