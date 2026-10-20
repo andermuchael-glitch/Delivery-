@@ -45,3 +45,32 @@ No Android, o motoboy deve conceder a permissão de localização solicitada pel
 6. Restaurar a internet e confirmar reconexão.
 7. Encerrar expediente e confirmar que novas posições deixam de ser recebidas.
 8. Verificar Android 13+ e 14+ com permissões de notificação/localização e otimização de bateria.
+
+
+## Plano comercial multiestabelecimento
+
+O módulo comercial funciona como SaaS: cada conta Google pode criar um estabelecimento, cadastrar motoboys ilimitados pelo e-mail Google e administrar somente sua equipe. O motoboy precisa aceitar o convite usando exatamente o e-mail cadastrado. O acesso ao GPS, às rotas e ao painel depende da assinatura autorizada.
+
+- Preço definido: R$ 19,90 por mês por estabelecimento, motoboys ilimitados.
+- Página de apresentação: `/rastreamento.html`; o login principal também exibe um convite para conhecer o serviço.
+- Interface de gestão: **Mais → Gestão do Rastreamento**.
+- APIs: `/api/tracking-establishment`, `/api/tracking-couriers`, `/api/tracking-courier-accept`, `/api/tracking-checkout`, `/api/tracking-billing-webhook` e `/api/tracking-routes`.
+- Rotas: o estabelecimento escolhe um motoboy vinculado, informa endereço e pode incluir latitude/longitude. O entregador consulta as rotas recebidas e abre o Google Maps para navegar. Notificação push direta ao motoboy ainda não está incluída.
+- Pagamento: checkout de assinatura recorrente do Mercado Pago via endpoint Preapproval. O webhook consulta o estado diretamente na API do Mercado Pago e só atualiza a assinatura quando o ID e a referência do estabelecimento correspondem.
+
+### Variáveis de produção
+
+- `MERCADOPAGO_ACCESS_TOKEN`: token privado de produção do Mercado Pago.
+- `TRACKING_SUBSCRIPTION_BACK_URL`: URL pública de retorno depois do checkout, por exemplo `https://entrega365.com.br/rastreamento.html`.
+- `NEON_DATABASE_URL` ou `DATABASE_URL`: banco PostgreSQL.
+- `TRACKING_ADMIN_EMAILS`: e-mails de suporte global, separados por vírgula.
+
+Configure no painel do Mercado Pago as notificações de assinatura/preapproval para `https://entrega365.com.br/api/tracking-billing-webhook`. Teste primeiro em ambiente de teste do Mercado Pago. A variável `MERCADOPAGO_WEBHOOK_SECRET` deve permanecer secreta; o webhook atual confirma o estado consultando a API autenticada do Mercado Pago antes de alterar o plano.
+
+### Pendências antes de produção
+
+1. Configurar e confirmar o token e as notificações de produção do Mercado Pago.
+2. Confirmar que a conexão PostgreSQL está disponível para o ambiente de produção e para o branch de preview.
+3. Validar a compilação Android e o GPS com a tela apagada em aparelhos reais.
+4. Fazer testes de isolamento com dois estabelecimentos, incluindo tentativas de acesso cruzado.
+5. Definir retenção de coordenadas e revisar o aviso de privacidade conforme a LGPD.
