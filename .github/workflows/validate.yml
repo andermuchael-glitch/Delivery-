@@ -26,6 +26,7 @@ jobs:
           node --check .tmp-app.js
           rm -f .tmp-app.js
           node --check tracking.js
+          node --check tracking-saas.js
           for f in api/*.js; do node --check "$f"; done
       - name: Validate service worker
         run: node --check sw.js
