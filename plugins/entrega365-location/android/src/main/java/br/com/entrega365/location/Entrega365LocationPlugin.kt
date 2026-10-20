@@ -61,7 +61,9 @@ class Entrega365LocationPlugin : Plugin() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
             else context.startService(intent)
-            val result = JSObject()\n            result.put("started", true)\n            call.resolve(result)
+            val result = JSObject()
+            result.put("started", true)
+            call.resolve(result)
         } catch (error: Exception) {
             call.reject("Não foi possível iniciar o serviço GPS: " + error.message, error)
         }
@@ -70,12 +72,16 @@ class Entrega365LocationPlugin : Plugin() {
     @PluginMethod
     fun stopTracking(call: PluginCall) {
         context.stopService(Intent(context, LocationForegroundService::class.java))
-        val result = JSObject()\n        result.put("stopped", true)\n        call.resolve(result)
+        val result = JSObject()
+        result.put("stopped", true)
+        call.resolve(result)
     }
 
     @PluginMethod
     fun isTracking(call: PluginCall) {
         val prefs = context.getSharedPreferences(LocationForegroundService.PREFS, 0)
-        val result = JSObject()\n        result.put("active", prefs.getBoolean("active", false))\n        call.resolve(result)
+        val result = JSObject()
+        result.put("active", prefs.getBoolean("active", false))
+        call.resolve(result)
     }
 }
