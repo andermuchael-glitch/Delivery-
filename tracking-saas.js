@@ -56,7 +56,7 @@
       const data=await request(API.establishment);
       establishment=data.establishment;
       const me=window.e365GetCurrentUser?.()||window.entrega365Auth?.auth?.currentUser;
-      const isCourier=!establishment && !data.isSupport;
+      const isCourier=!establishment && !data.isSupport && (data.memberships||[]).length>0;
       if(isCourier) {
         $('#e365-saas-body').innerHTML='<div class="e365-saas-card"><h3>Convite de motoboy</h3><p>Se um estabelecimento cadastrou este e-mail Google, você pode confirmar o vínculo e autorizar a localização apenas durante o expediente.</p><button class="e365-saas-btn primary" id="e365-saas-accept">Verificar e aceitar convite</button> <button class="e365-saas-btn" id="e365-saas-inbox">Ver rotas recebidas</button><div id="e365-saas-msg" class="e365-saas-muted"></div><div id="e365-saas-inbox-list" class="e365-saas-list" style="margin-top:12px"></div></div>';
         $('#e365-saas-accept').onclick=async()=>{try{const r=await request(API.accept,{method:'POST',body:JSON.stringify({displayName:me?.displayName||''})});$('#e365-saas-msg').textContent=r.message||'Concluído.';}catch(e){$('#e365-saas-msg').textContent=e.message;}};
