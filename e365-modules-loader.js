@@ -15,6 +15,7 @@
       await loadScript('layout-reorg.js','text/javascript');
       await loadScript('plus-buttons-fix.js','text/javascript');
       await loadScript('more-menu-fix.js','text/javascript');
+      await loadScript('tracking.js?v=1','text/javascript');
       await loadScript('secondary-backup-loader.js','module');
     }catch(e){console.warn('Entrega365 módulos complementares:',e);}
   };
