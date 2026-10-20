@@ -2,7 +2,7 @@ name: Build Entrega365 APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/rastreamento-motoboys]
     paths:
       - "package.json"
       - "capacitor.config.json"
@@ -15,7 +15,7 @@ on:
       - "*.svg"
       - ".github/workflows/build-apk.yml"
       - "android/**"
-      - "android-widget/**"
+      - "android-widget/**"\n      - "plugins/**"
   workflow_dispatch:
 
 permissions:
