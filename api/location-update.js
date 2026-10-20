@@ -1,5 +1,5 @@
-import { getDb } from './db.js';
-import { authenticated, ensureLocationSchema, methodNotAllowed } from './location-common.js';
+import { getDb } from '../lib/db.js';
+import { authenticated, ensureLocationSchema, methodNotAllowed } from '../lib/location-common.js';
 function finiteNumber(value) {
   if(value===null||value===undefined||value==='')return null;
   const n=Number(value);return Number.isFinite(n)?n:null;
