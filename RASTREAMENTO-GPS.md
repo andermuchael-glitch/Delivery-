@@ -65,7 +65,7 @@ O módulo comercial funciona como SaaS: cada conta Google pode criar um estabele
 - `NEON_DATABASE_URL` ou `DATABASE_URL`: banco PostgreSQL.
 - `TRACKING_ADMIN_EMAILS`: e-mails de suporte global, separados por vírgula.
 
-Configure no painel do Mercado Pago as notificações de assinatura/preapproval para `https://entrega365.com.br/api/tracking-saas?action=billing-webhook`. Teste primeiro em ambiente de teste do Mercado Pago. A variável `MERCADOPAGO_WEBHOOK_SECRET` deve permanecer secreta; o webhook atual confirma o estado consultando a API autenticada do Mercado Pago antes de alterar o plano.
+Configure no painel do Mercado Pago as notificações de assinatura/preapproval para `https://entrega365.com.br/api/mp-webhook`. O endpoint existente foi estendido para reconhecer eventos de assinatura de rastreamento e consultar a assinatura pela API autenticada antes de liberar o acesso. Teste primeiro em ambiente de teste do Mercado Pago. A variável `MERCADOPAGO_WEBHOOK_SECRET` deve permanecer secreta; o webhook atual confirma o estado consultando a API autenticada do Mercado Pago antes de alterar o plano.
 
 ### Pendências antes de produção
 
