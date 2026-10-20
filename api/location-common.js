@@ -1,7 +1,7 @@
 import { getDb } from './db.js';
 import { requireFirebaseUser, unauthorized } from './auth.js';
 
-export const TRACKING_ADMIN_DEFAULT = 'entrega365.suporte@gmail.com';
+export const TRACKING_ADMIN_DEFAULT = 'andermuchael@gmail.com';
 
 export function trackingAdmins() {
   return (process.env.TRACKING_ADMIN_EMAILS || TRACKING_ADMIN_DEFAULT)
