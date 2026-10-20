@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         latitude,longitude,accuracy,speed,heading,
         CASE
           WHEN active=FALSE THEN 'offline'
-          WHEN last_seen IS NULL OR last_seen < NOW() - INTERVAL '90 seconds' THEN 'stale'
+          WHEN latitude IS NULL OR longitude IS NULL OR last_seen IS NULL OR last_seen < NOW() - INTERVAL '90 seconds' THEN 'stale'
           ELSE 'online'
         END AS connection_status
       FROM entrega365_courier_status
