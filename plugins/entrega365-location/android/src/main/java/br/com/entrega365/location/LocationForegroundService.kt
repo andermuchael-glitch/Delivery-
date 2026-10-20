@@ -46,16 +46,35 @@ class LocationForegroundService : Service(), LocationListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action != ACTION_START) {
+        if (intent?.action == ACTION_START) {
+            endpoint = intent.getStringExtra("endpoint") ?: ""
+            idToken = intent.getStringExtra("idToken") ?: ""
+            refreshToken = intent.getStringExtra("refreshToken") ?: ""
+            apiKey = intent.getStringExtra("apiKey") ?: ""
+            displayName = intent.getStringExtra("displayName") ?: "Motoboy"
+            prefs.edit()
+                .putBoolean("active", true)
+                .putString("endpoint", endpoint)
+                .putString("idToken", idToken)
+                .putString("refreshToken", refreshToken)
+                .putString("apiKey", apiKey)
+                .putString("displayName", displayName)
+                .apply()
+        } else {
+            if (!prefs.getBoolean("active", false)) {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            endpoint = prefs.getString("endpoint", "") ?: ""
+            idToken = prefs.getString("idToken", "") ?: ""
+            refreshToken = prefs.getString("refreshToken", "") ?: ""
+            apiKey = prefs.getString("apiKey", "") ?: ""
+            displayName = prefs.getString("displayName", "Motoboy") ?: "Motoboy"
+        }
+        if (endpoint.isBlank() || idToken.isBlank()) {
             stopSelf()
             return START_NOT_STICKY
         }
-        endpoint = intent.getStringExtra("endpoint") ?: ""
-        idToken = intent.getStringExtra("idToken") ?: ""
-        refreshToken = intent.getStringExtra("refreshToken") ?: ""
-        apiKey = intent.getStringExtra("apiKey") ?: ""
-        displayName = intent.getStringExtra("displayName") ?: "Motoboy"
-        prefs.edit().putBoolean("active", true).apply()
 
         startForeground(NOTIFICATION_ID, buildNotification("Compartilhando GPS durante o expediente"))
         try {
@@ -139,7 +158,7 @@ class LocationForegroundService : Service(), LocationListener {
             val json = JSONObject(response)
             idToken = json.optString("id_token", idToken)
             refreshToken = json.optString("refresh_token", refreshToken)
-            prefs.edit().putString("idToken", idToken).putString("refreshToken", refreshToken).apply()
+             prefs.edit().putString("idToken", idToken).putString("refreshToken", refreshToken).apply()
             true
         } catch (error: Exception) {
             Log.w(TAG, "Não foi possível renovar o token Firebase", error)
