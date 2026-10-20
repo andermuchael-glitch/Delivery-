@@ -14,7 +14,7 @@ export function isTrackingAdmin(user) {
   return trackingAdmins().includes(String(user?.email || '').toLowerCase());
 }
 
-export async function ensureLocationSchema(sql) {
+async function createLocationSchema(sql) {
   await sql`CREATE TABLE IF NOT EXISTS entrega365_courier_status (
     uid TEXT PRIMARY KEY,
     email TEXT NOT NULL DEFAULT '',
@@ -45,6 +45,17 @@ export async function ensureLocationSchema(sql) {
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`;
   await sql`CREATE INDEX IF NOT EXISTS entrega365_location_points_uid_time_idx ON entrega365_location_points(uid,recorded_at DESC)`;
+}
+
+let locationSchemaPromise = null;
+export function ensureLocationSchema(sql) {
+  if (!locationSchemaPromise) {
+    locationSchemaPromise = createLocationSchema(sql).catch(error => {
+      locationSchemaPromise = null;
+      throw error;
+    });
+  }
+  return locationSchemaPromise;
 }
 
 export async function authenticated(req, res) {
