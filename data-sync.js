@@ -34,9 +34,16 @@
     const m=meta(),changes=currentChanges(),local=snapshot(),localHas=hasData(local);
     let server=await request('GET');
     if(!server.exists||!server.data||!Object.keys(server.data).length){
-      if(!localHas)return false;
-      const result=await request('POST',{data:local,version:Number(server.version||0),force:false});
-      setMeta({serverVersion:Number(result.version||0),updatedAt:result.updatedAt||null,lastSyncAt:new Date().toISOString(),changes:{},dirty:false,changedAt:0,error:''});return true;
+      // The first PostgreSQL response may arrive while a new comanda/taxa is being entered.
+      // Rebuild the payload immediately before POST and keep any edits made while POST is in flight.
+      const latestLocal=snapshot(),latestChanges=currentChanges();
+      const firstPayload=mergeRemote(latestLocal,latestChanges);
+      if(!hasData(firstPayload))return false;
+      const sentChanges={...latestChanges},localSent={...firstPayload};
+      const result=await request('POST',{data:firstPayload,version:Number(server.version||0),force:false});
+      clearSyncedChanges(sentChanges,localSent);
+      setMeta({serverVersion:Number(result.version||0),updatedAt:result.updatedAt||null,lastSyncAt:new Date().toISOString(),error:''});
+      return true;
     }
     const serverVersion=Number(server.version||0);
     if(Object.keys(changes).length){
@@ -77,7 +84,14 @@
     window.__e365SetUser?.('google:'+uid());window.dispatchEvent(new Event('e365-data-changed'));window.render?.();
     return true;
   }catch(e){console.warn('Entrega365 PostgreSQL sync:',e);setMeta({error:String(e?.message||e),lastAttemptAt:new Date().toISOString()});return false}
-  finally{running=false}}
+  finally{
+    running=false;
+    // If a write happened while this sync was busy, guarantee a follow-up attempt.
+    if(navigator.onLine&&uid()&&Object.keys(currentChanges()).length){
+      clearTimeout(timer);
+      timer=setTimeout(()=>sync().catch(()=>{}),250);
+    }
+  }}
   async function onLogin(){const u=uid();if(!u)return false;loginUid=u;installStorageHook();if(!navigator.onLine)return false;await new Promise(r=>setTimeout(r,500));return sync()}
   window.entrega365DataSync={sync,pull:sync,markDirty:()=>markDirty(),onLogin,status:()=>({...meta(),online:navigator.onLine,running,uid:loginUid})};
   installStorageHook();
