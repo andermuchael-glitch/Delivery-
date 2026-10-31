@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "686578751112-dqo1uktduu5pjhkooki887luj8iev0f3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.entrega365.app",
+            "certificate_hash": "8c1a6644792519af2531ae8582de008930e3a06f"
+          }
+        },
+        {
+          "client_id": "686578751112-jimtsm0emdeq7b5eevm1gu1ao6tlqv8r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.entrega365.app",
+            "certificate_hash": "efe01720465328c7b8ba3be50739fbf610051be0"
+          }
+        },
+        {
           "client_id": "686578751112-k0gtlun6m6ps558skkhdpfebsq5oel12.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
