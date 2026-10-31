@@ -69,22 +69,30 @@ jobs:
           const data = JSON.parse(fs.readFileSync(p, 'utf8'));
           const client = data.client?.find(c => c.client_info?.android_client_info?.package_name === 'br.com.entrega365.app');
           if (!client) throw new Error('Cliente Android br.com.entrega365.app não encontrado no google-services.json');
-          client.oauth_client = client.oauth_client || [];
-          const newId = '686578751112-jimtsm0emdeq7b5eevm1gu1ao6tlqv8r.apps.googleusercontent.com';
-          const newSha = 'efe01720465328c7b8ba3be50739fbf610051be0';
-          const exists = client.oauth_client.some(o => o.client_id === newId);
+          client.oauth_client = (client.oauth_client || []).filter(o =>
+            o.client_id !== '686578751112-jimtsm0emdeq7b5eevm1gu1ao6tlqv8r.apps.googleusercontent.com'
+          );
+          const expectedId = '686578751112-dqo1uktduu5pjhkooki887luj8iev0f3.apps.googleusercontent.com';
+          const expectedSha = '8c1a6644792519af2531ae8582de008930e3a06f';
+          const exists = client.oauth_client.some(o => o.client_id === expectedId);
           if (!exists) {
             client.oauth_client.unshift({
-              client_id: newId,
+              client_id: expectedId,
               client_type: 1,
               android_info: {
                 package_name: 'br.com.entrega365.app',
-                certificate_hash: newSha
+                certificate_hash: expectedSha
               }
             });
           }
-          fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
-          console.log('OAuth Android do certificado DEBUG atual configurado.');
+          const verified = client.oauth_client.some(o =>
+            o.client_id === expectedId &&
+            o.android_info?.package_name === 'br.com.entrega365.app' &&
+            o.android_info?.certificate_hash?.toLowerCase() === expectedSha
+          );
+          if (!verified) throw new Error('Falha ao validar SHA-1 OAuth do APK #180.');
+          fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\\n');
+          console.log('OAuth Android validado: SHA-1 da execução #180.');
           NODE
           cat >> android/variables.gradle <<'EOF'
 
