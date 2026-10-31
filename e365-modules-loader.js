@@ -11,6 +11,7 @@
   const boot=async()=>{
     try{
       await loadScript('data-sync.js?v=3','text/javascript');
+      await loadScript('daily-backup.js?v=1','text/javascript');
       await loadScript('manual-backup-ui.js','text/javascript');
       await loadScript('layout-reorg.js','text/javascript');
       await loadScript('plus-buttons-fix.js','text/javascript');
