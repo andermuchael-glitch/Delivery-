@@ -525,8 +525,8 @@ let commandListExpanded=false;
 function renderDay(){
   let d=getDay(day),t=totals(d);
   // Última comanda lançada aparece no topo; as anteriores ficam abaixo.
-  const orderedEntries=d.entries.slice().reverse();
-  const visibleEntries=commandListExpanded?orderedEntries:orderedEntries.slice(0,1);
+  // Mostrar todas as comandas: nenhuma fica escondida após adicionar outra.
+  const visibleEntries=d.entries.slice().reverse();
   let rows=visibleEntries.map(e=>{
     const status=e.ok?"Entregue":"Pendente";
     return `
@@ -564,7 +564,6 @@ function renderDay(){
     <div class="line"></div>
     <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
     ${rows?`<div class="command-list">${rows}</div>`:`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
-    ${d.entries.length>1?`<button class="add" id="toggleComandas">${commandListExpanded?"▲ Ocultar comandas anteriores":"▼ Ver todas as "+d.entries.length+" comandas"}</button>`:""}
     <button class="add" id="add">+ Nova comanda</button>
     <div class="line"></div>
     <div class="title" style="font-size:14px;margin:0 0 6px">⚡ Lançamento rápido</div>
@@ -614,19 +613,27 @@ function bindDay(){
   if(add) add.onclick=()=>{
     const d=current();
     if(!Array.isArray(d.entries)) d.entries=[];
-    d.entries.push({id:crypto.randomUUID(),comanda:"",taxa:"",ok:false});
-    commandListExpanded=false;
+    const id=window.crypto?.randomUUID?crypto.randomUUID():"cmd-"+Date.now()+"-"+Math.random().toString(16).slice(2);
+    d.entries.push({id,comanda:"",taxa:"",ok:false,createdAt:new Date().toISOString()});
     saveDayAnd(day,d);
     render();
   };
   document.querySelectorAll(".delivery-entry").forEach(r=>{
     const id=r.dataset.id;
-    r.querySelectorAll("[data-f]").forEach(i=>i.onchange=()=>{
-      const d=current(), entry=d.entries.find(x=>String(x.id)===String(id));
-      if(!entry)return;
-      const field=i.dataset.f;
-      entry[field]=field==="ok"?i.checked:i.value;
-      saveDayAnd(day,d);render();
+    r.querySelectorAll("[data-f]").forEach(i=>{
+      const persistField=()=>{
+        const d=current(), entry=d.entries.find(x=>String(x.id)===String(id));
+        if(!entry)return;
+        const field=i.dataset.f;
+        entry[field]=field==="ok"?i.checked:i.value;
+        // Grava cada alteração imediatamente sem reconstruir a tela durante a digitação.
+        saveDayAnd(day,d);
+      };
+      if(i.dataset.f==="ok") i.onchange=()=>{persistField();render();};
+      else {
+        i.oninput=persistField;
+        i.onchange=persistField;
+      }
     });
     const remove=r.querySelector("[data-remove]");
     if(remove) remove.onclick=()=>{
