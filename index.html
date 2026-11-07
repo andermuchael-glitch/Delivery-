@@ -521,12 +521,14 @@ function openMore(){
 
 
 let commandListExpanded=false;
+let completedEntriesExpanded=false;
 
 function renderDay(){
   let d=getDay(day),t=totals(d);
-  // Última comanda lançada aparece no topo; as anteriores ficam abaixo.
-  // Mostrar todas as comandas: nenhuma fica escondida após adicionar outra.
-  const visibleEntries=d.entries.slice().reverse();
+  // Pendentes ficam sempre visíveis; entregues podem ser recolhidas.
+  const orderedEntries=d.entries.slice().reverse();
+  const completedCount=orderedEntries.filter(e=>e.ok).length;
+  const visibleEntries=orderedEntries.filter(e=>!e.ok || completedEntriesExpanded);
   let rows=visibleEntries.map(e=>{
     const status=e.ok?"Entregue":"Pendente";
     return `
@@ -564,6 +566,7 @@ function renderDay(){
     <div class="line"></div>
     <div class="tablehead"><span>Comanda</span><span>Taxa</span><span style="text-align:center">OK</span><span></span></div>
     ${rows?`<div class="command-list">${rows}</div>`:`<div class="empty">Nenhuma entrega lançada no dia.<br>Toque em "+ Nova comanda" para iniciar.</div>`}
+    ${completedCount?`<button class="add" id="toggleCompleted">${completedEntriesExpanded?"▲ Minimizar entregas feitas":"▼ Mostrar "+completedCount+" entregas feitas"}</button>`:""}
     <button class="add" id="add">+ Nova comanda</button>
     <div class="line"></div>
     <div class="title" style="font-size:14px;margin:0 0 6px">⚡ Lançamento rápido</div>
@@ -606,8 +609,8 @@ function bindDay(){
       saveDayAnd(day,d);render();
     };
   });
-  const toggleComandas=$("#toggleComandas");
-  if(toggleComandas) toggleComandas.onclick=()=>{commandListExpanded=!commandListExpanded;render();};
+  const toggleCompleted=$("#toggleCompleted");
+  if(toggleCompleted) toggleCompleted.onclick=()=>{completedEntriesExpanded=!completedEntriesExpanded;render();};
 
   const add=$("#add");
   if(add) add.onclick=()=>{
