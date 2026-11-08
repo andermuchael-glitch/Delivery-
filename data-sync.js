@@ -47,8 +47,10 @@
     }
     const serverVersion=Number(server.version||0);
     if(Object.keys(changes).length){
+      // Merge local edits into the server payload WITHOUT applying the merged snapshot
+      // back to localStorage. Applying it here can overwrite text typed after this sync
+      // captured its change queue (for example, while the user creates the next comanda).
       const merged=mergeRemote(server.data,changes);
-      applyMerged(merged);
       const sentChanges={...changes},localSent={...merged};
       try{
         const result=await request('POST',{data:merged,version:serverVersion,force:false});
@@ -57,10 +59,10 @@
         return true;
       }catch(e){
         if(e.status!==409)throw e;
-        // A different device saved first: merge this device's changed keys into the latest server copy.
+        // Another device saved first: fetch its latest copy and merge pending local edits
+        // for the retry, again without replacing the user's live localStorage state.
         server=await request('GET');
         const latest=mergeRemote(server.data||{},currentChanges());
-        applyMerged(latest);
         const sentAgain=currentChanges(),localAgain={...latest};
         const result=await request('POST',{data:latest,version:Number(server.version||0),force:false});
         clearSyncedChanges(sentAgain,localAgain);
