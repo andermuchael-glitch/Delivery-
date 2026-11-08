@@ -507,7 +507,7 @@ function openMore(){
   document.querySelector(".moremodal")?.remove();
   const m=document.createElement("div");
   m.className="moremodal";
-  m.innerHTML='<div class="morebox"><div class="morehandle"></div><div class="moretitle">Mais recursos</div><div class="small">Ferramentas adicionais do Entrega365</div><div class="moregrid"><button class="moreitem pro" data-more="pro"><b>⭐</b><span>Modo PRO</span><small>Recursos avançados</small></button><button class="moreitem" data-more="calendar"><b>📅</b><span>Agenda</span><small>Compromissos e lembretes</small></button><button class="moreitem pro" data-more="finance"><b>💰</b><span>Controle financeiro</span><small>Contas pessoais e mensais</small></button><button class="moreitem" data-more="calculator"><b>🧮</b><span>Calculadora</span><small>Cálculos rápidos</small></button></div></div>';
+  m.innerHTML='<div class="morebox"><div class="morehandle"></div><div class="moretitle">Mais recursos</div><div class="small">Ferramentas adicionais do Entrega365</div><div class="moregrid"><button class="moreitem" data-more="calendar"><b>📅</b><span>Agenda</span><small>Compromissos e lembretes</small></button><button class="moreitem pro" data-more="finance"><b>💰</b><span>Controle financeiro</span><small>Contas pessoais e mensais</small></button><button class="moreitem" data-more="calculator"><b>🧮</b><span>Calculadora</span><small>Cálculos rápidos</small></button></div></div>';
   document.body.appendChild(m);
   m.onclick=e=>{if(e.target===m)m.remove()};
   m.querySelectorAll("[data-more]").forEach(b=>b.onclick=()=>{
