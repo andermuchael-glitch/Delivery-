@@ -91,7 +91,7 @@ jobs:
             o.android_info?.certificate_hash?.toLowerCase() === expectedSha
           );
           if (!verified) throw new Error('Falha ao validar SHA-1 OAuth do APK #180.');
-          fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\\n');
+          fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
           console.log('OAuth Android validado: SHA-1 da execução #180.');
           NODE
           cat >> android/variables.gradle <<'EOF'
