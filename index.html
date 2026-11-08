@@ -428,7 +428,7 @@ window.e365OpenPro=()=>{
 
 const defDay=k=>({date:k,entries:[],arrancada:0,kmInicial:"",kmFinal:""});
 const defExp=k=>({date:k,items:[]});
-const defMech=()=>({ultimaTroca:"",intervalo:"",motoKm:""});const defFinance=()=>({items:[],goal:{target:"",workDays:"26"},reserves:[]});const getFinance=()=>{const f=load("finance",defFinance());return {...defFinance(),...f,goal:{...defFinance().goal,...(f.goal||{})},reserves:Array.isArray(f.reserves)?f.reserves:[]}};const isProActive=()=>localStorage.getItem("entrega365:plan")==="active";
+const defMech=()=>({ultimaTroca:"",intervalo:"",motoKm:""});const defFinance=()=>({items:[],goal:{target:"",workDays:"26"},reserves:[]});const getFinance=()=>{const f=load("finance",defFinance());return {...defFinance(),...f,goal:{...defFinance().goal,...(f.goal||{})},reserves:Array.isArray(f.reserves)?f.reserves:[]}};const isProActive=()=>true;try{localStorage.setItem("entrega365:plan","active")}catch(e){}
 const getDay=k=>{
   const d=load("day:"+k,defDay(k));
   let changed=false;
