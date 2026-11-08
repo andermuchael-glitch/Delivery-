@@ -22,6 +22,7 @@ Configure no ambiente do servidor:
 
 - `MERCADOPAGO_ACCESS_TOKEN` — Access Token privado do Mercado Pago.
 - `MERCADOPAGO_WEBHOOK_SECRET` — chave secreta dos Webhooks do Mercado Pago.
+- `NEON_DATABASE_URL` ou `DATABASE_URL` — conexão com o PostgreSQL (Neon) usado pelo sync principal.
 
 Nunca coloque essas credenciais no JavaScript do navegador ou no GitHub.
 
@@ -30,6 +31,14 @@ Webhook de produção:
 `https://entrega365.com.br/api/mp-webhook`
 
 No Mercado Pago, configure os eventos de assinaturas/pagamentos conforme a aplicação criada no painel de desenvolvedor.
+
+## Sincronização de dados
+
+A fonte de verdade preferida é o **PostgreSQL** via `data-sync.js` + endpoint `/api/data`.
+
+- O módulo `cloud-sync.js` (Firebase Firestore) é legado e se desativa automaticamente quando o sync Postgres está ativo, evitando race conditions.
+- Os dados continuam no `localStorage` por usuário e são sincronizados de forma offline-first com versionamento (CAS).
+- Em caso de conflito, o cliente mescla as chaves alteradas localmente sobre a versão mais recente do servidor.
 
 ## Proteção dos dados
 
@@ -51,4 +60,4 @@ O Service Worker usa uma versão de cache própria e injeta os módulos compleme
 
 ## Publicação
 
-A aplicação principal continua compatível com GitHub Pages. Para ativar a cobrança automática do PRO, publique também a pasta `api/` em Vercel ou outro ambiente server-side compatível e configure as variáveis secretas.
+A aplicação principal continua compatível com GitHub Pages. Para ativar a cobrança automática do PRO e o sync PostgreSQL, publique também a pasta `api/` em Vercel ou outro ambiente server-side compatível e configure as variáveis secretas.
