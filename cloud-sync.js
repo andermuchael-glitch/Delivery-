@@ -1,6 +1,17 @@
-/* Entrega365 v170 — sincronização principal entre navegadores via Firebase */
+/* Entrega365 v170 — sincronização via Firebase (LEGADO)
+   Preferir o data-sync.js (PostgreSQL) como fonte de verdade.
+   Este módulo é desativado automaticamente se o sync Postgres estiver carregado,
+   evitando race conditions e sobrescrita de dados. */
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+
+// Skip entirely if the preferred PostgreSQL sync is already loaded.
+if (window.__e365PostgresSyncLoaded) {
+  console.info("Entrega365: cloud-sync.js desativado (PostgreSQL sync ativo).");
+  window.entrega365CloudSync = async () => false;
+  window.entrega365CloudSave = async () => false;
+  window.entrega365CloudStatus = () => ({ disabled: true, reason: "postgres-preferred" });
+} else {
 const DB=getFirestore(getApp()),ROOT="entrega365Sync";
 let uid="",ref=null,ready=false,restoring=false,timer=0,unsubscribe=null,lastError=null,retryTimer=0,starting=false,storageHooked=false;
 const now=()=>Date.now();
@@ -23,3 +34,4 @@ window.entrega365CloudSync=start;window.entrega365CloudSave=push;window.entrega3
 function scheduleRetry(){clearTimeout(retryTimer);retryTimer=setTimeout(()=>start().catch(()=>{}),2500)}
 window.addEventListener("e365-data-changed",queue);window.addEventListener("e365-pro-updated",queue);window.addEventListener("e365-cloud-restored",()=>setTimeout(()=>{window.e365Establishments?.refresh?.();window.render?.();window.e365SyncPro?.()},0));window.addEventListener("online",()=>start().catch(()=>{}));window.addEventListener("focus",()=>{start().catch(()=>{});window.e365SyncPro?.()});
 setInterval(()=>{if(!uid){start().catch(()=>{});return}if(!ready||lastError){start().catch(()=>{});return}if(state().dirty)push();else getDoc(ref).then(snap=>{if(!snap.exists()||restoring)return;const remote=snap.data()||{},remoteAt=Number(remote.updatedAt||0),st=state(),local=snapshot();if(remoteAt>Number(st.remoteAt||0)&&!st.dirty&&hasMeaningfulData(remote.data))restoreRemote(remote.data||{},remoteAt).catch(()=>{});else if(hasMeaningfulData(local)&&remoteAt<Number(st.savedAt||0)&&!st.dirty)push()}).catch(e=>{lastError=e;ready=false})},3000);
+}
