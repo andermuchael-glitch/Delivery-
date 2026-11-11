@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrega365 - Controle Profissional de Entregas</title>
+  <meta name="description" content="Entrega365: o aplicativo completo para entregadores. Controle entregas, taxas, KM, gastos, fechamento diário e relatórios mensais. Simples, rápido e profissional.">
+  <meta name="theme-color" content="#0f0f0f">
+  <link rel="icon" href="logo-moto.svg">
+  <link rel="apple-touch-icon" href="logo-entrega365.jpg">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --card: #1a1a1a;
+      --accent: #ffd000;
+      --accent2: #e6b800;
+      --text: #f5f5f5;
+      --muted: #a0a0a0;
+      --green: #4cd964;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      background: radial-gradient(circle at 50% 20%, rgba(255,208,0,.12) 0%, transparent 50%),
+                  linear-gradient(180deg, #0a0a0a 0%, #111 100%);
+      position: relative;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="%23ffd000" opacity=".1"/></svg>') repeat;
+      opacity: .3;
+      pointer-events: none;
+    }
+    .hero-content { max-width: 900px; position: relative; z-index: 1; }
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      background: var(--accent) url("logo-moto.svg") center/contain no-repeat;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 40px rgba(255,208,0,.4);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 32px;
+    }
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      text-decoration: none;
+      transition: all .2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0a0a;
+      box-shadow: 0 10px 30px rgba(255,208,0,.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255,208,0,.4); }
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    .btn-secondary:hover { background: rgba(255,208,0,.1); }
+    section { padding: 100px 20px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 60px;
+      font-size: 1.1rem;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .feature {
+      background: var(--card);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      transition: transform .2s, border-color .2s;
+    }
+    .feature:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+    .feature h3 { font-size: 1.3rem; margin-bottom: 12px; }
+    .feature p { color: var(--muted); font-size: .95rem; }
+    .pricing {
+      background: linear-gradient(180deg, transparent, rgba(255,208,0,.05));
+    }
+    .price-card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 2px solid var(--accent);
+      border-radius: 28px;
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .price {
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin: 16px 0;
+    }
+    .price span { font-size: 1.5rem; font-weight: 600; }
+    .price-card ul {
+      list-style: none;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .price-card li {
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .price-card li::before { content: "\2713 "; color: var(--green); font-weight: bold; }
+    footer {
+      background: #050505;
+      padding: 60px 20px 30px;
+      text-align: center;
+      border-top: 1px solid #222;
+    }
+    .footer-links { display: flex; gap: 24px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--accent); }
+    @media (max-width: 600px) {
+      .cta-group { flex-direction: column; align-items: center; }
+      .btn { width: 100%; max-width: 320px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-content">
+      <div class="logo"></div>
+      <h1>Entrega365</h1>
+      <p>O aplicativo profissional feito para entregadores. Controle entregas, taxas, KM, gastos e feche o dia com precisão — tudo no seu celular.</p>
+      <div class="cta-group">
+        <a href="/" class="btn btn-primary">Começar Grátis</a>
+        <a href="#recursos" class="btn btn-secondary">Ver Recursos</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="recursos">
+    <div class="container">
+      <h2>Tudo que você precisa no dia a dia</h2>
+      <p class="subtitle">Feito por quem entende a rotina de quem entrega. Simples, rápido e sem complicação.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📦</div>
+          <h3>Controle de Entregas</h3>
+          <p>Registre entregas, clientes, taxas e arrancadas com poucos toques. Acompanhe o que realmente entrou no dia.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🛣️</div>
+          <h3>KM e Fechamento Diário</h3>
+          <p>KM inicial, final e rodados. Fechamento claro com ganhos, gastos e resultado líquido do dia.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔧</div>
+          <h3>Mecânica e Manutenção</h3>
+          <p>Controle de troca de óleo, intervalo personalizado e acompanhamento da saúde da moto.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <h3>Relatórios Mensais</h3>
+          <p>Visão completa do mês: totais, médias de KM, ganhos e despesas para você tomar melhores decisões.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">💰</div>
+          <h3>Gastos e Taxas</h3>
+          <p>Organize despesas e visualize taxas de forma transparente. Nada fica de fora do seu controle.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">☁️</div>
+          <h3>Backup e Sincronização</h3>
+          <p>Seus dados seguros. Backup local e opções de sincronização para nunca perder o histórico.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing">
+    <div class="container">
+      <h2>Entrega365 PRO</h2>
+      <p class="subtitle">Desbloqueie o máximo do aplicativo por um valor acessível.</p>
+      <div class="price-card">
+        <h3>Plano PRO</h3>
+        <div class="price">R$ 9,90<span>/mês</span></div>
+        <ul>
+          <li>Todos os recursos avançados</li>
+          <li>Relatórios completos</li>
+          <li>Suporte prioritário</li>
+          <li>Atualizações exclusivas</li>
+          <li>Sem anúncios</li>
+        </ul>
+        <a href="/" class="btn btn-primary" style="width:100%; justify-content:center;">Assinar PRO</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container" style="text-align:center;">
+      <h2>Pronto para organizar suas entregas?</h2>
+      <p class="subtitle">Comece agora mesmo. É grátis para começar e funciona direto no navegador — instale como app no celular.</p>
+      <a href="/" class="btn btn-primary" style="font-size:1.2rem; padding:18px 40px;">Entrar no Entrega365</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo" style="width:60px;height:60px;margin-bottom:16px;"></div>
+    <p><strong>Entrega365</strong> — Controle profissional de entregas</p>
+    <div class="footer-links">
+      <a href="mailto:entrega365.suporte@gmail.com">Suporte</a>
+      <a href="privacidade.html">Privacidade</a>
+      <a href="/">Abrir App</a>
+    </div>
+    <p style="margin-top:30px; color:#666; font-size:.9rem;">© 2026 Entrega365. Todos os direitos reservados.</p>
+  </footer>
+</body>
+</html>
