@@ -466,9 +466,17 @@ function showLogin(){
 function totals(d){
   const extraEnt=Math.max(0,Math.floor(+d.lancamentoRapidoEntregas||0));
   const extraTaxas=Math.max(0,+d.lancamentoRapidoTaxas||0);
-  let taxas=d.entries.reduce((s,e)=>s+(+e.taxa||0),0)+extraTaxas;
+  // Uma comanda só é efetiva quando número e taxa foram preenchidos.
+  // A conferência (OK) é independente e não interfere na contagem.
+  const effectiveEntries=(Array.isArray(d.entries)?d.entries:[]).filter(e=>{
+    if(!e)return false;
+    const number=String(e.comanda??e.numero??"").trim();
+    const rawTax=String(e.taxa??"").trim();
+    return number!=="" && rawTax!=="" && Number.isFinite(Number(rawTax)) && Number(rawTax)>=0;
+  });
+  let taxas=effectiveEntries.reduce((s,e)=>s+(Number(e.taxa)||0),0)+extraTaxas;
   let km=(+d.kmFinal||0)-(+d.kmInicial||0);
-  return{taxas,ent:d.entries.length+extraEnt,conf:d.entries.filter(e=>e.ok).length+extraEnt,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
+  return{taxas,ent:effectiveEntries.length+extraEnt,conf:effectiveEntries.filter(e=>e.ok).length+extraEnt,arr:+d.arrancada||0,total:taxas+(+d.arrancada||0),km:km>0?km:0}
 }
 function saveDayAnd(k,d){save("day:"+k,d)}
 function shell(content){
@@ -1076,7 +1084,7 @@ function monthKeys(){
 }
 
 function renderMonth(){
-  let ks=monthKeys(),ds=ks.map(getDay),km=ds.reduce((s,d)=>s+totals(d).km,0),ent=ds.reduce((s,d)=>s+d.entries.length,0),tax=ds.reduce((s,d)=>s+totals(d).taxas,0),arr=ds.reduce((s,d)=>s+(+d.arrancada||0),0),exp=0;
+  let ks=monthKeys(),ds=ks.map(getDay),km=ds.reduce((s,d)=>s+totals(d).km,0),ent=ds.reduce((s,d)=>s+totals(d).ent,0),tax=ds.reduce((s,d)=>s+totals(d).taxas,0),arr=ds.reduce((s,d)=>s+(+d.arrancada||0),0),exp=0;
   ks.forEach(k=>{exp+=getExp(k).items.reduce((s,e)=>s+(+e.val||0),0)});
   let saldo = (tax + arr) - exp;
 
